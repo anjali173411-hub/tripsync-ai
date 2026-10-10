@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Sparkles, RefreshCw, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Pencil, Trash, BedDouble } from "lucide-react";
+import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash, BedDouble } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 
@@ -231,6 +231,36 @@ function ItineraryPage() {
     return total;
   }
 
+  // Which part of the day an activity is in, from its time like "13:30"
+  function getPartOfDay(time) {
+    const hour = parseInt(String(time).substring(0, 2), 10);
+
+    if (hour < 12) {
+      return "Morning";
+    }
+    if (hour < 17) {
+      return "Afternoon";
+    }
+    return "Evening"; // also used if the time can not be read
+  }
+
+  // A small picture for each kind of activity
+  function getActivityIcon(activity) {
+    if (activity.category === "travel") {
+      if (trip.travelMode) {
+        return travelModeText(trip.travelMode).split(" ")[0]; // the train, bus or car emoji
+      }
+      return "🧭";
+    }
+    if (activity.category === "food") {
+      return "🍽️";
+    }
+    if (activity.category === "stay") {
+      return "🏨";
+    }
+    return "📍";
+  }
+
   // Counts the conflicts that are not decided yet
   function countOpenDecisions() {
     let count = 0;
@@ -425,106 +455,131 @@ function ItineraryPage() {
             </span>
           )}
         </p>
-        <p className="muted small">Click an activity to see more.</p>
-
         {day.activities.length === 0 && <p className="muted">No activities on this day.</p>}
 
-        {/* The activities of the selected day: expandable cards (SRS 4.1) */}
-        {day.activities.map((activity, index) => {
-          const isOpen = openActivityId === activity._id;
-          const isEditing = editingId === activity._id;
+        {/* The day as a timeline: Morning, Afternoon, Evening */}
+        {["Morning", "Afternoon", "Evening"].map((part) => {
+          // The activities that belong to this part of the day (keeping their position in the day)
+          const items = [];
+          for (let i = 0; i < day.activities.length; i++) {
+            if (getPartOfDay(day.activities[i].time) === part) {
+              items.push({ activity: day.activities[i], index: i });
+            }
+          }
+
+          if (items.length === 0) {
+            return null;
+          }
 
           return (
-            <div
-              key={activity._id}
-              className={"card activity" + (isOpen ? " open" : "") + (activity.category === "travel" ? " travel" : "")}
-            >
-              {/* The always-visible top row. Clicking it opens or closes the card. */}
-              <button className="activity-header" onClick={() => toggleActivity(activity._id)}>
-                <span className="activity-time">{activity.time}</span>
-                <span className="activity-title">
-                  {/* The journey there and back is shown with the travel mode's emoji */}
-                  {activity.category === "travel" && trip.travelMode && (
-                    <span>{travelModeText(trip.travelMode).split(" ")[0]} </span>
-                  )}
-                  {activity.name}
-                </span>
-                <span className="activity-cost">{formatMoney(activity.estimatedCost, currency)}</span>
-                {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
+            <div key={part} className="day-part">
+              <h3 className="day-part-title">{part}</h3>
 
-              {/* Shown only when the card is open */}
-              {isOpen && !isEditing && (
-                <div className="activity-details">
-                  <p>{activity.description}</p>
+              {items.map((item) => {
+                const activity = item.activity;
+                const index = item.index;
+                const isOpen = openActivityId === activity._id;
+                const isEditing = editingId === activity._id;
 
-                  <span className="tag">{activity.category}</span>
+                return (
+                  <div key={activity._id} className={"timeline-item" + (activity.category === "travel" ? " travel" : "")}>
+                    <div className="timeline-time">{activity.time}</div>
 
-                  {/* FR-5.6: which members this activity was chosen for */}
-                  {trip.type === "group" && activity.matchedMembers.length > 0 && (
-                    <span className="tag tag-match">Matches: {activity.matchedMembers.join(", ")}</span>
-                  )}
+                    <div className="timeline-body">
+                      <div className="row-between">
+                        <h4>{getActivityIcon(activity)} {activity.name}</h4>
+                        <span className="activity-cost">
+                          {activity.estimatedCost > 0 ? formatMoney(activity.estimatedCost, currency) : "Free"}
+                        </span>
+                      </div>
 
-                  {canEdit && (
-                    <div className="button-row activity-buttons">
-                      <button className="btn-small btn-outline" onClick={() => startEditing(activity)}>
-                        <Pencil size={14} /> Edit
-                      </button>
-                      <button
-                        className="btn-small btn-outline"
-                        onClick={() => handleMove(activity._id, "up")}
-                        disabled={index === 0}
-                      >
-                        <ArrowUp size={14} /> Earlier
-                      </button>
-                      <button
-                        className="btn-small btn-outline"
-                        onClick={() => handleMove(activity._id, "down")}
-                        disabled={index === day.activities.length - 1}
-                      >
-                        <ArrowDown size={14} /> Later
-                      </button>
-                      <button className="btn-small btn-danger" onClick={() => handleRemove(activity)}>
-                        <Trash size={14} /> Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                      <p className="muted">{activity.description}</p>
 
-              {/* The edit form, shown instead of the details while editing */}
-              {isOpen && isEditing && (
-                <form className="activity-details" onSubmit={handleSaveEdit}>
-                  <div className="two-columns">
-                    <div>
-                      <label>Time</label>
-                      <input value={editTime} onChange={(e) => setEditTime(e.target.value)} />
-                    </div>
-                    <div>
-                      <label>Cost per person ({currency})</label>
-                      <input type="number" min="0" value={editCost} onChange={(e) => setEditCost(e.target.value)} required />
+                      {/* FR-5.6: which members this activity was chosen for */}
+                      {trip.type === "group" && activity.matchedMembers.length > 0 && (
+                        <span className="tag tag-match">Matches: {activity.matchedMembers.join(", ")}</span>
+                      )}
+
+                      {/* Organiser only: small "Change" link that opens the edit buttons */}
+                      {canEdit && !isEditing && (
+                        <button className="link-button" onClick={() => toggleActivity(activity._id)}>
+                          {isOpen ? "Close" : "Change"}
+                        </button>
+                      )}
+
+                      {canEdit && isOpen && !isEditing && (
+                        <div className="button-row activity-buttons">
+                          <button className="btn-small btn-outline" onClick={() => startEditing(activity)}>
+                            <Pencil size={14} /> Edit
+                          </button>
+                          <button
+                            className="btn-small btn-outline"
+                            onClick={() => handleMove(activity._id, "up")}
+                            disabled={index === 0}
+                          >
+                            <ArrowUp size={14} /> Earlier
+                          </button>
+                          <button
+                            className="btn-small btn-outline"
+                            onClick={() => handleMove(activity._id, "down")}
+                            disabled={index === day.activities.length - 1}
+                          >
+                            <ArrowDown size={14} /> Later
+                          </button>
+                          <button className="btn-small btn-danger" onClick={() => handleRemove(activity)}>
+                            <Trash size={14} /> Remove
+                          </button>
+                        </div>
+                      )}
+
+                      {/* The edit form */}
+                      {isEditing && (
+                        <form onSubmit={handleSaveEdit}>
+                          <div className="two-columns">
+                            <div>
+                              <label>Time</label>
+                              <input value={editTime} onChange={(e) => setEditTime(e.target.value)} />
+                            </div>
+                            <div>
+                              <label>Cost per person ({currency})</label>
+                              <input type="number" min="0" value={editCost} onChange={(e) => setEditCost(e.target.value)} required />
+                            </div>
+                          </div>
+
+                          <label>Name</label>
+                          <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
+
+                          <label>Description</label>
+                          <textarea rows="2" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+
+                          <div className="button-row">
+                            <button type="submit">Save</button>
+                            <button type="button" className="btn-outline" onClick={() => setEditingId("")}>Cancel</button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   </div>
-
-                  <label>Name</label>
-                  <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-
-                  <label>Description</label>
-                  <textarea rows="2" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-
-                  <div className="button-row">
-                    <button type="submit">Save</button>
-                    <button type="button" className="btn-outline" onClick={() => setEditingId("")}>Cancel</button>
-                  </div>
-                </form>
-              )}
+                );
+              })}
             </div>
           );
         })}
 
-        {/* Organiser controls */}
+        {/* Organiser: finalise (always visible) */}
         {canEdit && (
           <div className="card">
+            <button onClick={handleFinalise} disabled={openDecisions > 0}>Finalise itinerary</button>
+            {openDecisions > 0 && <p className="muted small">Resolve all open group decisions first.</p>}
+            {openDecisions === 0 && <p className="muted small">Happy with the plan? Finalise it to lock it for everyone.</p>}
+          </div>
+        )}
+
+        {/* Organiser: asking the AI again, hidden until opened */}
+        {canEdit && (
+          <details className="card change-plan">
+            <summary>Change the plan with AI</summary>
+
             <h3>Plan Day {day.dayNumber} again</h3>
             <p className="muted small">The AI re-plans only this day. The other days stay the same.</p>
             <input
@@ -546,12 +601,7 @@ function ItineraryPage() {
               placeholder="What should the AI change?"
             />
             <button className="btn-outline" onClick={handleGenerate}><RefreshCw size={16} /> Plan whole trip again</button>
-
-            <hr />
-
-            <button onClick={handleFinalise} disabled={openDecisions > 0}>Finalise itinerary</button>
-            {openDecisions > 0 && <p className="muted small">Resolve all open group decisions first.</p>}
-          </div>
+          </details>
         )}
       </section>
     </div>

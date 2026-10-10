@@ -47,8 +47,17 @@ You plan day-by-day trip itineraries for one traveller or for a group of travell
 
 Rules:
 - Plan exactly the number of days you are asked for, numbered from 1.
-- Give each day a few activities with a time (e.g. "09:00"), a name, a short description,
-  a category, and an estimated cost per person in the trip's currency.
+- Plan a FULL day for every day, from morning to night (about 08:00 to 21:00), in time order.
+  A normal day has: breakfast, a morning activity, lunch, an afternoon activity,
+  an evening activity and dinner. Every activity has a time (e.g. "09:00"), a name,
+  a short description (where it is and what they do), a category, and an estimated
+  cost per person in the trip's currency.
+- Use category "food" for every meal, "stay" for hotel check-in and check-out,
+  "travel" for journeys, and a normal category (e.g. sightseeing, beach, culture,
+  shopping, nightlife, relaxation) for everything else.
+- Pace: "relaxed" means fewer sights and longer breaks, "packed" means more sights,
+  but EVERY day still has breakfast, lunch and dinner (except meals before arriving
+  on Day 1 or after leaving on the last day).
 - Prefer activities that satisfy several travellers at once.
 - For every activity, list in "matchedMembers" the names of the travellers whose
   interests or must-do items it satisfies. Use the names exactly as given.
@@ -61,9 +70,12 @@ The journey (when you are told where they travel from and how: train, bus or car
 - Day 1 must START with the journey itself as an activity with category "travel",
   e.g. time "06:00", name "Train from Chennai to Goa", description "About 12 hours; arrive around 18:00".
   Use a realistic departure time and travel time for that distance and that kind of transport.
-- Only plan activities on Day 1 AFTER the arrival time. After a long journey keep Day 1 light.
+- Only plan activities on Day 1 AFTER the arrival time. Right after arriving, add
+  "Check in at <the suggested stay>" (category "stay"). After a long journey keep Day 1 light,
+  but still include dinner.
 - The LAST day must END with the journey home as a "travel" activity, at a realistic time,
-  so they get home at a sensible hour. Plan only what fits before leaving.
+  so they get home at a sensible hour. Before it, add breakfast and
+  "Check out from <the stay>" (category "stay"). Plan only what fits before leaving.
 - The travel activity's estimatedCost is the ticket or fuel cost per person for that journey.
 - With a car they can reach places further away; otherwise keep activities close together
   or use local transport.
@@ -164,8 +176,11 @@ function buildRetryPrompt(errors) {
 const DAY_PROMPT = `You are TripSync AI, a travel planner.
 You are re-planning ONE day of an existing trip itinerary.
 Follow the same rules as for a full plan:
-- Give the day a few activities with a time (e.g. "09:00"), a name, a short description,
-  a category, and an estimated cost per person in the trip's currency.
+- Plan a FULL day from morning to night (about 08:00 to 21:00), in time order:
+  breakfast, morning activity, lunch, afternoon activity, evening activity, dinner.
+  Every activity has a time (e.g. "09:00"), a name, a short description, a category
+  ("food" for meals, "stay" for check-in/check-out, "travel" for journeys),
+  and an estimated cost per person in the trip's currency.
 - In "matchedMembers" list the travellers whose interests or must-do items each activity satisfies.
   Use the names exactly as given.
 - Never include anything on a traveller's deal-breaker list.
@@ -499,6 +514,17 @@ export function checkAIReply(replyText, numberOfDays, memberNames) {
     }
 
     checkActivities(day.activities, dayLabel, memberNames, errors);
+
+    // A full day plan always includes meals
+    let mealCount = 0;
+    for (let a = 0; a < day.activities.length; a++) {
+      if (day.activities[a].category === "food") {
+        mealCount = mealCount + 1;
+      }
+    }
+    if (mealCount === 0) {
+      errors.push(dayLabel + " has no meals; add breakfast, lunch and dinner (category \"food\")");
+    }
   }
 
   // The suggested place to stay

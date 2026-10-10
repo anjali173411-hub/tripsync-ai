@@ -1471,3 +1471,117 @@ tbody tr:hover {
   background: var(--primary);
   color: var(--white);
 }
+
+/* ---------- Itinerary: the day as a simple timeline ---------- */
+
+/* "Morning", "Afternoon", "Evening" headings */
+.day-part {
+  margin-bottom: 18px;
+}
+
+.day-part-title {
+  margin: 18px 0 10px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+}
+
+/* One row: time on the left, details on the right, joined by a line */
+.timeline-item {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 14px;
+}
+
+/* The vertical line connecting the times */
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: 31px;
+  top: 34px;
+  bottom: 0;
+  width: 2px;
+  background: var(--primary-light);
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-time {
+  flex-shrink: 0;
+  width: 64px;
+  padding: 6px 0;
+  border-radius: 8px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 700;
+  text-align: center;
+  align-self: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.timeline-item.travel .timeline-time {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.timeline-body {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.timeline-item.travel .timeline-body {
+  background: var(--primary-pale);
+}
+
+.timeline-body h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--primary-dark);
+}
+
+.timeline-body p {
+  margin: 4px 0 6px;
+}
+
+/* Small text button, e.g. "Change" */
+.link-button {
+  display: inline;
+  margin: 6px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  background: none;
+  color: var(--primary-dark);
+  transform: none;
+  box-shadow: none;
+}
+
+/* "Change the plan with AI" box that opens when clicked */
+.change-plan summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.change-plan[open] summary {
+  margin-bottom: 12px;
+}

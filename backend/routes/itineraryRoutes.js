@@ -151,6 +151,12 @@ function toSavedActivities(aiActivities) {
     });
   }
 
+  // Put the activities in time order ("08:00" before "13:00"),
+  // in case the AI listed them out of order
+  activities.sort(function (first, second) {
+    return String(first.time).localeCompare(String(second.time));
+  });
+
   return activities;
 }
 
