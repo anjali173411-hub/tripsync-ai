@@ -66,11 +66,23 @@ export async function findPlace(placeName) {
 
     const results = await getJson(url);
 
+    // Only consider results whose name matches what was typed
+    // (otherwise e.g. "Bali" could pick Paris, which is "more important")
+    const typed = placeName.trim().toLowerCase();
     let best = null;
+
     for (let i = 0; i < results.length; i++) {
-      if (best === null || results[i].importance > best.importance) {
+      const name = String(results[i].name || "").toLowerCase();
+      const nameMatches = name !== "" && (name.includes(typed) || typed.includes(name));
+
+      if (nameMatches && (best === null || results[i].importance > best.importance)) {
         best = results[i];
       }
+    }
+
+    // No name matched exactly: fall back to OpenStreetMap's own first choice
+    if (best === null && results.length > 0) {
+      best = results[0];
     }
 
     if (best) {
