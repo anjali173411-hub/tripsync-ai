@@ -56,20 +56,50 @@ async function getJson(url) {
 // Finds the map position of a place name, e.g. "Goa" -> Goa, India
 // Returns null if the place cannot be found.
 export async function findPlace(placeName) {
-  const url =
-    "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" +
+  // 1. OpenStreetMap. It can return several places with the same name
+  //    (e.g. "Kashmir" is also a small village in Rajasthan), so we ask for
+  //    5 results and keep the one OpenStreetMap rates as most important.
+  try {
+    const url =
+      "https://nominatim.openstreetmap.org/search?format=json&limit=5&q=" +
+      encodeURIComponent(placeName);
+
+    const results = await getJson(url);
+
+    let best = null;
+    for (let i = 0; i < results.length; i++) {
+      if (best === null || results[i].importance > best.importance) {
+        best = results[i];
+      }
+    }
+
+    if (best) {
+      return {
+        lat: Number(best.lat),
+        lon: Number(best.lon),
+        fullName: best.display_name
+      };
+    }
+  } catch (error) {
+    console.warn("OpenStreetMap place search failed, trying Open-Meteo:", error.message);
+  }
+
+  // 2. Backup: Open-Meteo's own place search (used if OpenStreetMap is busy or finds nothing)
+  const backupUrl =
+    "https://geocoding-api.open-meteo.com/v1/search?count=1&name=" +
     encodeURIComponent(placeName);
 
-  const results = await getJson(url);
+  const backup = await getJson(backupUrl);
 
-  if (results.length === 0) {
+  if (!backup.results || backup.results.length === 0) {
     return null;
   }
 
+  const place = backup.results[0];
   return {
-    lat: Number(results[0].lat),
-    lon: Number(results[0].lon),
-    fullName: results[0].display_name
+    lat: place.latitude,
+    lon: place.longitude,
+    fullName: place.name + ", " + place.country
   };
 }
 
