@@ -1,15 +1,25 @@
 
 // Sends emails from the app (used for trip invitations).
 //
-// It uses a Gmail account. The address and its "app password" are secrets,
-// so they live in backend/.env:
-//   EMAIL_USER=yourname@gmail.com
-//   EMAIL_PASS=your 16-letter app password
+// There are two ways to send, chosen by what is in backend/.env (or Render's settings):
 //
-// If they are not set, emails are simply skipped: the invitation is still
-// saved and the person sees it on their dashboard when they log in.
+//   1. Brevo email service (used online on Render)
+//      Render's free plan blocks normal email sending (SMTP), so online we send
+//      through Brevo's web API instead, which works like visiting a website.
+//        BREVO_API_KEY=your Brevo API key
+//        EMAIL_USER=the email address you confirmed as a sender in Brevo
+//
+//   2. Gmail (used on your own computer)
+//        EMAIL_USER=yourname@gmail.com
+//        EMAIL_PASS=your 16-letter Gmail app password
+//
+// If neither is set up, or sending fails, the invitation is still saved and
+// the person sees it on their dashboard when they sign up or log in.
 
 import nodemailer from "nodemailer";
+
+// Give up on sending an email after 10 seconds, so the page never hangs
+const EMAIL_TIMEOUT_MS = 10000;
 
 // Makes text safe to put inside HTML, e.g. "<b>" becomes "&lt;b&gt;"
 function escapeHtml(text) {
@@ -20,26 +30,73 @@ function escapeHtml(text) {
     .split("\"").join("&quot;");
 }
 
-// Returns true if the email settings are in .env
+// Returns true if at least one way of sending email is set up
 export function isEmailSetUp() {
-  return Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+  const brevoReady = Boolean(process.env.BREVO_API_KEY && process.env.EMAIL_USER);
+  const gmailReady = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+  return brevoReady || gmailReady;
+}
+
+// Sends one email through Brevo's web API. Returns true if it worked.
+async function sendWithBrevo(toEmail, subject, text, html) {
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": process.env.BREVO_API_KEY,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({
+      sender: { name: "TripSync AI", email: process.env.EMAIL_USER },
+      to: [{ email: toEmail }],
+      subject: subject,
+      textContent: text,
+      htmlContent: html
+    }),
+    signal: AbortSignal.timeout(EMAIL_TIMEOUT_MS)
+  });
+
+  if (!response.ok) {
+    const problem = await response.text();
+    console.error("Brevo could not send the email (" + response.status + "):", problem);
+    return false;
+  }
+
+  return true;
+}
+
+// Sends one email through Gmail. Returns true if it worked.
+async function sendWithGmail(toEmail, subject, text, html) {
+  const mailer = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    },
+    // Stop waiting if Gmail can't be reached (some hosts block it)
+    connectionTimeout: EMAIL_TIMEOUT_MS,
+    greetingTimeout: EMAIL_TIMEOUT_MS,
+    socketTimeout: EMAIL_TIMEOUT_MS
+  });
+
+  await mailer.sendMail({
+    from: "TripSync AI <" + process.env.EMAIL_USER + ">",
+    to: toEmail,
+    subject: subject,
+    text: text,
+    html: html
+  });
+
+  return true;
 }
 
 // Sends the "you are invited" email.
 // Returns true if the email was sent, false if it could not be sent.
 export async function sendInvitationEmail(toEmail, organiserName, trip) {
   if (!isEmailSetUp()) {
-    console.warn("Email not sent: EMAIL_USER / EMAIL_PASS are not set in .env");
+    console.warn("Email not sent: no email settings found");
     return false;
   }
-
-  const mailer = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
 
   const signUpLink = process.env.CLIENT_URL + "/register";
   const logInLink = process.env.CLIENT_URL + "/login";
@@ -68,14 +125,11 @@ export async function sendInvitationEmail(toEmail, organiserName, trip) {
     "<p>- TripSync AI</p>";
 
   try {
-    await mailer.sendMail({
-      from: "TripSync AI <" + process.env.EMAIL_USER + ">",
-      to: toEmail,
-      subject: subject,
-      text: text,
-      html: html
-    });
-    return true;
+    // Online (Brevo key set): use Brevo. On your computer: use Gmail.
+    if (process.env.BREVO_API_KEY) {
+      return await sendWithBrevo(toEmail, subject, text, html);
+    }
+    return await sendWithGmail(toEmail, subject, text, html);
   } catch (error) {
     console.error("Could not send invitation email:", error.message);
     return false;
