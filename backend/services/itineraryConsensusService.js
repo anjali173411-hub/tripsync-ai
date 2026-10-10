@@ -789,8 +789,14 @@ export async function getBudgetSuggestions(trip, numberOfTravellers, totalSpent,
 
 const PREFERENCES_PROMPT = `You fill in a travel preference form from what a traveller wrote.
 Only use what they actually said. Do not invent wishes they did not mention.
-- interests: pick from the allowed list only.
-- otherInterests: other things they like that are not in the list (short phrases).
+- interests: pick from the allowed list only. Tick the CLOSEST matching interest for
+  anything related they mention, even if they used different words. For example:
+  hiking, trekking, rafting or paragliding -> adventure; temples, forts or museums ->
+  history and/or culture; street food or cafes -> food; clubs or parties -> nightlife;
+  waterfalls, wildlife or hills -> nature; spa or lazy days -> relaxation;
+  markets -> shopping. Use your judgement for anything else.
+- otherInterests: specific things they mentioned that are worth keeping as written
+  (e.g. "hiking", "street food"), as short phrases. These can overlap with ticked interests.
 - mustDo: specific places or activities they really want (short phrases).
 - dealBreakers: things they want to avoid (short phrases).
 - pace, foodPreference, stayBudget, stayType: pick from the allowed values,
