@@ -1,0 +1,1473 @@
+/* =========================================================
+   TripSync AI - violet theme
+   All colours, corners and shadows are set once here at the top.
+   To change the app's colour, change the "--primary" values below.
+   ========================================================= */
+
+:root {
+  /* Main colour: violet */
+  --primary: #6d28d9;
+  --primary-dark: #4c1d95;
+  --primary-darkest: #2e1065;
+  --primary-hover: #5b21b6;
+  --primary-bright: #a855f7;
+  --primary-light: #ede4ff;
+  --primary-tile: #f3edff;
+  --primary-pale: #faf7ff;
+
+  /* Neutrals */
+  --white: #ffffff;
+  --background: #f5f3fa;
+  --text: #1f1633;
+  --muted: #6f6685;
+  --border: #e7e1f3;
+
+  /* Messages */
+  --error: #c0392b;
+  --error-light: #fdecea;
+  --warning: #a16207;
+  --warning-light: #fef6e0;
+
+  /* Shapes */
+  --radius: 14px;
+  --radius-small: 10px;
+  --shadow: 0 1px 2px rgba(46, 16, 101, 0.06), 0 4px 16px rgba(46, 16, 101, 0.07);
+  --shadow-hover: 0 2px 4px rgba(46, 16, 101, 0.08), 0 10px 28px rgba(46, 16, 101, 0.15);
+  --primary-glow: rgba(109, 40, 217, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--background);
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+h1, h2, h3 {
+  margin: 0.3em 0;
+  color: var(--primary-dark);
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* ---------- Navbar ---------- */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 24px;
+  background: linear-gradient(90deg, var(--primary-darkest), var(--primary));
+  box-shadow: 0 2px 12px rgba(46, 16, 101, 0.25);
+}
+
+/* Logo: purple square + name + tagline */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--white);
+}
+
+.brand:hover {
+  color: var(--white);
+}
+
+.brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--white);
+}
+
+.brand-name {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.brand-tagline {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nav-links a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+.nav-links a.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--white);
+}
+
+.nav-user {
+  margin-left: 10px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Round button that only has an icon (e.g. log out) */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--white);
+  box-shadow: none;
+}
+
+.icon-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------- Cards and layout ---------- */
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.narrow {
+  max-width: 420px;
+  margin: 48px auto;
+  padding: 32px;
+}
+
+.narrow-wide {
+  max-width: 620px;
+  margin: 16px auto;
+  padding: 28px;
+}
+
+.center {
+  text-align: center;
+}
+
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Cards you can click (destinations) */
+.trip-card {
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.trip-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-light);
+}
+
+.trip-card p {
+  margin: 4px 0;
+}
+
+/* Trip details: label on top, value below */
+.details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.details > div {
+  padding: 12px 14px;
+  border-radius: var(--radius-small);
+  background: var(--primary-pale);
+}
+
+.details .muted {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.details p {
+  margin: 4px 0 0;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--primary-dark);
+}
+
+/* "How to plan this trip" numbered list */
+.steps {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+
+.steps li {
+  margin: 10px 0;
+  padding-left: 4px;
+}
+
+.steps li::marker {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+/* Yellow box: "the group needs to decide..." */
+.notice {
+  background: var(--warning-light);
+  border-color: #f3dfa6;
+  color: #6b4a06;
+}
+
+/* ---------- Login and sign-up ---------- */
+
+.narrow h1 {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.narrow > p:last-child {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.narrow form button[type="submit"] {
+  width: 100%;
+  padding: 13px;
+  margin-top: 14px;
+}
+
+/* ---------- Forms ---------- */
+
+label {
+  display: block;
+  margin: 16px 0 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 11px 14px;
+  margin: 0 0 4px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-small);
+  font: inherit;
+  color: var(--text);
+  background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input:hover, select:hover, textarea:hover {
+  border-color: #d6cbec;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.15);
+}
+
+/* ---------- Buttons ---------- */
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary);
+  color: var(--white);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-small);
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 6px var(--primary-glow);
+}
+
+button:hover,
+.button:hover {
+  background: var(--primary-hover);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px var(--primary-glow);
+}
+
+button:active,
+.button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  margin-right: 6px;
+  border-radius: 8px;
+}
+
+/* White button with purple text */
+.btn-outline {
+  background: var(--white);
+  color: var(--primary);
+  border-color: var(--primary-light);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+/* Input and button side by side (e.g. "Add member") */
+.inline-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.inline-form input {
+  margin: 0;
+}
+
+.inline-form button {
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Clickable pills for trip type, interests and pace */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: var(--white);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin: 0;
+  font-weight: 500;
+  text-transform: capitalize;
+  box-shadow: none;
+}
+
+.chip:hover {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+  border-color: var(--primary-light);
+  box-shadow: none;
+}
+
+.chip.selected {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* ---------- Messages ---------- */
+
+.error {
+  color: var(--error);
+  background: var(--error-light);
+  padding: 10px 14px;
+  border-radius: var(--radius-small);
+  font-weight: 500;
+}
+
+.success {
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  padding: 10px 14px;
+  border-radius: var(--radius-small);
+  font-weight: 500;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+/* ---------- Badges, pills and tags ---------- */
+
+.badge,
+.pill {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.badge-planning,
+.pill-planning { background: var(--primary-light); color: var(--primary); }
+
+.badge-finalised,
+.pill-finalised { background: var(--primary); color: var(--white); }
+
+.badge-completed,
+.pill-completed { background: #ece8f3; color: var(--muted); }
+
+.pill {
+  margin-top: 8px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 6px 6px 0 0;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--primary-pale);
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.tag-match {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  text-transform: none;
+}
+
+.stars {
+  color: #e0a100;
+  letter-spacing: 1px;
+}
+
+/* ---------- Trip pages: menu on the left, content on the right ---------- */
+
+.trip-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.sidebar h3 {
+  margin: 0 8px 6px;
+  overflow-wrap: anywhere;
+}
+
+.sidebar .badge {
+  align-self: flex-start;
+  margin: 0 8px 14px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.sidebar a:hover {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+}
+
+.sidebar a.active {
+  background: var(--primary);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.trip-content {
+  min-width: 0;
+}
+
+.trip-content > h1 {
+  margin-top: 0;
+}
+
+/* ---------- Dashboard ---------- */
+
+.dashboard {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+/* Welcome banner */
+.hero {
+  padding: 32px;
+  border: none;
+  color: var(--white);
+  background:
+    radial-gradient(circle at 90% 10%, rgba(168, 85, 247, 0.55), transparent 45%),
+    linear-gradient(135deg, var(--primary-darkest), var(--primary));
+  box-shadow: 0 10px 30px rgba(46, 16, 101, 0.3);
+}
+
+.hero h1 {
+  margin: 6px 0;
+  font-size: 2.1rem;
+  color: var(--white);
+}
+
+.hero .muted {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.hero .eyebrow {
+  color: #d8b4fe;
+}
+
+/* White button on the dark banner */
+.hero .button-big {
+  background: var(--white);
+  color: var(--primary-dark);
+  border-color: var(--white);
+}
+
+.hero .button-big:hover {
+  background: var(--primary-light);
+  color: var(--primary-darkest);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+}
+
+/* Big full-width button */
+.button-big {
+  width: 100%;
+  padding: 16px;
+  margin-top: 20px;
+  font-size: 1.05rem;
+  border-radius: 12px;
+}
+
+.section-title {
+  margin: 28px 0 12px;
+}
+
+/* ---------- Tabs (itinerary days) ---------- */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0 16px;
+  padding: 5px;
+  overflow-x: auto;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.tab {
+  flex-shrink: 0;
+  background: none;
+  color: var(--muted);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  margin: 0;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.tab:hover {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+  transform: none;
+  box-shadow: none;
+}
+
+.tab.active {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* ---------- Itinerary activities (timeline) ---------- */
+
+/* An activity card: a clickable top row, and details that open below it */
+.activity {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+
+.activity.open {
+  border-color: var(--primary-light);
+}
+
+/* The top row is a button so the whole row can be clicked */
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 0;
+  background: var(--white);
+  color: var(--text);
+  text-align: left;
+  box-shadow: none;
+}
+
+.activity-header:hover {
+  background: var(--primary-pale);
+  color: var(--text);
+  transform: none;
+  box-shadow: none;
+}
+
+.activity-title {
+  flex: 1;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.activity-cost {
+  font-weight: 700;
+  color: var(--primary-dark);
+  white-space: nowrap;
+}
+
+.activity-details {
+  padding: 0 18px 16px 96px; /* lines up with the title, after the time bubble */
+}
+
+.activity-details p {
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+.activity-buttons {
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .activity-details {
+    padding-left: 18px;
+  }
+}
+
+/* Time in a purple bubble on the left */
+.activity-time {
+  flex-shrink: 0;
+  align-self: flex-start;
+  min-width: 64px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 700;
+  text-align: center;
+}
+
+.activity-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-body h3 {
+  margin: 0;
+}
+
+.activity-body p {
+  margin: 6px 0;
+  color: var(--muted);
+}
+
+.activity-body .row-between span {
+  font-weight: 700;
+  color: var(--primary-dark);
+  white-space: nowrap;
+}
+
+.activity-body .btn-small {
+  margin-top: 10px;
+}
+
+/* ---------- Group decisions ---------- */
+
+.conflict {
+  border-left: 5px solid #e0a100;
+}
+
+.conflict.resolved {
+  border-left-color: var(--primary);
+}
+
+/* Options shown side by side */
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--primary-pale);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.option:hover {
+  border-color: var(--primary-light);
+  background: var(--white);
+}
+
+.option p {
+  margin: 4px 0;
+}
+
+.option p:first-child {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.option.chosen {
+  border: 2px solid var(--primary);
+  background: var(--white);
+}
+
+/* Loading spinner while the AI works */
+.spinner {
+  width: 46px;
+  height: 46px;
+  margin: 16px auto;
+  border: 4px solid var(--primary-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Budget ---------- */
+
+.progress {
+  height: 12px;
+  background: var(--primary-tile);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress.small {
+  height: 8px;
+  flex: 1;
+  margin: 0;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-bright), var(--primary));
+  transition: width 0.4s;
+}
+
+.progress-fill.over {
+  background: linear-gradient(90deg, #e05a4a, var(--error));
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.bar-row span:first-child {
+  width: 110px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.bar-row span:last-child {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- Tables ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* A card that holds a table can scroll sideways on small screens */
+.card:has(> table) {
+  overflow-x: auto;
+}
+
+thead {
+  background: var(--primary-pale);
+}
+
+th {
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:hover {
+  background: var(--primary-pale);
+}
+
+/* ---------- Admin and reviews ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat h2 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.stat p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.review {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.review:last-of-type {
+  border-bottom: none;
+}
+
+.review p {
+  margin: 6px 0 0;
+}
+
+.destination-image {
+  width: calc(100% + 40px);
+  height: 160px;
+  margin: -20px -20px 14px;
+  object-fit: cover;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* ---------- Phones ---------- */
+
+@media (max-width: 760px) {
+  .container {
+    padding: 16px 16px 40px;
+  }
+
+  .navbar {
+    padding: 10px 16px;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .nav-user {
+    display: none;
+  }
+
+  .trip-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* On phones the trip menu becomes a row of buttons you can scroll */
+  .sidebar {
+    position: static;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 10px;
+  }
+
+  .sidebar h3,
+  .sidebar .badge {
+    display: none;
+  }
+
+  .sidebar a {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .inline-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  /* The "+" card does not need to be so tall on phones */
+  .add-trip-card {
+    min-height: 170px;
+  }
+
+  .narrow {
+    margin: 24px auto;
+    padding: 24px;
+  }
+}
+
+/* ---------- Small extras ---------- */
+
+/* Round purple logo at the top of the login and sign-up cards */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary-bright), var(--primary-dark));
+  color: var(--white);
+  box-shadow: 0 6px 16px var(--primary-glow);
+}
+
+.auth-subtitle {
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+/* Icon in a pale purple circle for empty pages */
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 8px auto 4px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* ---------- Dashboard: trip cards ---------- */
+
+/* Grid of cards: as many columns as fit, each at least 250px wide */
+.trip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+/* The first card with the big "+" */
+.add-trip-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 290px;
+  border: 2px dashed #cdb8f2;
+  border-radius: var(--radius);
+  background: var(--primary-pale);
+  color: var(--primary);
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.add-trip-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-tile);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.add-trip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  box-shadow: 0 8px 20px var(--primary-glow);
+  transition: transform 0.15s;
+}
+
+.add-trip-card:hover .add-trip-icon {
+  transform: scale(1.08);
+}
+
+.add-trip-text {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+/* One trip card: picture on top, details below */
+.trip-tile {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 290px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.trip-tile:hover {
+  color: var(--text);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.trip-tile-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+/* Shown when there is no photo for the place */
+.trip-tile-image-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--white);
+  font-weight: 700;
+  font-size: 1.05rem;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(168, 85, 247, 0.6), transparent 50%),
+    linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+
+.trip-tile-body {
+  flex: 1;
+  padding: 14px 16px 16px;
+}
+
+.trip-tile-body h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.trip-tile-body .pill {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.trip-tile-body p {
+  margin: 4px 0 0;
+  font-size: 0.92rem;
+}
+
+/* ---------- Dashboard: invitations ---------- */
+
+.invitation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-left: 5px solid var(--primary-bright);
+}
+
+.invitation h3 {
+  margin: 0;
+}
+
+.invitation p {
+  margin: 4px 0 0;
+}
+
+.invitation-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.invitation-buttons button {
+  margin: 0;
+}
+
+/* ---------- Itinerary: cost summary ---------- */
+
+.cost-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cost-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  background: var(--primary-pale);
+}
+
+.cost-summary strong {
+  font-size: 1.15rem;
+  color: var(--primary-dark);
+}
+
+/* Small "Admin" label next to the admin's name in the top bar */
+.admin-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fbbf24;
+  color: #3b2300;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ---------- Password box with an eye button ---------- */
+
+/* The eye button sits inside the right end of the password box */
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 46px; /* leave room for the eye button */
+}
+
+.eye-button {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.eye-button:hover {
+  background: var(--primary-pale);
+  color: var(--primary);
+  transform: translateY(-50%);
+  box-shadow: none;
+}
+
+/* ---------- Weather ---------- */
+
+/* One small box per day, side by side; scrolls sideways on long trips */
+.weather-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.weather-day {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 120px;
+  padding: 12px 10px;
+  border-radius: var(--radius-small);
+  background: var(--primary-pale);
+  text-align: center;
+}
+
+.weather-emoji {
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+/* Weather line above the activities of one day (Itinerary page) */
+.day-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+/* ---------- Small extras for the SRS features ---------- */
+
+/* Buttons side by side */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.button-row button {
+  margin-top: 0;
+}
+
+/* Red button for actions that delete things */
+.btn-danger {
+  background: var(--white);
+  color: var(--error);
+  border-color: var(--error-light);
+  box-shadow: none;
+}
+
+.btn-danger:hover {
+  background: var(--error-light);
+  color: var(--error);
+  border-color: var(--error);
+  box-shadow: none;
+}
+
+/* One person found by the member search */
+.search-result {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result button {
+  margin: 0;
+}
+
+.pill-archived,
+.badge-archived {
+  background: #ece8f3;
+  color: var(--muted);
+}
+
+/* One AI money-saving tip (Budget page) */
+.suggestion {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  background: var(--white);
+}
+
+.suggestion p {
+  margin: 4px 0 0;
+}
+
+.notice h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b4a06;
+}
+
+/* A review the admin has hidden */
+.hidden-review {
+  opacity: 0.6;
+}
+
+/* ---------- Itinerary: stay suggestion and journey ---------- */
+
+.cost-summary {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+/* "Where to stay" card: icon on the left, details on the right */
+.stay-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.stay-card h3 {
+  margin: 2px 0 6px;
+  text-transform: capitalize;
+}
+
+.stay-card p {
+  margin: 4px 0;
+}
+
+.stay-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* The journey there and back looks different from normal activities */
+.activity.travel .activity-header {
+  background: var(--primary-pale);
+}
+
+.activity.travel .activity-time {
+  background: var(--primary);
+  color: var(--white);
+}

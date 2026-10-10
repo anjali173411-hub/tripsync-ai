@@ -1,0 +1,100 @@
+
+import mongoose from "mongoose";
+
+const preferenceSchema = new mongoose.Schema(
+  {
+    trip: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Trip",
+      required: true
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    // The allowed interests are listed once here.
+    // The frontend fetches this list from GET /api/options.
+    interests: {
+      type: [
+        {
+          type: String,
+          enum: [
+            "adventure",
+            "food",
+            "culture",
+            "nightlife",
+            "relaxation",
+            "shopping",
+            "nature",
+            "beaches",
+            "history",
+            "photography"
+          ]
+        }
+      ],
+      default: []
+    },
+    // Interests the member typed in themselves, because they were not in the list above
+    otherInterests: {
+      type: [String],
+      default: []
+    },
+    pace: {
+      type: String,
+      enum: ["relaxed", "balanced", "packed"],
+      default: "balanced"
+    },
+
+    budgetContribution: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    mustDo: {
+      type: [String],
+      default: []
+    },
+    dealBreakers: {
+      type: [String],
+      default: []
+    },
+    // Optional free-text, e.g. "relaxed trip, good food, no adventure sports" (FR-3.2)
+    freeTextNotes: {
+      type: String,
+      default: "",
+      maxlength: 1000
+    },
+    // What the member eats. The AI picks food places that suit everyone.
+    foodPreference: {
+      type: String,
+      enum: ["no preference", "vegetarian", "non-vegetarian", "vegan", "jain"],
+      default: "no preference"
+    },
+    // How the member likes to stay. The AI suggests where the group should stay.
+    stayBudget: {
+      type: String,
+      enum: ["budget", "mid-range", "luxury"],
+      default: "mid-range"
+    },
+    stayType: {
+      type: String,
+      enum: ["hotel", "homestay", "hostel", "resort"],
+      default: "hotel"
+    }
+  },
+  { timestamps: true }
+);
+
+// One preference document per user per trip
+preferenceSchema.index(
+  { trip: 1, user: 1 },
+  { unique: true }
+);
+
+const Preference = mongoose.model(
+  "Preference",
+  preferenceSchema
+);
+
+export default Preference;

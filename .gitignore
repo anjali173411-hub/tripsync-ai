@@ -1,0 +1,9 @@
+# Secrets: never upload these (passwords, API keys)
+.env
+.env.local
+backend/.env
+frontend/.env
+
+# Installed packages and build output (Render recreates them)
+node_modules/
+dist/
