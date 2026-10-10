@@ -13,6 +13,8 @@
 //        EMAIL_USER=yourname@gmail.com
 //        EMAIL_PASS=your 16-letter Gmail app password
 //
+// Links in the email point to PUBLIC_APP_URL (the online app) if it is set, otherwise CLIENT_URL.
+//
 // If neither is set up, or sending fails, the invitation is still saved and
 // the person sees it on their dashboard when they sign up or log in.
 
@@ -98,8 +100,12 @@ export async function sendInvitationEmail(toEmail, organiserName, trip) {
     return false;
   }
 
-  const signUpLink = process.env.CLIENT_URL + "/register";
-  const logInLink = process.env.CLIENT_URL + "/login";
+  // The address people should open from the email.
+  // PUBLIC_APP_URL = the online app (set it on your laptop, so emails sent while testing
+  // locally still link to the online app). If it isn't set, CLIENT_URL is used (on Render).
+  const appUrl = process.env.PUBLIC_APP_URL || process.env.CLIENT_URL;
+  const signUpLink = appUrl + "/register";
+  const logInLink = appUrl + "/login";
 
   const subject = organiserName + " invited you to plan \"" + trip.title + "\" on TripSync AI";
 
