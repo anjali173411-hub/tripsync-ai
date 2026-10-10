@@ -21,7 +21,8 @@ import { GoogleGenAI, ApiError } from "@google/genai";
 
 // ---------- Settings ----------
 export const CURRENCY = "INR";              // all money in the app is in this currency (SRS 8.1)
-const GEMINI_MODEL = "gemini-flash-latest"; // always points to Google's newest Flash model
+const GEMINI_MODEL = "gemini-flash-latest";             // main model: Google's newest Flash model
+const GEMINI_BACKUP_MODEL = "gemini-flash-lite-latest"; // used when the main model's free daily limit is used up
 const AI_TIMEOUT_MS = 60000;                // give up on one AI request after 60 seconds
 const AI_MAX_ATTEMPTS = 2;                  // if the AI's answer is wrong, ask this many times in total
 const AI_BUSY_TRIES = 3;                    // if Gemini is busy, try this many times in total
@@ -593,14 +594,16 @@ async function askGemini(systemPrompt, shape, messages) {
     });
   }
 
-  const maxTries = AI_BUSY_TRIES;
+  // Each model has its own free daily limit. If the main one is used up, try the backup.
+  const models = [GEMINI_MODEL, GEMINI_BACKUP_MODEL];
+  let modelIndex = 0;
+  let attempt = 1;
   let response = null;
 
-  // Try a few times, because the AI service is sometimes busy for a moment
-  for (let attempt = 1; attempt <= maxTries; attempt++) {
+  while (response === null) {
     try {
       response = await gemini.models.generateContent({
-        model: GEMINI_MODEL,
+        model: models[modelIndex],
         contents: contents,
         config: {
           systemInstruction: systemPrompt,
@@ -608,26 +611,33 @@ async function askGemini(systemPrompt, shape, messages) {
           responseJsonSchema: shape              // ...in exactly this shape
         }
       });
-      break; // it worked, stop trying
     } catch (error) {
-      // 429 = too many requests, 500+ = server problem. Both are usually temporary.
-      // The free Gemini plan allows a fixed number of requests per day.
-      // When that is used up, trying again won't help until the next day.
+      // The free Gemini plan allows a fixed number of requests per day, per model.
       const dailyLimitReached =
         error instanceof ApiError && error.status === 429 && String(error.message).includes("PerDay");
 
       if (dailyLimitReached) {
-        console.error("Gemini daily free limit reached:", error.message);
+        // Is there another model left to try?
+        if (modelIndex < models.length - 1) {
+          console.warn(models[modelIndex] + " has used its free daily limit, switching to " + models[modelIndex + 1]);
+          modelIndex = modelIndex + 1;
+          attempt = 1;
+          continue;
+        }
+
+        console.error("Gemini daily free limit reached on every model:", error.message);
         throw new AIServiceError(
           "The AI's free daily limit has been reached. Please try again later – it resets every day."
         );
       }
 
+      // 429 = too many requests right now, 500+ = server problem. Both are usually temporary.
       const isTemporary = error instanceof ApiError && (error.status === 429 || error.status >= 500);
 
-      if (isTemporary && attempt < maxTries) {
+      if (isTemporary && attempt < AI_BUSY_TRIES) {
         console.warn("Gemini is busy (try " + attempt + "), trying again:", error.message);
         await wait(AI_RETRY_DELAY_MS * attempt);
+        attempt = attempt + 1;
       } else {
         console.error("Gemini request failed:", error.message);
         throw new AIServiceError("The AI service is unavailable right now. Please try again.");
