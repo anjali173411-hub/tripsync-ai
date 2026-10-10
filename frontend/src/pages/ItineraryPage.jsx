@@ -22,6 +22,7 @@ function ItineraryPage() {
   const [currency, setCurrency] = useState("");
   const [itinerary, setItinerary] = useState(null);    // stays null until the AI has made one
   const [conflicts, setConflicts] = useState([]);      // group decisions (from ConflictVote)
+  const [membersNotInPlan, setMembersNotInPlan] = useState([]); // joined but no preferences yet
   const [selectedDay, setSelectedDay] = useState(0);   // which day tab is open (0 = Day 1)
   const [weatherDays, setWeatherDays] = useState([]);  // weather for each trip day (may stay empty)
 
@@ -64,6 +65,7 @@ function ItineraryPage() {
       const itineraryResponse = await api.get("/trips/" + tripId + "/itinerary");
       setItinerary(itineraryResponse.data.itinerary);
       setConflicts(itineraryResponse.data.conflicts);
+      setMembersNotInPlan(itineraryResponse.data.membersNotInPlan);
     } catch (err) {
       if (err.response && err.response.status === 404) {
         setItinerary(null); // not generated yet, which is fine
@@ -336,6 +338,16 @@ function ItineraryPage() {
 
         {error && <p className="error">{error}</p>}
         {isFinalised && <p className="success">✅ This itinerary is finalised.</p>}
+
+        {/* People who joined after the plan was made, and aren't in it yet */}
+        {!isFinalised && membersNotInPlan.length > 0 && (
+          <div className="card notice">
+            👥 Not in this plan yet: <strong>{membersNotInPlan.join(", ")}</strong> (no preferences saved).
+            {" "}They should fill in{" "}
+            <Link to={"/trips/" + tripId + "/preferences"}>My Preferences</Link>.
+            {isOrganiser && " Then click \"Plan whole trip again\" below so the plan includes them."}
+          </div>
+        )}
 
         {openDecisions > 0 && (
           <div className="card notice">

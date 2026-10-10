@@ -69,6 +69,30 @@ async function getMembersForAI(trip) {
   return { members: members };
 }
 
+// Names of members who have not saved their preferences yet
+async function getMembersWithoutPreferences(trip) {
+  const populatedTrip = await Trip.findById(trip._id).populate("members", "name");
+  const preferences = await Preference.find({ trip: trip._id });
+
+  const names = [];
+  for (let i = 0; i < populatedTrip.members.length; i++) {
+    const member = populatedTrip.members[i];
+
+    let saved = false;
+    for (let j = 0; j < preferences.length; j++) {
+      if (preferences[j].user.toString() === member._id.toString()) {
+        saved = true;
+      }
+    }
+
+    if (!saved) {
+      names.push(member.name);
+    }
+  }
+
+  return names;
+}
+
 // Loads the trip and itinerary for editing.
 // Only the organiser may edit, and only while the trip is still being planned.
 // Returns { trip, itinerary } or { error, status }.
@@ -189,6 +213,15 @@ router.post("/:tripId/generate", verifyToken, async (req, res) => {
       });
     }
 
+    // Everyone invited must accept or decline first, otherwise they'd be left out of the plan
+    if (trip.invitedEmails.length > 0) {
+      return res.status(400).json({
+        message:
+          "Still waiting for " + trip.invitedEmails.join(", ") + " to accept the invitation. " +
+          "Wait for them, or cancel the invitation on the Members page."
+      });
+    }
+
     const result = await getMembersForAI(trip);
     if (result.error) {
       return res.status(400).json({ message: result.error });
@@ -286,9 +319,13 @@ router.get("/:tripId/itinerary", verifyToken, async (req, res) => {
 
     const conflicts = await ConflictVote.find({ trip: trip._id });
 
+    // Members with no saved preferences (e.g. they joined after the plan was made)
+    const membersNotInPlan = await getMembersWithoutPreferences(trip);
+
     res.json({
       itinerary: itinerary,
-      conflicts: conflicts
+      conflicts: conflicts,
+      membersNotInPlan: membersNotInPlan
     });
   } catch (error) {
     sendError(res, error, "Failed to retrieve itinerary");

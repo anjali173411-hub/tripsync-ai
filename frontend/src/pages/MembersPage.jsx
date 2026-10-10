@@ -89,6 +89,27 @@ function MembersPage() {
     setEmail("");
   }
 
+  // Organiser cancels an invitation that hasn't been answered
+  async function handleCancelInvite(invitedEmail) {
+    const sure = window.confirm("Cancel the invitation to " + invitedEmail + "?");
+    if (!sure) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await api.delete("/trips/" + tripId + "/invitations", {
+        data: { email: invitedEmail }
+      });
+      setMessage(response.data.message);
+      loadPage();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
   // Organiser removes a member
   async function handleRemove(member) {
     const sure = window.confirm(
@@ -195,10 +216,20 @@ function MembersPage() {
         {trip.invitedEmails.length > 0 && (
           <div className="card">
             <h3>Waiting for reply</h3>
+            <p className="muted small">
+              The itinerary can be generated once everyone invited has accepted or declined.
+            </p>
             {trip.invitedEmails.map((invitedEmail) => (
-              <p key={invitedEmail}>
-                ✉️ {invitedEmail} <span className="tag">Invited</span>
-              </p>
+              <div key={invitedEmail} className="row-between search-result">
+                <span>
+                  ✉️ {invitedEmail} <span className="tag">Invited</span>
+                </span>
+                {canChangeMembers && (
+                  <button className="btn-small btn-outline" onClick={() => handleCancelInvite(invitedEmail)}>
+                    Cancel invite
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}

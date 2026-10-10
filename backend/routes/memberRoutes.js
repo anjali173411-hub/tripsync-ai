@@ -114,6 +114,48 @@ router.post("/:tripId/members", verifyToken, async (req, res) => {
   }
 });
 
+// CANCEL AN INVITATION (organiser only)
+router.delete("/:tripId/invitations", verifyToken, async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.tripId);
+
+    if (!trip) {
+      return res.status(404).json({
+        message: "Trip not found"
+      });
+    }
+
+    if (trip.organiser.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Only the organiser can cancel invitations"
+      });
+    }
+
+    let email = "";
+    if (req.body && req.body.email) {
+      email = String(req.body.email).toLowerCase().trim();
+    }
+
+    if (!trip.invitedEmails.includes(email)) {
+      return res.status(404).json({
+        message: "No invitation for this email"
+      });
+    }
+
+    trip.invitedEmails = removeEmailFromList(trip.invitedEmails, email);
+    await trip.save();
+
+    res.json({
+      message: "Invitation to " + email + " cancelled"
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Could not cancel the invitation"
+    });
+  }
+});
+
+// MY INVITATIONS: trips that invited my email address
 router.get("/invitations/mine", verifyToken, async (req, res) => {
   try {
     const me = await User.findById(req.user.id);

@@ -61,11 +61,17 @@ router.put("/:tripId/preferences", verifyToken, async (req, res) => {
 
     const itinerary = await Itinerary.findOne({ trip: trip._id });
 
-    // FR-3.4: preferences can only be edited until the itinerary is generated
+    // FR-3.4: preferences can only be edited until the itinerary is generated.
+    // Exception: someone who joined AFTER the plan was made (and has no preferences yet)
+    // may still save theirs once, so the organiser can plan the trip again with them.
     if (itinerary) {
-      return res.status(400).json({
-        message: "The itinerary has already been generated"
-      });
+      const alreadySaved = await Preference.findOne({ trip: trip._id, user: req.user.id });
+
+      if (alreadySaved || itinerary.status === "finalised") {
+        return res.status(400).json({
+          message: "The itinerary has already been generated, so preferences are locked"
+        });
+      }
     }
 
     const preference = await Preference.findOneAndUpdate(
