@@ -739,17 +739,77 @@ function getMemberNames(members) {
 // =====================================================================
 
 // The whole itinerary. Returns { days: [...], conflicts: [...] }, already checked.
+// Works out what a plan costs for the whole group:
+// (all activity costs per person x number of travellers) + (stay per night x nights)
+export function getPlanCost(plan, numberOfTravellers) {
+  let costPerPerson = 0;
+  for (let d = 0; d < plan.days.length; d++) {
+    for (let a = 0; a < plan.days[d].activities.length; a++) {
+      costPerPerson = costPerPerson + plan.days[d].activities[a].estimatedCost;
+    }
+  }
+
+  let nights = plan.days.length - 1;
+  if (nights < 0) {
+    nights = 0;
+  }
+
+  let stayCost = 0;
+  if (plan.stay) {
+    stayCost = plan.stay.costPerNight * nights;
+  }
+
+  return Math.round(costPerPerson * numberOfTravellers + stayCost);
+}
+
 export async function generateItinerary(trip, numberOfDays, members, instructions) {
   const memberNames = getMemberNames(members);
 
-  return askUntilValid(
+  function checkReply(replyText) {
+    return checkAIReply(replyText, numberOfDays, memberNames);
+  }
+
+  // 1. The normal plan
+  const plan = await askUntilValid(
     SYSTEM_PROMPT,
     ITINERARY_SHAPE,
     buildTripPrompt(trip, numberOfDays, members, instructions),
-    function (replyText) {
-      return checkAIReply(replyText, numberOfDays, memberNames);
-    }
+    checkReply
   );
+
+  // 2. Over budget? Ask once more for a cheaper version of the same trip
+  const cost = getPlanCost(plan, members.length);
+  if (cost <= trip.budget) {
+    return plan;
+  }
+
+  console.warn("Plan costs " + cost + " but the budget is " + trip.budget + ", asking for a cheaper plan");
+
+  const cheaperInstructions =
+    (instructions ? instructions + "\n" : "") +
+    "IMPORTANT: your first plan cost about " + cost + " " + CURRENCY + " for the whole group, " +
+    "but the total budget is only " + trip.budget + " " + CURRENCY + ". Make a CHEAPER plan that fits " +
+    "the budget: choose free or low-cost activities, cheaper places to eat, a budget stay and " +
+    "cheaper local transport, while still giving everyone what they asked for as far as possible.";
+
+  try {
+    const cheaperPlan = await askUntilValid(
+      SYSTEM_PROMPT,
+      ITINERARY_SHAPE,
+      buildTripPrompt(trip, numberOfDays, members, cheaperInstructions),
+      checkReply
+    );
+
+    // Keep whichever plan is cheaper
+    if (getPlanCost(cheaperPlan, members.length) < cost) {
+      return cheaperPlan;
+    }
+  } catch (error) {
+    // The cheaper attempt failed: keep the first plan (the page will show it is over budget)
+    console.warn("Could not get a cheaper plan:", error.message);
+  }
+
+  return plan;
 }
 
 // Plans one day again (FR-4.3). Returns { activities: [...] }, already checked.

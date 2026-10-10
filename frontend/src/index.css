@@ -1595,3 +1595,12 @@ tbody tr:hover {
 .describe-card h3 {
   margin-top: 0;
 }
+
+/* Over-budget warning with the "Make it cheaper" button */
+.over-budget {
+  border-color: var(--error-light);
+}
+
+.over-budget .error {
+  margin-top: 0;
+}

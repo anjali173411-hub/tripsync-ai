@@ -121,6 +121,34 @@ function ItineraryPage() {
     setAiWorking("");
   }
 
+  // Organiser asks the AI for a cheaper version of the whole trip
+  async function handleMakeCheaper(totalCost) {
+    const sure = window.confirm(
+      "The AI will make a new, cheaper plan for the whole trip. Group decisions will start over. Continue?"
+    );
+    if (!sure) {
+      return;
+    }
+
+    setError("");
+    setAiWorking("trip");
+
+    try {
+      const response = await api.post("/trips/" + tripId + "/generate", {
+        instructions:
+          "The current plan costs about " + totalCost + " " + currency + " for the whole group, " +
+          "but the budget is " + trip.budget + " " + currency + ". Make a cheaper plan that fits the budget."
+      });
+      setItinerary(response.data.itinerary);
+      setConflicts(response.data.conflicts);
+      setSelectedDay(0);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+
+    setAiWorking("");
+  }
+
   // Organiser plans only the selected day again (FR-4.3)
   async function handleRegenerateDay(dayNumber) {
     setError("");
@@ -407,10 +435,20 @@ function ItineraryPage() {
         </div>
 
         {overBudget && (
-          <p className="error">
-            These activities cost more than the trip budget. Remove some activities, or ask the
-            AI to plan a day or the whole trip again with cheaper activities.
-          </p>
+          <div className="card over-budget">
+            <p className="error">
+              This plan costs about {formatMoney(costForEveryone, currency)}, which is{" "}
+              {formatMoney(costForEveryone - trip.budget, currency)} more than the trip budget.
+            </p>
+            {canEdit && (
+              <button onClick={() => handleMakeCheaper(costForEveryone)}>
+                💰 Make it cheaper with AI
+              </button>
+            )}
+            {!canEdit && !isFinalised && (
+              <p className="muted small">The organiser can ask the AI for a cheaper plan.</p>
+            )}
+          </div>
         )}
 
         {/* Where to stay: the AI's suggestion (not a booking) */}
