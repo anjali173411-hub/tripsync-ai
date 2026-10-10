@@ -777,3 +777,111 @@ export async function getBudgetSuggestions(trip, numberOfTravellers, totalSpent,
     checkSuggestionsReply
   );
 }
+
+// =====================================================================
+// FILLING THE PREFERENCE FORM FROM A DESCRIPTION (FR-3.2)
+//
+// The traveller describes their trip in their own words, for example
+// "I'm vegetarian, want a calm trip with beaches, no water sports".
+// The AI turns that into the form's answers. Nothing is saved here:
+// the page fills in the form and the traveller checks it and clicks Save.
+// =====================================================================
+
+const PREFERENCES_PROMPT = `You fill in a travel preference form from what a traveller wrote.
+Only use what they actually said. Do not invent wishes they did not mention.
+- interests: pick from the allowed list only.
+- otherInterests: other things they like that are not in the list (short phrases).
+- mustDo: specific places or activities they really want (short phrases).
+- dealBreakers: things they want to avoid (short phrases).
+- pace, foodPreference, stayBudget, stayType: pick from the allowed values,
+  or "" (empty) if they did not say.
+- budgetContribution: the amount of money they said they will put in, or 0 if not said.`;
+
+// Builds the reply shape, using the allowed choices from the Preference model
+function buildPreferencesShape(choices) {
+  return {
+    type: "object",
+    properties: {
+      interests: { type: "array", items: { type: "string", enum: choices.interests } },
+      otherInterests: { type: "array", items: { type: "string" } },
+      mustDo: { type: "array", items: { type: "string" } },
+      dealBreakers: { type: "array", items: { type: "string" } },
+      pace: { type: "string", enum: choices.paces.concat([""]) },
+      foodPreference: { type: "string", enum: choices.foods.concat([""]) },
+      stayBudget: { type: "string", enum: choices.stayBudgets.concat([""]) },
+      stayType: { type: "string", enum: choices.stayTypes.concat([""]) },
+      budgetContribution: { type: "number" }
+    },
+    required: [
+      "interests", "otherInterests", "mustDo", "dealBreakers",
+      "pace", "foodPreference", "stayBudget", "stayType", "budgetContribution"
+    ]
+  };
+}
+
+// Keeps only the list items that are allowed (or any text, if no list is given)
+function cleanList(list, allowed) {
+  const result = [];
+  if (!Array.isArray(list)) {
+    return result;
+  }
+  for (let i = 0; i < list.length; i++) {
+    const item = String(list[i]).trim();
+    if (item === "") {
+      continue;
+    }
+    if (allowed && !allowed.includes(item)) {
+      continue;
+    }
+    if (!result.includes(item)) {
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+// Keeps one value only if it is allowed, otherwise ""
+function cleanChoice(value, allowed) {
+  if (allowed.includes(value)) {
+    return value;
+  }
+  return "";
+}
+
+// choices: { interests, paces, foods, stayBudgets, stayTypes } (the allowed values)
+// Returns the form answers, already cleaned.
+export async function preferencesFromText(text, choices) {
+  let prompt = "Allowed interests: " + choices.interests.join(", ") + "\n\n";
+  prompt += "What the traveller wrote:\n\"" + text + "\"";
+
+  const data = await askUntilValid(
+    PREFERENCES_PROMPT,
+    buildPreferencesShape(choices),
+    prompt,
+    function (replyText) {
+      const reply = readJson(replyText);
+      if (!reply || typeof reply !== "object") {
+        return { ok: false, errors: ["The response was not valid JSON"] };
+      }
+      return { ok: true, data: reply };
+    }
+  );
+
+  // Never trust the AI blindly: keep only allowed values (FR-4.6)
+  let budget = Number(data.budgetContribution);
+  if (!Number.isFinite(budget) || budget < 0) {
+    budget = 0;
+  }
+
+  return {
+    interests: cleanList(data.interests, choices.interests),
+    otherInterests: cleanList(data.otherInterests, null),
+    mustDo: cleanList(data.mustDo, null),
+    dealBreakers: cleanList(data.dealBreakers, null),
+    pace: cleanChoice(data.pace, choices.paces),
+    foodPreference: cleanChoice(data.foodPreference, choices.foods),
+    stayBudget: cleanChoice(data.stayBudget, choices.stayBudgets),
+    stayType: cleanChoice(data.stayType, choices.stayTypes),
+    budgetContribution: Math.round(budget)
+  };
+}

@@ -1585,3 +1585,13 @@ tbody tr:hover {
 .change-plan[open] summary {
   margin-bottom: 12px;
 }
+
+/* "Describe your ideal trip" box on My Preferences */
+.describe-card {
+  border: 2px solid var(--primary-light);
+  background: linear-gradient(135deg, var(--white) 60%, var(--primary-tile));
+}
+
+.describe-card h3 {
+  margin-top: 0;
+}

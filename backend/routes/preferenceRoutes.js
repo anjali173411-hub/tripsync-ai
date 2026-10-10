@@ -4,6 +4,7 @@ import Preference from "../models/Preference.js";
 import Trip from "../models/Trip.js";
 import Itinerary from "../models/Itinerary.js";
 import { verifyToken } from "../middleware/auth.js";
+import { preferencesFromText, AIServiceError } from "../services/itineraryConsensusService.js";
 
 const router = express.Router();
 
@@ -116,6 +117,75 @@ router.put("/:tripId/preferences", verifyToken, async (req, res) => {
 
     res.status(500).json({
       message: "Could not save preferences"
+    });
+  }
+});
+
+// FILL THE FORM FROM A DESCRIPTION (FR-3.2)
+// The AI reads what the traveller wrote and returns the form answers.
+// Nothing is saved: the page fills in the form, and the traveller clicks Save.
+router.post("/:tripId/preferences/from-text", verifyToken, async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.tripId);
+
+    if (!trip) {
+      return res.status(404).json({
+        message: "Trip not found"
+      });
+    }
+
+    let isMember = false;
+    for (let i = 0; i < trip.members.length; i++) {
+      if (trip.members[i].toString() === req.user.id) {
+        isMember = true;
+      }
+    }
+
+    if (!isMember) {
+      return res.status(403).json({
+        message: "You are not a member of this trip"
+      });
+    }
+
+    let text = "";
+    if (req.body && typeof req.body.text === "string") {
+      text = req.body.text.trim();
+    }
+
+    if (text.length < 10) {
+      return res.status(400).json({
+        message: "Please describe your trip in a bit more detail"
+      });
+    }
+
+    if (text.length > 1000) {
+      return res.status(400).json({
+        message: "Please keep the description under 1000 characters"
+      });
+    }
+
+    // The allowed choices come from the Preference model
+    const choices = {
+      interests: Preference.schema.path("interests").getEmbeddedSchemaType().enumValues,
+      paces: Preference.schema.path("pace").enumValues,
+      foods: Preference.schema.path("foodPreference").enumValues,
+      stayBudgets: Preference.schema.path("stayBudget").enumValues,
+      stayTypes: Preference.schema.path("stayType").enumValues
+    };
+
+    const filled = await preferencesFromText(text, choices);
+
+    res.json({
+      preferences: filled
+    });
+  } catch (error) {
+    if (error instanceof AIServiceError) {
+      return res.status(502).json({ message: error.message });
+    }
+
+    console.error("Preferences from text error:", error);
+    res.status(500).json({
+      message: "Could not read your description"
     });
   }
 });

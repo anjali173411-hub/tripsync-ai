@@ -31,6 +31,11 @@ function PreferencesPage() {
   const [stayBudget, setStayBudget] = useState("");
   const [stayType, setStayType] = useState("");
 
+  // "Describe your trip" box: the AI fills in the form from this text (FR-3.2)
+  const [description, setDescription] = useState("");
+  const [filling, setFilling] = useState(false);
+  const [fillMessage, setFillMessage] = useState("");
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -99,6 +104,52 @@ function PreferencesPage() {
   }
 
   // Runs when the form is submitted
+  // The AI reads the description and fills in the form below. Nothing is saved yet.
+  async function handleFillFromText() {
+    setFillMessage("");
+    setMessage("");
+    setError("");
+    setFilling(true);
+
+    try {
+      const response = await api.post("/trips/" + tripId + "/preferences/from-text", {
+        text: description
+      });
+      const filled = response.data.preferences;
+
+      setInterests(filled.interests);
+      setOtherInterests(filled.otherInterests.join(", "));
+      setMustDo(filled.mustDo.join(", "));
+      setDealBreakers(filled.dealBreakers.join(", "));
+
+      // Only change these if the description mentioned them
+      if (filled.pace) {
+        setPace(filled.pace);
+      }
+      if (filled.foodPreference) {
+        setFoodPreference(filled.foodPreference);
+      }
+      if (filled.stayBudget) {
+        setStayBudget(filled.stayBudget);
+      }
+      if (filled.stayType) {
+        setStayType(filled.stayType);
+      }
+      if (filled.budgetContribution > 0) {
+        setBudgetContribution(filled.budgetContribution);
+      }
+
+      // Keep the description too, so the AI planner can read it
+      setFreeTextNotes(description);
+
+      setFillMessage("Done! Check the answers below, change anything you like, then click Save preferences.");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+
+    setFilling(false);
+  }
+
   async function handleSave(event) {
     event.preventDefault();
     setMessage("");
@@ -140,7 +191,29 @@ function PreferencesPage() {
           Tell the AI what you want. You can change this until the organiser generates the itinerary.
         </p>
 
+        {/* The easy way: describe the trip, and the AI fills in the form */}
+        <div className="card describe-card">
+          <h3>✨ Describe your ideal trip</h3>
+          <p className="muted small">
+            Write it like a message to a friend. The AI fills in the form below for you.
+          </p>
+          <textarea
+            rows="4"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="e.g. I'm vegetarian and want a relaxed trip with beaches and old churches. I must see Dudhsagar falls. No water sports or nightclubs. A cheap homestay is fine."
+          />
+          <button type="button" onClick={handleFillFromText} disabled={filling || description.trim().length < 10}>
+            {filling ? "Reading your description..." : "✨ Fill in the form for me"}
+          </button>
+        </div>
+
+        {fillMessage && <p className="success">{fillMessage}</p>}
+
         <form className="card" onSubmit={handleSave}>
+          <h3>Your answers</h3>
+          <p className="muted small">Fill these in yourself, or let the AI fill them in above. Then click Save.</p>
+
           <label>What are you interested in? (pick any)</label>
           <div className="chip-list">
             {interestOptions.map((interest) => (

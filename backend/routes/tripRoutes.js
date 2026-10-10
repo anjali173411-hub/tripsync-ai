@@ -232,6 +232,81 @@ router.patch("/:id/complete", verifyToken, async (req, res) => {
   }
 });
 
+// WHERE IS THE TRIP UP TO? (used by the "Next step" bar on every trip page)
+router.get("/:id/progress", verifyToken, async (req, res) => {
+  try {
+    const trip = await Trip.findOne({
+      _id: req.params.id,
+      members: req.user.id
+    });
+
+    if (!trip) {
+      return res.status(404).json({
+        message: "Trip not found"
+      });
+    }
+
+    // Who has saved preferences?
+    const preferences = await Preference.find({ trip: trip._id }).select("user");
+    let iHaveSavedPreferences = false;
+    let membersWithPreferences = 0;
+
+    for (let i = 0; i < trip.members.length; i++) {
+      const memberId = trip.members[i].toString();
+
+      for (let j = 0; j < preferences.length; j++) {
+        if (preferences[j].user.toString() === memberId) {
+          membersWithPreferences = membersWithPreferences + 1;
+          if (memberId === req.user.id) {
+            iHaveSavedPreferences = true;
+          }
+        }
+      }
+    }
+
+    // The plan and the group decisions
+    const itinerary = await Itinerary.findOne({ trip: trip._id }).select("status");
+    const conflicts = await ConflictVote.find({ trip: trip._id });
+
+    let openDecisions = 0;
+    let decisionsWaitingForMyVote = 0;
+
+    for (let i = 0; i < conflicts.length; i++) {
+      if (!conflicts[i].resolved) {
+        openDecisions = openDecisions + 1;
+
+        let iVoted = false;
+        for (let j = 0; j < conflicts[i].votes.length; j++) {
+          if (conflicts[i].votes[j].user.toString() === req.user.id) {
+            iVoted = true;
+          }
+        }
+        if (!iVoted) {
+          decisionsWaitingForMyVote = decisionsWaitingForMyVote + 1;
+        }
+      }
+    }
+
+    res.json({
+      isOrganiser: trip.organiser.toString() === req.user.id,
+      tripType: trip.type,
+      status: trip.status,
+      memberCount: trip.members.length,
+      invitedCount: trip.invitedEmails.length,
+      membersMissingPreferences: trip.members.length - membersWithPreferences,
+      iHaveSavedPreferences: iHaveSavedPreferences,
+      hasItinerary: Boolean(itinerary),
+      itineraryFinalised: Boolean(itinerary && itinerary.status === "finalised"),
+      openDecisions: openDecisions,
+      decisionsWaitingForMyVote: decisionsWaitingForMyVote
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Could not load trip progress"
+    });
+  }
+});
+
 // ARCHIVE A TRIP (organiser only) - FR-2.7
 // The trip is kept but moved to "Archived trips" on the dashboard.
 router.patch("/:id/archive", verifyToken, async (req, res) => {
