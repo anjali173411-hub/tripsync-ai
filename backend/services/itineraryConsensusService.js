@@ -794,7 +794,11 @@ Only use what they actually said. Do not invent wishes they did not mention.
   hiking, trekking, rafting or paragliding -> adventure; temples, forts or museums ->
   history and/or culture; street food or cafes -> food; clubs or parties -> nightlife;
   waterfalls, wildlife or hills -> nature; spa or lazy days -> relaxation;
-  markets -> shopping. Use your judgement for anything else.
+  markets -> shopping; sunsets or sunrises -> beaches and/or nature (beaches if by the sea).
+  Look at EVERYTHING they wrote, including must-do places and activities, and tick every
+  interest it relates to (e.g. "must see the Meenakshi temple" -> culture and history,
+  "sunrise at Tiger Hill" -> nature). Most descriptions should tick at least one interest.
+  Use your judgement for anything else.
 - otherInterests: specific things they mentioned that are worth keeping as written
   (e.g. "hiking", "street food"), as short phrases. These can overlap with ticked interests.
 - mustDo: specific places or activities they really want (short phrases),
