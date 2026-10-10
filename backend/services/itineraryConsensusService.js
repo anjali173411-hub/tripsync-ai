@@ -797,11 +797,23 @@ Only use what they actually said. Do not invent wishes they did not mention.
   markets -> shopping. Use your judgement for anything else.
 - otherInterests: specific things they mentioned that are worth keeping as written
   (e.g. "hiking", "street food"), as short phrases. These can overlap with ticked interests.
-- mustDo: specific places or activities they really want (short phrases).
-- dealBreakers: things they want to avoid (short phrases).
-- pace, foodPreference, stayBudget, stayType: pick from the allowed values,
-  or "" (empty) if they did not say.
-- budgetContribution: the amount of money they said they will put in, or 0 if not said.`;
+- mustDo: specific places or activities they really want (short phrases),
+  e.g. "must see", "really want to", "can't miss", "have to try".
+- dealBreakers: things they want to avoid (short phrases),
+  e.g. "no ...", "hate ...", "scared of ...", "not into ...", "avoid ...", "allergic to ...".
+- For pace, foodPreference, stayBudget and stayType, pick the CLOSEST allowed value for
+  what they mean, even in different words. Use "" (empty) only if they gave no hint at all.
+  Examples (use your judgement for anything else):
+  pace: "chill", "lazy", "slow", "take it easy" -> relaxed;
+        "see as much as possible", "fit in a lot", "busy days" -> packed; "a bit of both" -> balanced.
+  foodPreference: "I don't eat meat", "veg only" -> vegetarian; "no meat, eggs or dairy" -> vegan;
+        "no onion or garlic" -> jain; "I eat everything", "love seafood or chicken" -> non-vegetarian.
+  stayBudget: "cheap", "backpacker", "low budget" -> budget; "5-star", "fancy", "premium" -> luxury;
+        "comfortable", "nothing too fancy" -> mid-range.
+  stayType: "dorm", "backpacker place" -> hostel; "with a local family", "home-like" -> homestay;
+        "villa", "pool", "beach property", "all-inclusive" -> resort; otherwise a normal hotel -> hotel.
+- budgetContribution: the amount of money they said they will put in, as a plain number
+  ("10k" -> 10000, "1.5 lakh" -> 150000, "5 thousand" -> 5000), or 0 if not said.`;
 
 // Builds the reply shape, using the allowed choices from the Preference model
 function buildPreferencesShape(choices) {
