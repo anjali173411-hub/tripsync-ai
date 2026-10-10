@@ -1,7 +1,7 @@
 // Page routing: which page to show for each web address.
 // Pages wrapped in <ProtectedRoute> need the user to be logged in.
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { getCurrentUser } from "./api/axios.js";
 import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -31,11 +31,15 @@ function HomePage() {
 }
 
 function App() {
+  // The login and sign-up pages use the whole screen (no top bar)
+  const location = useLocation();
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+
   return (
     <div>
-      <Navbar />
+      {!isAuthPage && <Navbar />}
 
-      <main className="container">
+      <main className={isAuthPage ? "" : "container"}>
         <Routes>
           {/* Anyone can see these */}
           <Route path="/login" element={<LoginPage />} />

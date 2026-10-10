@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage, saveLogin, getCurrentUser } from "../api/axios.js";
 
 function LoginPage() {
@@ -62,19 +63,23 @@ function LoginPage() {
   }
 
   return (
-    <div className="card narrow">
-      <div className="auth-logo"><Leaf size={28} /></div>
-      <h1>Welcome back</h1>
-      <p className="muted auth-subtitle">Log in to plan your next trip</p>
+    <AuthLayout>
+      <span className="auth-tag">Welcome back</span>
+      <h2 className="auth-title">Log in to TripSync AI</h2>
+      <p className="muted">Pick up where your group left off.</p>
 
       {successMessage && <p className="success">{successMessage}</p>}
 
       <form onSubmit={handleLogin}>
         <label>Email</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <div className="icon-input">
+          <Mail size={18} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+        </div>
 
         <label>Password</label>
-        <div className="password-field">
+        <div className="icon-input password-field">
+          <Lock size={18} />
           <input
             type={showPassword ? "text" : "password"}
             value={password}
@@ -94,13 +99,13 @@ function LoginPage() {
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Log in"}
+        <button type="submit" className="auth-button" disabled={loading}>
+          {loading ? "Logging in..." : "Log in"} {!loading && <ArrowRight size={18} />}
         </button>
       </form>
 
-      <p>New here? <Link to="/register">Create an account</Link></p>
-    </div>
+      <p className="auth-switch">New here? <Link to="/register">Create an account</Link></p>
+    </AuthLayout>
   );
 }
 

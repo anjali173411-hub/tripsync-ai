@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage } from "../api/axios.js";
 
 function RegisterPage() {
@@ -58,20 +59,27 @@ function RegisterPage() {
   }
 
   return (
-    <div className="card narrow">
-      <div className="auth-logo"><Leaf size={28} /></div>
-      <h1>Create an account</h1>
-      <p className="muted auth-subtitle">Plan trips together with friends</p>
+    <AuthLayout>
+      <span className="auth-tag">Join TripSync AI</span>
+      <h2 className="auth-title">Create your account</h2>
+      <p className="muted">Plan trips together with your friends.</p>
 
       <form onSubmit={handleRegister}>
         <label>Name</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} required />
+        <div className="icon-input">
+          <User size={18} />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
+        </div>
 
         <label>Email</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <div className="icon-input">
+          <Mail size={18} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+        </div>
 
         <label>Password (at least {minPasswordLength} characters)</label>
-        <div className="password-field">
+        <div className="icon-input password-field">
+          <Lock size={18} />
           <input
             type={showPassword ? "text" : "password"}
             value={password}
@@ -92,13 +100,13 @@ function RegisterPage() {
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating account..." : "Sign up"}
+        <button type="submit" className="auth-button" disabled={loading}>
+          {loading ? "Creating account..." : "Sign up"} {!loading && <ArrowRight size={18} />}
         </button>
       </form>
 
-      <p>Already have an account? <Link to="/login">Log in</Link></p>
-    </div>
+      <p className="auth-switch">Already have an account? <Link to="/login">Log in</Link></p>
+    </AuthLayout>
   );
 }
 

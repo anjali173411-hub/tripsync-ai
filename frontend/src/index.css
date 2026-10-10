@@ -1604,3 +1604,188 @@ tbody tr:hover {
 .over-budget .error {
   margin-top: 0;
 }
+
+/* ---------- Log in and Sign up: split screen ---------- */
+
+.auth-page {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  min-height: 100vh;
+}
+
+/* Left: maroon side that explains the app */
+.auth-story {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 48px 56px;
+  color: var(--white);
+  background:
+    radial-gradient(circle at 85% 15%, rgba(194, 65, 107, 0.55), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(194, 65, 107, 0.35), transparent 40%),
+    linear-gradient(140deg, var(--primary-darkest), var(--primary));
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.auth-story h1 {
+  margin: 0 0 14px;
+  font-size: 2.6rem;
+  line-height: 1.15;
+  color: var(--white);
+}
+
+.auth-lead {
+  max-width: 440px;
+  margin: 0 0 28px;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.auth-features {
+  display: grid;
+  gap: 12px;
+  max-width: 440px;
+}
+
+.auth-feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.auth-feature b {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.auth-feature small {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-feature-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.auth-footnote {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+/* Right: the form */
+.auth-form-side {
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+}
+
+.auth-form-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-tag {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-title {
+  margin: 0 0 4px;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+
+/* Input with an icon inside on the left */
+.icon-input {
+  position: relative;
+}
+
+.icon-input > svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.icon-input input {
+  padding-left: 44px;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #a1284c, var(--primary));
+  box-shadow: 0 8px 20px var(--primary-glow);
+}
+
+.auth-switch {
+  margin-top: 22px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.auth-switch a {
+  font-weight: 700;
+}
+
+/* Phones: the maroon side becomes a short header above the form */
+@media (max-width: 760px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-story {
+    padding: 28px 20px;
+    gap: 16px;
+  }
+
+  .auth-story h1 {
+    font-size: 1.7rem;
+  }
+
+  .auth-features,
+  .auth-footnote {
+    display: none;
+  }
+
+  .auth-lead {
+    margin-bottom: 0;
+  }
+
+  .auth-form-side {
+    padding: 28px 16px 40px;
+  }
+}
