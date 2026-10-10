@@ -1,26 +1,26 @@
 /* =========================================================
-   TripSync AI - violet theme
+   TripSync AI - maroon theme
    All colours, corners and shadows are set once here at the top.
    To change the app's colour, change the "--primary" values below.
    ========================================================= */
 
 :root {
-  /* Main colour: violet */
-  --primary: #6d28d9;
-  --primary-dark: #4c1d95;
-  --primary-darkest: #2e1065;
-  --primary-hover: #5b21b6;
-  --primary-bright: #a855f7;
-  --primary-light: #ede4ff;
-  --primary-tile: #f3edff;
-  --primary-pale: #faf7ff;
+  /* Main colour: maroon */
+  --primary: #8b1e3f;
+  --primary-dark: #5c1028;
+  --primary-darkest: #3a0a19;
+  --primary-hover: #741734;
+  --primary-bright: #c2416b;
+  --primary-light: #f7e1e7;
+  --primary-tile: #fbedf0;
+  --primary-pale: #fdf7f8;
 
   /* Neutrals */
   --white: #ffffff;
-  --background: #f5f3fa;
-  --text: #1f1633;
-  --muted: #6f6685;
-  --border: #e7e1f3;
+  --background: #faf6f5;
+  --text: #2a1a1f;
+  --muted: #7a6a6e;
+  --border: #eee2e4;
 
   /* Messages */
   --error: #c0392b;
@@ -31,9 +31,9 @@
   /* Shapes */
   --radius: 14px;
   --radius-small: 10px;
-  --shadow: 0 1px 2px rgba(46, 16, 101, 0.06), 0 4px 16px rgba(46, 16, 101, 0.07);
-  --shadow-hover: 0 2px 4px rgba(46, 16, 101, 0.08), 0 10px 28px rgba(46, 16, 101, 0.15);
-  --primary-glow: rgba(109, 40, 217, 0.28);
+  --shadow: 0 1px 2px rgba(58, 10, 25, 0.06), 0 4px 16px rgba(58, 10, 25, 0.07);
+  --shadow-hover: 0 2px 4px rgba(58, 10, 25, 0.08), 0 10px 28px rgba(58, 10, 25, 0.15);
+  --primary-glow: rgba(139, 30, 63, 0.28);
 }
 
 * {
@@ -106,7 +106,7 @@ hr {
   gap: 12px;
   padding: 12px 24px;
   background: linear-gradient(90deg, var(--primary-darkest), var(--primary));
-  box-shadow: 0 2px 12px rgba(46, 16, 101, 0.25);
+  box-shadow: 0 2px 12px rgba(58, 10, 25, 0.25);
 }
 
 /* Logo: purple square + name + tagline */
@@ -357,13 +357,13 @@ input, select, textarea {
 }
 
 input:hover, select:hover, textarea:hover {
-  border-color: #d6cbec;
+  border-color: #e6d3d7;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.15);
+  box-shadow: 0 0 0 4px rgba(139, 30, 63, 0.15);
 }
 
 /* ---------- Buttons ---------- */
@@ -522,7 +522,7 @@ button:disabled {
 .pill-finalised { background: var(--primary); color: var(--white); }
 
 .badge-completed,
-.pill-completed { background: #ece8f3; color: var(--muted); }
+.pill-completed { background: #f1e8ea; color: var(--muted); }
 
 .pill {
   margin-top: 8px;
@@ -625,9 +625,9 @@ button:disabled {
   border: none;
   color: var(--white);
   background:
-    radial-gradient(circle at 90% 10%, rgba(168, 85, 247, 0.55), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(194, 65, 107, 0.55), transparent 45%),
     linear-gradient(135deg, var(--primary-darkest), var(--primary));
-  box-shadow: 0 10px 30px rgba(46, 16, 101, 0.3);
+  box-shadow: 0 10px 30px rgba(58, 10, 25, 0.3);
 }
 
 .hero h1 {
@@ -641,7 +641,7 @@ button:disabled {
 }
 
 .hero .eyebrow {
-  color: #d8b4fe;
+  color: #f9c5d3;
 }
 
 /* White button on the dark banner */
@@ -1124,7 +1124,7 @@ tbody tr:hover {
   justify-content: center;
   gap: 6px;
   min-height: 290px;
-  border: 2px dashed #cdb8f2;
+  border: 2px dashed #e3b8c4;
   border-radius: var(--radius);
   background: var(--primary-pale);
   color: var(--primary);
@@ -1199,7 +1199,7 @@ tbody tr:hover {
   font-weight: 700;
   font-size: 1.05rem;
   background:
-    radial-gradient(circle at 85% 15%, rgba(168, 85, 247, 0.6), transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(194, 65, 107, 0.6), transparent 50%),
     linear-gradient(135deg, var(--primary-dark), var(--primary));
 }
 
@@ -1400,7 +1400,7 @@ tbody tr:hover {
 
 .pill-archived,
 .badge-archived {
-  background: #ece8f3;
+  background: #f1e8ea;
   color: var(--muted);
 }
 
