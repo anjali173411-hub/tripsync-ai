@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import NextStep from "../components/NextStep.jsx";
 
 function TripDetailsPage() {
   const { tripId } = useParams(); // the trip id from the web address
@@ -119,7 +118,6 @@ function TripDetailsPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <NextStep tripId={tripId} refreshKey={trip.status} />
         <h1>{trip.title}</h1>
 
         {/* Trip details */}

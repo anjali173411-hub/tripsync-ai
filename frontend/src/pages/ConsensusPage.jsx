@@ -7,7 +7,6 @@ import { Link, useParams } from "react-router-dom";
 import { Scale, CheckCircle2, Clock, Users } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import NextStep from "../components/NextStep.jsx";
 
 function ConsensusPage() {
   const { tripId } = useParams();
@@ -119,7 +118,6 @@ function ConsensusPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <NextStep tripId={tripId} refreshKey={JSON.stringify(conflicts)} />
         <h1>Group Decisions</h1>
         <p className="muted">
           When members want different things, the AI suggests compromises here. Vote for the one you prefer.

@@ -13,7 +13,6 @@ import { Link, useParams } from "react-router-dom";
 import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash, BedDouble } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import NextStep from "../components/NextStep.jsx";
 
 function ItineraryPage() {
   const { tripId } = useParams();
@@ -319,7 +318,6 @@ function ItineraryPage() {
       <div className="trip-layout">
         <Sidebar trip={trip} />
         <section className="trip-content">
-        <NextStep tripId={tripId} refreshKey={itinerary ? itinerary.updatedAt + itinerary.status : "none"} />
           <div className="card center">
             <div className="spinner" />
             <h2>{aiWorking === "day" ? "The AI is planning this day again..." : "The AI is planning your trip..."}</h2>
@@ -336,7 +334,6 @@ function ItineraryPage() {
       <div className="trip-layout">
         <Sidebar trip={trip} />
         <section className="trip-content">
-        <NextStep tripId={tripId} refreshKey={itinerary ? itinerary.updatedAt + itinerary.status : "none"} />
           <h1>Itinerary</h1>
           <div className="card center">
             <div className="empty-icon"><Sparkles size={30} /></div>
@@ -395,7 +392,6 @@ function ItineraryPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <NextStep tripId={tripId} refreshKey={itinerary ? itinerary.updatedAt + itinerary.status : "none"} />
         <h1>Itinerary</h1>
 
         {error && <p className="error">{error}</p>}
