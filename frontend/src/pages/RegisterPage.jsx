@@ -1,5 +1,3 @@
-// Sign-up page
-// Built with Mantine components (TextInput, PasswordInput, Button, Alert).
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";

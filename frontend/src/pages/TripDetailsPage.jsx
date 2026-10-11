@@ -111,7 +111,7 @@ function TripDetailsPage() {
   async function completeTrip() {
     try {
       await api.patch("/trips/" + tripId + "/complete");
-      notifications.show({ title: "Welcome back! 🏡", message: "You can now write a review.", color: "green" });
+      notifications.show({ title: "Welcome back!", message: "You can now write a review.", color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -235,7 +235,7 @@ function TripDetailsPage() {
         )}
 
         {trip.status === "completed" && (
-          <Alert color="green" variant="light" mb="lg" title="Trip completed 🎉">
+          <Alert color="green" variant="light" mb="lg" title="Trip completed">
             <Anchor component={Link} to="/reviews">Write a review</Anchor> of {trip.destination}.
           </Alert>
         )}

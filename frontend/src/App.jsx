@@ -1,5 +1,3 @@
-// Page routing: which page to show for each web address.
-// Pages wrapped in <ProtectedRoute> need the user to be logged in.
 
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { getCurrentUser } from "./api/axios.js";

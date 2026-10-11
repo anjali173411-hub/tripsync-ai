@@ -7,7 +7,10 @@ import {
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
-import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash2, BedDouble, MoreVertical, Lock, Wallet } from "lucide-react";
+import {
+  CalendarDays, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash2, BedDouble, MoreVertical, Lock, Wallet,
+  TrainFront, Bus, Car, Utensils, MapPin, Navigation
+} from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 
@@ -226,7 +229,7 @@ function ItineraryPage() {
   async function finalise() {
     try {
       await api.post("/trips/" + tripId + "/finalise");
-      notifications.show({ title: "Plan finalised 🎉", message: "Have a great trip!", color: "green" });
+      notifications.show({ title: "Plan finalised", message: "Have a great trip!", color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -260,18 +263,24 @@ function ItineraryPage() {
   // A small picture for each kind of activity
   function getActivityIcon(activity) {
     if (activity.category === "travel") {
-      if (trip.travelMode) {
-        return travelModeText(trip.travelMode).split(" ")[0]; // the train, bus or car emoji
+      if (trip.travelMode === "train") {
+        return <TrainFront size={16} />;
       }
-      return "🧭";
+      if (trip.travelMode === "bus") {
+        return <Bus size={16} />;
+      }
+      if (trip.travelMode === "car") {
+        return <Car size={16} />;
+      }
+      return <Navigation size={16} />;
     }
     if (activity.category === "food") {
-      return "🍽️";
+      return <Utensils size={16} />;
     }
     if (activity.category === "stay") {
-      return "🏨";
+      return <BedDouble size={16} />;
     }
-    return "📍";
+    return <MapPin size={16} />;
   }
 
   // Counts the conflicts that are not decided yet
@@ -348,14 +357,14 @@ function ItineraryPage() {
           <Title order={1} mb="lg">Itinerary</Title>
           <Card p={40} ta="center">
             <Center mb="md">
-              <ThemeIcon size={64} radius="xl" variant="light"><Sparkles size={30} /></ThemeIcon>
+              <ThemeIcon size={64} radius="xl" variant="light"><CalendarDays size={30} /></ThemeIcon>
             </Center>
             <Title order={2}>No itinerary yet</Title>
 
             {isOrganiser && (
               <div>
                 <Text c="dimmed" mb="md">Make sure everyone has saved their preferences, then let the AI plan the trip.</Text>
-                <Button size="md" leftSection={<Sparkles size={18} />} onClick={handleGenerate}>Generate with AI</Button>
+                <Button size="md" onClick={handleGenerate}>Generate with AI</Button>
               </div>
             )}
 
@@ -427,7 +436,7 @@ function ItineraryPage() {
         )}
 
         {openDecisions > 0 && (
-          <Alert color="yellow" variant="light" mb="md" title={"⚖️ " + openDecisions + " group decision(s) to make"}>
+          <Alert color="yellow" variant="light" mb="md" title={openDecisions + " group decision(s) to make"}>
             The AI found things the group disagrees on.{" "}
             <Anchor component={Link} to={"/trips/" + tripId + "/consensus"} fw={700}>Go to Group Decisions →</Anchor>
           </Alert>
@@ -465,7 +474,7 @@ function ItineraryPage() {
               {formatMoney(costForEveryone - trip.budget, currency)} more than the trip budget.
             </Text>
             {canEdit && (
-              <Button color="red" onClick={() => handleMakeCheaper(costForEveryone)}>💰 Make it cheaper with AI</Button>
+              <Button color="red" onClick={() => handleMakeCheaper(costForEveryone)}>Make it cheaper with AI</Button>
             )}
             {!canEdit && !isFinalised && (
               <Text size="sm" c="dimmed">The organiser can ask the AI for a cheaper plan.</Text>
@@ -642,7 +651,7 @@ function ItineraryPage() {
         {canEdit && (
           <Accordion variant="separated" radius="lg">
             <Accordion.Item value="change">
-              <Accordion.Control icon={<Sparkles size={18} />}>Change the plan with AI</Accordion.Control>
+              <Accordion.Control>Change the plan with AI</Accordion.Control>
               <Accordion.Panel>
                 <Title order={4}>Plan Day {day.dayNumber} again</Title>
                 <Text size="sm" c="dimmed" mb="xs">The AI re-plans only this day. The other days stay the same.</Text>

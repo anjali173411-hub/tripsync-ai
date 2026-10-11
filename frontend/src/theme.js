@@ -1,8 +1,3 @@
-// The look of all Mantine components (buttons, inputs, cards ...) in one place.
-// Mantine is the UI component library the app uses: https://mantine.dev
-//
-// To change the app's main colour, change the "maroon" shades below
-// (and the --primary colours at the top of index.css).
 
 import { createTheme } from "@mantine/core";
 

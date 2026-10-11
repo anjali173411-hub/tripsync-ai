@@ -102,9 +102,9 @@ export function formatDate(date) {
 
 // Turns a travel mode from the backend into text with an emoji, e.g. "train" -> "🚆 Train"
 export function travelModeText(mode) {
-  if (mode === "train") return "🚆 Train";
-  if (mode === "bus") return "🚌 Bus";
-  if (mode === "car") return "🚗 Car / bike";
+  if (mode === "train") return "Train";
+  if (mode === "bus") return "Bus";
+  if (mode === "car") return "Car / bike";
   return "";
 }
 

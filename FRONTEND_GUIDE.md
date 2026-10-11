@@ -35,7 +35,6 @@ function SomePage() {
     setTrip(response.data.trip);          // changing state re-draws the screen
   }
 
-  // ③ ACTIONS – run when the user clicks
   async function handleSave(event) {
     event.preventDefault();               // stop the browser reloading the page
     await api.put("/trips/" + tripId + "/preferences", { ... });

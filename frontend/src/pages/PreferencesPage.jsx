@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, Title, Text, Textarea, TagsInput, NumberInput, Chip, SegmentedControl, Button, Group, Stack, Alert, Center, Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Sparkles, Save, Wallet } from "lucide-react";
+import { Save, Wallet } from "lucide-react";
 import api, { getErrorMessage } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 
@@ -118,7 +118,7 @@ function PreferencesPage() {
       setFreeTextNotes(description);
 
       notifications.show({
-        title: "Form filled in ✨",
+        title: "Form filled in",
         message: "Check the answers below, change anything you like, then click Save.",
         color: "green"
       });
@@ -178,7 +178,7 @@ function PreferencesPage() {
 
         {/* The easy way: describe the trip, and the AI fills in the form */}
         <Card mb="lg" className="describe-card">
-          <Title order={3}>✨ Describe your ideal trip</Title>
+          <Title order={3}>Describe your ideal trip</Title>
           <Text c="dimmed" size="sm" mb="sm">
             Write it like a message to a friend. The AI fills in the form below for you.
           </Text>
@@ -191,7 +191,6 @@ function PreferencesPage() {
           />
           <Group mt="sm">
             <Button
-              leftSection={<Sparkles size={16} />}
               loading={filling}
               disabled={description.trim().length < 10}
               onClick={handleFillFromText}

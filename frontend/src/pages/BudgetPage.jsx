@@ -1,9 +1,3 @@
-// Budget tracking:
-// - add expenses by category, optionally linked to an itinerary activity (FR-7.1)
-// - see spent vs budget with a breakdown by category (FR-7.2)
-// - see each member's contribution, what they paid and their fair share (FR-7.3)
-// - ask the AI for money-saving tips when spending is near or over budget (FR-7.4)
-// Built with Mantine components (RingProgress, Table, Select, NumberInput ...).
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";

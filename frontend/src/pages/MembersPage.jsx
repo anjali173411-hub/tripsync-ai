@@ -59,7 +59,7 @@ function MembersPage() {
 
     try {
       const response = await api.post("/trips/" + tripId + "/members", { email: emailToInvite });
-      notifications.show({ title: "Invite sent ✉️", message: response.data.message, color: "green" });
+      notifications.show({ title: "Invite sent", message: response.data.message, color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));

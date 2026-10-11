@@ -49,7 +49,7 @@ function LoginPage() {
 
       saveLogin(response.data.token, response.data.user);
 
-      notifications.show({ message: "Welcome back, " + response.data.user.name + " 👋", color: "green" });
+      notifications.show({ message: "Welcome back, " + response.data.user.name, color: "green" });
 
       // Admins go to the admin dashboard, everyone else to their trips
       if (response.data.user.role === "admin") {

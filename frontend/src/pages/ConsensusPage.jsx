@@ -154,7 +154,6 @@ function ConsensusPage() {
         {/* Itinerary exists but no conflicts */}
         {itinerary && conflicts.length === 0 && (
           <Card p={40} ta="center">
-            <Text fz={40}>🎉</Text>
             <Text fw={700}>No conflicts – the AI found a plan that suits everyone.</Text>
           </Card>
         )}

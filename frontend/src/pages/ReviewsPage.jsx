@@ -1,9 +1,3 @@
-// Destinations and their reviews.
-// - Everyone sees destinations with their average rating (FR-9.2).
-// - If you completed a trip to a destination, you can review it (FR-9.1).
-// - Admins add, edit and remove destinations (FR-10.1)
-//   and can hide or remove reviews (FR-9.3).
-// Built with Mantine components (Card, Image, Rating, Modal, SegmentedControl ...).
 
 import { useEffect, useState } from "react";
 import {
@@ -223,7 +217,7 @@ function ReviewsPage() {
         comment: comment
       });
 
-      notifications.show({ title: "Thanks! ⭐", message: "Your review was submitted.", color: "green" });
+      notifications.show({ title: "Thanks!", message: "Your review was submitted.", color: "green" });
       setRating(0);
       setComment("");
       await loadReviews(selectedDestination);

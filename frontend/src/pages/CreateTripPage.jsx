@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, Title, Text, TextInput, NumberInput, SegmentedControl, Button, Alert, Group, SimpleGrid, Stack } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
-import { MapPin, Navigation, CalendarDays, Wallet, Sparkles, User, Users } from "lucide-react";
+import { MapPin, Navigation, CalendarDays, Wallet, User, Users } from "lucide-react";
 import dayjs from "dayjs";
 import api, { getErrorMessage, travelModeText } from "../api/axios.js";
 
@@ -84,7 +84,7 @@ function CreateTripPage() {
 
   
       notifications.show({
-        title: "Trip created 🎉",
+        title: "Trip created",
         message: "Now invite people and fill in your preferences.",
         color: "green"
       });
@@ -101,7 +101,7 @@ function CreateTripPage() {
   // The choices for the two switches: [{ value: "solo", label: "Just me" }, ...]
   const typeChoices = [];
   for (let i = 0; i < tripTypes.length; i++) {
-    const label = tripTypes[i] === "solo" ? "🧍 Just me" : "👥 With friends";
+    const label = tripTypes[i] === "solo" ? "Just me" : "With friends";
     typeChoices.push({ value: tripTypes[i], label: label });
   }
 
@@ -116,7 +116,7 @@ function CreateTripPage() {
         <Stack gap="lg">
           <div>
             <Text c="maroon.7" fw={800} size="xs" tt="uppercase">
-              <Sparkles size={13} /> New trip
+              New trip
             </Text>
             <Title order={1}>Where are you going?</Title>
             <Text c="dimmed">Fill this in once. The AI uses it to plan your days.</Text>

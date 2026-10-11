@@ -1049,6 +1049,7 @@ button:where(:not([class*="mantine-"])):disabled {
 .day-part .mantine-Timeline-itemBullet {
   background: var(--primary-light);
   border-color: var(--primary-bright);
+  color: var(--primary); /* the small icon inside the dot */
 }
 
 /* Reviews page: destination cards can be clicked */

@@ -48,7 +48,7 @@ function DashboardPage() {
 
     try {
       const response = await api.post("/trips/" + tripId + "/invitation/accept");
-      notifications.show({ title: "Joined! 🎉", message: response.data.message, color: "green" });
+      notifications.show({ title: "Joined!", message: response.data.message, color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -287,7 +287,7 @@ function DashboardPage() {
                   <div>
                     <Text fw={700}>{trip.title}</Text>
                     <Text size="sm" c="dimmed">
-                      {trip.organiser.name} invited you · 📍 {trip.destination} · {formatDateRange(trip.startDate, trip.endDate)}
+                      {trip.organiser.name} invited you · {trip.destination} · {formatDateRange(trip.startDate, trip.endDate)}
                     </Text>
                   </div>
                 </Group>
