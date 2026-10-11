@@ -9,14 +9,14 @@
 | File | Job |
 |---|---|
 | `main.jsx` | Starts the app. Wraps it in **MantineProvider** (colour for the Mantine parts), **Notifications** (corner messages) and **BrowserRouter** (pages). |
-| `theme.js` | The maroon colour and font for the few Mantine parts we use. |
+| `theme.js` | The green colour and font for the few Mantine parts we use. |
 | `App.jsx` | The list of pages: which web address shows which page. Hides the top bar on login/sign up. |
 | `index.css` | Our own styles: banners, trip cards, login split-screen, sidebar, top bar. |
 | `api/axios.js` | Talks to the backend + small helpers (`formatMoney`, `formatDate`, `getCurrentUser` …). |
 | `components/Navbar.jsx` | Top bar: logo, menu, logout button. |
 | `components/Sidebar.jsx` | Left menu inside a trip (Details, Members, Preferences, Itinerary, Decisions, Budget). |
 | `components/ProtectedRoute.jsx` | Guard: not logged in → login page. `adminOnly` → only admins. |
-| `components/AuthLayout.jsx` | Split screen for login / sign up (maroon story left, form right). |
+| `components/AuthLayout.jsx` | Split screen for login / sign up (green story left, form right). |
 | `pages/*.jsx` | One file per screen (12 pages). |
 
 ---

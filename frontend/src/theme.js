@@ -5,10 +5,10 @@ import { createTheme } from "@mantine/core";
 export const theme = createTheme({
   // Mantine needs 10 shades of a colour, from light (0) to dark (9)
   colors: {
-    maroon: ["#fdf2f5", "#f7e1e7", "#efc0cd", "#e49aae", "#d6718d", "#c2416b", "#a82a52", "#8b1e3f", "#741734", "#5c1028"]
+    brand: ["#ebf7ef", "#dcf2e4", "#b9e4c9", "#92d4ab", "#6cc390", "#3aa26a", "#28894f", "#1e7a46", "#18663a", "#14532d"]
   },
-  primaryColor: "maroon",
-  primaryShade: 7, // "#8b1e3f", our main colour
+  primaryColor: "brand",
+  primaryShade: 7, // "#1e7a46", our main green
   fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
   // Same height as our plain input boxes
   components: { PasswordInput: { defaultProps: { size: "md" } } }

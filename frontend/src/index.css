@@ -1,26 +1,26 @@
 /* =========================================================
-   TripSync AI - maroon theme
+   TripSync AI - green theme
    All colours, corners and shadows are set once here at the top.
    To change the app's colour, change the "--primary" values below.
    ========================================================= */
 
 :root {
-  /* Main colour: maroon */
-  --primary: #8b1e3f;
-  --primary-dark: #5c1028;
-  --primary-darkest: #3a0a19;
-  --primary-hover: #741734;
-  --primary-bright: #c2416b;
-  --primary-light: #f7e1e7;
-  --primary-tile: #fbedf0;
-  --primary-pale: #fdf7f8;
+  /* Main colour: green */
+  --primary: #1e7a46;
+  --primary-dark: #14532d;
+  --primary-darkest: #0b3a1e;
+  --primary-hover: #18663a;
+  --primary-bright: #3aa26a;
+  --primary-light: #dcf2e4;
+  --primary-tile: #ebf7ef;
+  --primary-pale: #f6fbf7;
 
   /* Neutrals */
   --white: #ffffff;
-  --background: #faf6f5;
-  --text: #2a1a1f;
-  --muted: #7a6a6e;
-  --border: #eee2e4;
+  --background: #f6f9f6;
+  --text: #1b2a21;
+  --muted: #66756b;
+  --border: #dfeae2;
 
   /* Messages */
   --error: #c0392b;
@@ -31,9 +31,9 @@
   /* Shapes */
   --radius: 14px;
   --radius-small: 10px;
-  --shadow: 0 1px 2px rgba(58, 10, 25, 0.06), 0 4px 16px rgba(58, 10, 25, 0.07);
-  --shadow-hover: 0 2px 4px rgba(58, 10, 25, 0.08), 0 10px 28px rgba(58, 10, 25, 0.15);
-  --primary-glow: rgba(139, 30, 63, 0.28);
+  --shadow: 0 1px 2px rgba(11, 58, 30, 0.06), 0 4px 16px rgba(11, 58, 30, 0.07);
+  --shadow-hover: 0 2px 4px rgba(11, 58, 30, 0.08), 0 10px 28px rgba(11, 58, 30, 0.15);
+  --primary-glow: rgba(30, 122, 70, 0.28);
 }
 
 * {
@@ -106,7 +106,7 @@ hr {
   gap: 12px;
   padding: 12px 24px;
   background: linear-gradient(90deg, var(--primary-darkest), var(--primary));
-  box-shadow: 0 2px 12px rgba(58, 10, 25, 0.25);
+  box-shadow: 0 2px 12px rgba(11, 58, 30, 0.25);
 }
 
 /* Logo: purple square + name + tagline */
@@ -275,7 +275,7 @@ button:where(:not([class*="mantine-"])):disabled {
 
 .badge-finalised { background: var(--primary); color: var(--white); }
 
-.badge-completed { background: #f1e8ea; color: var(--muted); }
+.badge-completed { background: #e6efe8; color: var(--muted); }
 
 /* ---------- Trip pages: menu on the left, content on the right ---------- */
 
@@ -346,9 +346,9 @@ button:where(:not([class*="mantine-"])):disabled {
   border: none;
   color: var(--white);
   background:
-    radial-gradient(circle at 90% 10%, rgba(194, 65, 107, 0.55), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(58, 162, 106, 0.55), transparent 45%),
     linear-gradient(135deg, var(--primary-darkest), var(--primary));
-  box-shadow: 0 10px 30px rgba(58, 10, 25, 0.3);
+  box-shadow: 0 10px 30px rgba(11, 58, 30, 0.3);
 }
 
 .hero h1 {
@@ -474,7 +474,7 @@ button:where(:not([class*="mantine-"])):disabled {
   justify-content: center;
   gap: 6px;
   min-height: 290px;
-  border: 2px dashed #e3b8c4;
+  border: 2px dashed #a9d8bb;
   border-radius: var(--radius);
   background: var(--primary-pale);
   color: var(--primary);
@@ -557,7 +557,7 @@ button:where(:not([class*="mantine-"])):disabled {
   justify-content: center;
   color: rgba(255, 255, 255, 0.35);
   background:
-    radial-gradient(circle at 85% 15%, rgba(194, 65, 107, 0.6), transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(58, 162, 106, 0.6), transparent 50%),
     linear-gradient(135deg, var(--primary-dark), var(--primary));
 }
 
@@ -566,7 +566,7 @@ button:where(:not([class*="mantine-"])):disabled {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(15, 5, 8, 0.8) 10%, rgba(15, 5, 8, 0.1) 55%, rgba(15, 5, 8, 0.3));
+  background: linear-gradient(to top, rgba(5, 15, 9, 0.8) 10%, rgba(5, 15, 9, 0.1) 55%, rgba(5, 15, 9, 0.3));
 }
 
 .cover-text {
@@ -624,7 +624,7 @@ button:where(:not([class*="mantine-"])):disabled {
 /* ---------- Small extras for the SRS features ---------- */
 
 .badge-archived {
-  background: #f1e8ea;
+  background: #e6efe8;
   color: var(--muted);
 }
 
@@ -638,7 +638,7 @@ button:where(:not([class*="mantine-"])):disabled {
   min-height: 100vh;
 }
 
-/* Left: maroon side that explains the app */
+/* Left: green side that explains the app */
 .auth-story {
   display: flex;
   flex-direction: column;
@@ -647,8 +647,8 @@ button:where(:not([class*="mantine-"])):disabled {
   padding: 48px 56px;
   color: var(--white);
   background:
-    radial-gradient(circle at 85% 15%, rgba(194, 65, 107, 0.55), transparent 45%),
-    radial-gradient(circle at 10% 90%, rgba(194, 65, 107, 0.35), transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(58, 162, 106, 0.55), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(58, 162, 106, 0.35), transparent 40%),
     linear-gradient(140deg, var(--primary-darkest), var(--primary));
 }
 
@@ -734,7 +734,7 @@ button:where(:not([class*="mantine-"])):disabled {
   color: var(--primary-dark);
 }
 
-/* Phones: the maroon side becomes a short header above the form */
+/* Phones: the green side becomes a short header above the form */
 @media (max-width: 760px) {
 .auth-page {
     grid-template-columns: 1fr;
@@ -765,7 +765,7 @@ button:where(:not([class*="mantine-"])):disabled {
 
 /* ---------- Small extra styles for Mantine parts ---------- */
 
-/* Trip Details: big banner with the place photo (or the maroon gradient) */
+/* Trip Details: big banner with the place photo (or the green gradient) */
 .trip-banner {
   position: relative;
   display: flex;
@@ -773,7 +773,7 @@ button:where(:not([class*="mantine-"])):disabled {
   min-height: 210px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 85% 15%, rgba(194, 65, 107, 0.6), transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(58, 162, 106, 0.6), transparent 50%),
     linear-gradient(135deg, var(--primary-dark), var(--primary));
   background-size: cover;
   background-position: center;
@@ -784,7 +784,7 @@ button:where(:not([class*="mantine-"])):disabled {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(15, 5, 8, 0.8), rgba(15, 5, 8, 0.05) 70%);
+  background: linear-gradient(to top, rgba(5, 15, 9, 0.8), rgba(5, 15, 9, 0.05) 70%);
 }
 
 .trip-banner-text {
