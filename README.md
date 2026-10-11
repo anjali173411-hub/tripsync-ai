@@ -137,38 +137,30 @@ npm run build      # creates frontend/dist
 
 ---
 
-## Deployment on AWS (EC2)
+## Deployment (Render)
 
-One Ubuntu EC2 server runs the whole app. Express serves the API **and** the built React app, and Nginx forwards web traffic (port 80) to Express (port 5000). The database is MongoDB Atlas.
+**Live app:** https://tripsync-ai-v1zw.onrender.com
+
+The whole app runs as **one Render web service** connected to this GitHub repository. Express serves the API **and** the built React app, so the frontend and the API share one address (no CORS problems, and the frontend calls `/api`). The database is **MongoDB Atlas**.
 
 ```
-Browser ──► EC2: Nginx :80 ──► Node/Express :5000 ──► MongoDB Atlas
-                                  └─ serves frontend/dist (React build)
+Browser ──► Render web service (Node/Express) ──► MongoDB Atlas
+              ├─ /api/...      → API routes
+              └─ everything else → frontend/dist (React build)
 ```
 
-1. **Launch the server:** EC2 → Launch instance → Ubuntu 24.04, `t2.micro`/`t3.micro`, security group allowing **SSH (22)** and **HTTP (80)**.
-2. **Install the tools** (connect with *EC2 Instance Connect*):
-   ```bash
-   sudo apt update
-   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-   sudo apt install -y nodejs git nginx
-   sudo npm install -g pm2
-   ```
-3. **Get the code and settings:**
-   ```bash
-   git clone https://github.com/anjali173411-hub/tripsync-ai.git
-   cd tripsync-ai
-   nano backend/.env      # same variable names as above; PORT=5000, CLIENT_URL=http://<server address>
-   ```
-4. **Build and start:**
-   ```bash
-   npm run build                                   # installs packages and builds the React app
-   pm2 start backend/server.js --name tripsync     # keeps the API running
-   pm2 save && pm2 startup                         # restart it automatically after a reboot
-   ```
-5. **Nginx:** forward port 80 to 5000 (`proxy_pass http://localhost:5000;`, `proxy_read_timeout 180s;` because AI planning can take up to a minute), then `sudo systemctl restart nginx`.
-6. **MongoDB Atlas:** Network Access must allow the EC2 server's IP address.
-7. **Update after a new push:** `git pull && npm run build && pm2 restart tripsync`
+| Render setting | Value |
+|---|---|
+| Build command | `npm run build` – installs backend + frontend packages and builds the React app (root `package.json`) |
+| Start command | `npm start` – runs `node backend/server.js` |
+| Environment variables | Set in Render's *Environment* screen (names listed below), never in the code |
+
+- Every `git push` to `main` makes Render build and deploy the new version automatically.
+- MongoDB Atlas *Network Access* allows the Render service to connect.
+- Online, invite emails are sent with the **Brevo** email API, because Render blocks normal SMTP email ports.
+- On the free plan the service sleeps when unused, so the first visit can take up to a minute.
+
+The same build also runs on any Node host (for example an AWS EC2 server with Nginx in front): `npm run build`, then `npm start`.
 
 ---
 
