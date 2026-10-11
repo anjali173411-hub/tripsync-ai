@@ -36,6 +36,20 @@ router.post("/register", async (req, res) => {
       });
     }
 
+    // At least one capital letter (A-Z)
+    if (!/[A-Z]/.test(password)) {
+      return res.status(400).json({
+        message: "Password must contain at least one capital letter"
+      });
+    }
+
+    // At least one special character: anything that is not a letter or a number, e.g. @ # ! $
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      return res.status(400).json({
+        message: "Password must contain at least one special character (for example @ # ! $)"
+      });
+    }
+
     const existingUser = await User.findOne({
       email: email.toLowerCase().trim()
     });

@@ -79,7 +79,7 @@ TripSync AI gives every member their own preference form, then uses one AI servi
 - **I want to** create an account and log in securely,
 - **So that** I can plan trips and see trips I am invited to.
 
-*Acceptance criteria:* name, email and password are required; the password must have at least 8 characters; an email can only be registered once; passwords are stored hashed; after login the user is taken to their dashboard; logging out ends the session on every device.
+*Acceptance criteria:* name, email and password are required; the password must have at least 8 characters, one capital letter and one special character; an email can only be registered once; passwords are stored hashed; after login the user is taken to their dashboard; logging out ends the session on every device.
 
 **User Story 2 – Create a trip**
 - **As an** organiser,

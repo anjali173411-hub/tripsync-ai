@@ -48,7 +48,7 @@ function RegisterPage() {
         <label>Email (use the one your friends invited)</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
-        <label>Password (at least {minPasswordLength} characters)</label>
+        <label>Password (at least {minPasswordLength} characters, one capital letter and one special character like @ or #)</label>
         <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} minLength={minPasswordLength} required />
 
         {error && <p className="error-box">{error}</p>}
