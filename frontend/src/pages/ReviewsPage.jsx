@@ -10,10 +10,10 @@ import {
   Card, Image, Title, Text, Button, Badge, Group, Stack, SimpleGrid, Rating, Modal, TextInput, Textarea,
   SegmentedControl, Alert, Paper, Divider
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Plus, Pencil, Trash2, Eye, EyeOff, MapPin } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser } from "../api/axios.js";
-import { confirmAction } from "../components/ui/confirm.jsx";
 
 function ReviewsPage() {
   const user = getCurrentUser();
@@ -150,11 +150,12 @@ function ReviewsPage() {
   }
 
   function handleDeleteDestination(destination) {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Remove " + destination.name + "?",
-      text: "The destination and all its reviews will be deleted.",
-      confirmLabel: "Remove",
-      danger: true,
+      centered: true,
+      children: <Text size="sm">The destination and all its reviews will be deleted.</Text>,
+      labels: { confirm: "Remove", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: () => deleteDestination(destination)
     });
   }
@@ -183,11 +184,12 @@ function ReviewsPage() {
   }
 
   function handleDeleteReview(review) {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Remove this review?",
-      text: "It will be deleted for good.",
-      confirmLabel: "Remove",
-      danger: true,
+      centered: true,
+      children: <Text size="sm">It will be deleted for good.</Text>,
+      labels: { confirm: "Remove", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: () => deleteReview(review)
     });
   }

@@ -1,5 +1,4 @@
-// Create a new solo or group trip (FR-2.1, FR-2.2)
-// Built with Mantine components (Card, TextInput, SegmentedControl, DatePickerInput ...).
+
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -83,14 +82,14 @@ function CreateTripPage() {
         budget: Number(budget)
       });
 
-      // A small pop-up in the corner
+  
       notifications.show({
         title: "Trip created 🎉",
         message: "Now invite people and fill in your preferences.",
         color: "green"
       });
 
-      // Open the new trip
+  
       navigate("/trips/" + response.data.trip._id);
     } catch (err) {
       setError(getErrorMessage(err));

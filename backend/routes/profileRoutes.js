@@ -1,4 +1,3 @@
-
 import express from "express";
 import User from "../models/User.js";
 import Preference from "../models/Preference.js";
@@ -83,7 +82,7 @@ router.put("/", verifyToken, async (req, res) => {
   }
 });
 
-// SEARCH REGISTERED TRAVELLERS BY NAME OR EMAIL (for inviting in the app, FR-2.3)
+// SEARCH REGISTERED T
 router.get("/search", verifyToken, async (req, res) => {
   try {
     let text = "";

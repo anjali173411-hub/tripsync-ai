@@ -1,26 +1,15 @@
-// The AI itinerary, day by day.
-//
-// How it works:
-//   1. No itinerary yet  -> organiser clicks "Generate with AI" (FR-4.1)
-//   2. Itinerary ready   -> everyone sees the days; click an activity to open it (SRS 4.1)
-//      The organiser can edit, move or remove activities (FR-4.4),
-//      plan one day again (FR-4.3) or the whole trip again.
-//      Group trips vote on conflicts on the Group Decisions page.
-//   3. Nothing left to decide -> organiser clicks "Finalise" (FR-5.7)
-//
-// Built with Mantine components (Tabs, Timeline, Menu, Modal, Accordion, Progress ...).
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  Card, Paper, Title, Text, Button, Badge, Group, Stack, SimpleGrid, ThemeIcon, Alert, Anchor,
-  Tabs, Timeline, Menu, ActionIcon, Modal, TextInput, NumberInput, Textarea, Accordion, Progress, Loader, Center
+  Card, Title, Text, Button, Badge, Group, Stack, SimpleGrid, ThemeIcon, Alert, Anchor, Tabs, Timeline, Menu,
+  ActionIcon, Modal, TextInput, NumberInput, Textarea, Accordion, Progress, Loader, Center
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash2, BedDouble, MoreVertical, Lock, Wallet } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import { confirmAction } from "../components/ui/confirm.jsx";
 
 function ItineraryPage() {
   const { tripId } = useParams();
@@ -28,27 +17,23 @@ function ItineraryPage() {
 
   const [trip, setTrip] = useState(null);
   const [currency, setCurrency] = useState("");
-  const [itinerary, setItinerary] = useState(null);    // stays null until the AI has made one
-  const [conflicts, setConflicts] = useState([]);      // group decisions (from ConflictVote)
-  const [membersNotInPlan, setMembersNotInPlan] = useState([]); // joined but no preferences yet
-  const [selectedDay, setSelectedDay] = useState(0);   // which day tab is open (0 = Day 1)
-  const [weatherDays, setWeatherDays] = useState([]);  // weather for each trip day (may stay empty)
-
-  // Editing one activity (the pop-up is open while editingId is not "")
+  const [itinerary, setItinerary] = useState(null);  
+  const [conflicts, setConflicts] = useState([]);      
+  const [membersNotInPlan, setMembersNotInPlan] = useState([]); 
+  const [selectedDay, setSelectedDay] = useState(0);  
+  const [weatherDays, setWeatherDays] = useState([]); 
   const [editingId, setEditingId] = useState("");
   const [editTime, setEditTime] = useState("");
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCost, setEditCost] = useState("");
-
-  // Asking the AI again
-  const [instructions, setInstructions] = useState("");       // for the whole trip
-  const [dayInstructions, setDayInstructions] = useState(""); // for one day
-  const [aiWorking, setAiWorking] = useState("");             // "", "trip" or "day"
+  const [instructions, setInstructions] = useState("");    
+  const [dayInstructions, setDayInstructions] = useState(""); 
+  const [aiWorking, setAiWorking] = useState("");             
 
   const [error, setError] = useState("");
 
-  // Runs when the page opens
+
   useEffect(() => {
     loadPage();
   }, [tripId]);
@@ -81,7 +66,6 @@ function ItineraryPage() {
     }
   }
 
-  // Weather is extra information: if it fails, the page simply shows no weather
   async function loadWeather() {
     try {
       const response = await api.get("/trips/" + tripId + "/weather");
@@ -91,7 +75,6 @@ function ItineraryPage() {
     }
   }
 
-  // Finds the weather for one itinerary day (or null if we don't have it)
   function getWeatherForDay(dayDate) {
     const dateText = new Date(dayDate).toISOString().substring(0, 10);
 
@@ -104,16 +87,15 @@ function ItineraryPage() {
     return null;
   }
 
-  // ---------------- Asking the AI ----------------
-
-  // Organiser plans the whole trip (FR-4.1) or plans it again (FR-4.3)
-  async function handleGenerate() {
+  // Asks the AI to plan the whole trip (FR-4.1). Used by "Generate", "Plan whole trip again"
+  // and "Make it cheaper" - only the instructions are different.
+  async function planTrip(instructionsText) {
     setError("");
     setAiWorking("trip");
 
     try {
       const response = await api.post("/trips/" + tripId + "/generate", {
-        instructions: instructions
+        instructions: instructionsText
       });
       setItinerary(response.data.itinerary);
       setConflicts(response.data.conflicts);
@@ -127,34 +109,24 @@ function ItineraryPage() {
     setAiWorking("");
   }
 
-  // Organiser asks the AI for a cheaper version of the whole trip
-  function handleMakeCheaper(totalCost) {
-    confirmAction({
-      title: "Make a cheaper plan?",
-      text: "The AI will make a new, cheaper plan for the whole trip. Group decisions will start over.",
-      confirmLabel: "Make it cheaper",
-      onConfirm: () => makeCheaper(totalCost)
-    });
+  function handleGenerate() {
+    planTrip(instructions);
   }
 
-  async function makeCheaper(totalCost) {
-    setError("");
-    setAiWorking("trip");
+  // Organiser asks the AI for a cheaper version of the whole trip
+  function handleMakeCheaper(totalCost) {
+    const cheaperInstructions =
+      "The current plan costs about " + totalCost + " " + currency + " for the whole group, " +
+      "but the budget is " + trip.budget + " " + currency + ". Make a cheaper plan that fits the budget.";
 
-    try {
-      const response = await api.post("/trips/" + tripId + "/generate", {
-        instructions:
-          "The current plan costs about " + totalCost + " " + currency + " for the whole group, " +
-          "but the budget is " + trip.budget + " " + currency + ". Make a cheaper plan that fits the budget."
-      });
-      setItinerary(response.data.itinerary);
-      setConflicts(response.data.conflicts);
-      setSelectedDay(0);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
-
-    setAiWorking("");
+    modals.openConfirmModal({
+      title: "Make a cheaper plan?",
+      centered: true,
+      children: <Text size="sm">The AI will make a new, cheaper plan for the whole trip. Group decisions will start over.</Text>,
+      labels: { confirm: "Make it cheaper", cancel: "Cancel" },
+      confirmProps: { color: "maroon" },
+      onConfirm: () => planTrip(cheaperInstructions)
+    });
   }
 
   // Organiser plans only the selected day again (FR-4.3)
@@ -220,11 +192,12 @@ function ItineraryPage() {
   }
 
   function handleRemove(activity) {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Remove this activity?",
-      text: "\"" + activity.name + "\" will be removed from the itinerary.",
-      confirmLabel: "Remove",
-      danger: true,
+      centered: true,
+      children: <Text size="sm">{"\"" + activity.name + "\" will be removed from the itinerary."}</Text>,
+      labels: { confirm: "Remove", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: () => removeActivity(activity)
     });
   }
@@ -240,10 +213,12 @@ function ItineraryPage() {
 
   // Organiser locks the itinerary (FR-5.7)
   function handleFinalise() {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Finalise the itinerary?",
-      text: "The plan will be locked for everyone. It can't be changed afterwards.",
-      confirmLabel: "Finalise",
+      centered: true,
+      children: <Text size="sm">The plan will be locked for everyone. It can't be changed afterwards.</Text>,
+      labels: { confirm: "Finalise", cancel: "Cancel" },
+      confirmProps: { color: "maroon" },
       onConfirm: finalise
     });
   }
@@ -310,6 +285,26 @@ function ItineraryPage() {
     return count;
   }
 
+  // FR-5.6: the members an activity (or the stay) does NOT suit.
+  // matchedMembers is the list of names the AI chose it for.
+  // Returns [] if it suits everyone - then nothing is shown.
+  function getNotMatched(matchedMembers) {
+    // The AI gave no names (e.g. a train journey): nothing to say
+    if (trip.type !== "group" || matchedMembers.length === 0) {
+      return [];
+    }
+
+    const notMatched = [];
+    for (let i = 0; i < trip.members.length; i++) {
+      const name = trip.members[i].name;
+      // People who joined after the plan was made are not in it yet, so skip them
+      if (!matchedMembers.includes(name) && !membersNotInPlan.includes(name)) {
+        notMatched.push(name);
+      }
+    }
+    return notMatched;
+  }
+
   // ---------------- What to show ----------------
 
   // 1. Still loading the trip
@@ -331,6 +326,7 @@ function ItineraryPage() {
     return (
       <div className="trip-layout">
         <Sidebar trip={trip} />
+
         <section className="trip-content">
           <Card p={50} ta="center">
             <Center mb="md"><Loader size="lg" type="dots" /></Center>
@@ -347,6 +343,7 @@ function ItineraryPage() {
     return (
       <div className="trip-layout">
         <Sidebar trip={trip} />
+
         <section className="trip-content">
           <Title order={1} mb="lg">Itinerary</Title>
           <Card p={40} ta="center">
@@ -372,8 +369,7 @@ function ItineraryPage() {
       </div>
     );
   }
-
-  // 4. The itinerary exists: work out a few values, then show it
+  
   const isFinalised = itinerary.status === "finalised";
   const canEdit = isOrganiser && !isFinalised && trip.status === "planning";
   const openDecisions = countOpenDecisions();
@@ -492,8 +488,11 @@ function ItineraryPage() {
                   </Text>
                 </Group>
                 <Text size="sm" c="dimmed">{itinerary.stay.reason}</Text>
-                {trip.type === "group" && itinerary.stay.matchedMembers.length > 0 && (
-                  <Badge color="green" variant="light" mt="xs">Matches: {itinerary.stay.matchedMembers.join(", ")}</Badge>
+                {/* Only shown when the stay doesn't suit someone */}
+                {getNotMatched(itinerary.stay.matchedMembers).length > 0 && (
+                  <Badge color="orange" variant="light" mt="xs">
+                    Doesn't match: {getNotMatched(itinerary.stay.matchedMembers).join(", ")}
+                  </Badge>
                 )}
               </div>
             </Group>
@@ -562,10 +561,10 @@ function ItineraryPage() {
                             </Group>
                             <Text size="sm" c="dimmed" mt={4}>{activity.description}</Text>
 
-                            {/* FR-5.6: which members this activity was chosen for */}
-                            {trip.type === "group" && activity.matchedMembers.length > 0 && (
-                              <Badge color="green" variant="light" size="sm" mt={6}>
-                                Matches: {activity.matchedMembers.join(", ")}
+                            {/* FR-5.6: only shown when this activity doesn't suit someone */}
+                            {getNotMatched(activity.matchedMembers).length > 0 && (
+                              <Badge color="orange" variant="light" size="sm" mt={6}>
+                                Doesn't match: {getNotMatched(activity.matchedMembers).join(", ")}
                               </Badge>
                             )}
                           </div>
@@ -607,7 +606,6 @@ function ItineraryPage() {
           })}
         </Card>
 
-        {/* The edit pop-up (opens when "Edit" is clicked in the ⋮ menu) */}
         <Modal opened={editingId !== ""} onClose={() => setEditingId("")} title="Edit activity" centered>
           <form onSubmit={handleSaveEdit}>
             <Stack>
@@ -625,7 +623,6 @@ function ItineraryPage() {
           </form>
         </Modal>
 
-        {/* Organiser: finalise */}
         {canEdit && (
           <Card mb="lg">
             <Group justify="space-between">
@@ -642,7 +639,6 @@ function ItineraryPage() {
           </Card>
         )}
 
-        {/* Organiser: asking the AI again, folded away until opened */}
         {canEdit && (
           <Accordion variant="separated" radius="lg">
             <Accordion.Item value="change">

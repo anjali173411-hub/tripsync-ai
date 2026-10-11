@@ -35,7 +35,7 @@ const preferenceSchema = new mongoose.Schema(
       ],
       default: []
     },
-    // Interests the member typed in themselves, because they were not in the list above
+    
     otherInterests: {
       type: [String],
       default: []
@@ -59,19 +59,19 @@ const preferenceSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
-    // Optional free-text, e.g. "relaxed trip, good food, no adventure sports" (FR-3.2)
+    
     freeTextNotes: {
       type: String,
       default: "",
       maxlength: 1000
     },
-    // What the member eats. The AI picks food places that suit everyone.
+    
     foodPreference: {
       type: String,
       enum: ["no preference", "vegetarian", "non-vegetarian", "vegan", "jain"],
       default: "no preference"
     },
-    // How the member likes to stay. The AI suggests where the group should stay.
+  
     stayBudget: {
       type: String,
       enum: ["budget", "mid-range", "luxury"],
@@ -86,7 +86,6 @@ const preferenceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// One preference document per user per trip
 preferenceSchema.index(
   { trip: 1, user: 1 },
   { unique: true }

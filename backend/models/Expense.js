@@ -18,7 +18,7 @@ const expenseSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
-    // Expense categories from SRS FR-7.1 / 6.6
+  
     category: {
       type: String,
       enum: ["accommodation", "food", "transport", "activities", "misc"],

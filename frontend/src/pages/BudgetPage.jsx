@@ -8,8 +8,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  Card, Title, Text, Button, Badge, Group, Stack, SimpleGrid, Table, RingProgress, Progress,
-  TextInput, NumberInput, Select, Alert, Loader, Center, Paper
+  Card, Title, Text, Button, Badge, Group, Stack, SimpleGrid, Table, RingProgress, Progress, TextInput,
+  NumberInput, Select, Alert, Paper, Center, Loader
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { Lightbulb, Plus } from "lucide-react";

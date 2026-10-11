@@ -5,12 +5,12 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Card, Title, Text, Button, Badge, Avatar, Group, Progress, Alert, Anchor, Loader, Center, ThemeIcon } from "@mantine/core";
+import { Card, Title, Text, Button, Badge, Avatar, Group, Progress, Alert, Anchor, Center, ThemeIcon, Loader } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Scale, CheckCircle2, Clock } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import { confirmAction } from "../components/ui/confirm.jsx";
 
 function ConsensusPage() {
   const { tripId } = useParams();
@@ -70,10 +70,12 @@ function ConsensusPage() {
 
   // The organiser picks an option for everyone
   function handleDecide(conflictId, optionIndex) {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Decide this for everyone?",
-      text: "This option will be chosen for the whole group, and voting on this decision ends.",
-      confirmLabel: "Choose this option",
+      centered: true,
+      children: <Text size="sm">This option will be chosen for the whole group, and voting on this decision ends.</Text>,
+      labels: { confirm: "Choose this option", cancel: "Cancel" },
+      confirmProps: { color: "maroon" },
       onConfirm: () => decide(conflictId, optionIndex)
     });
   }

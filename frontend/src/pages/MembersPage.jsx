@@ -1,27 +1,20 @@
-// Group members:
-// - invite people by searching the app or by email (FR-2.3)
-// - see who hasn't accepted their invitation yet (FR-2.4)
-// - organiser removes members before the itinerary is finalised (FR-2.5)
-// - organiser sees who has filled in preferences (FR-3.3)
-// Built with Mantine components (Card, Avatar, Badge, TextInput, Button ...).
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, Title, Text, TextInput, Button, Badge, Avatar, Group, Stack, Divider, Alert, Loader, Center } from "@mantine/core";
+import { Card, Title, Text, TextInput, Button, Badge, Avatar, Group, Stack, Divider, Alert, Center, Loader } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Search, Mail, Send, UserMinus, X } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import { confirmAction } from "../components/ui/confirm.jsx";
 
 function MembersPage() {
   const { tripId } = useParams();
   const user = getCurrentUser();
 
   const [trip, setTrip] = useState(null);
-  const [submittedUserIds, setSubmittedUserIds] = useState([]); // ids of members who saved preferences
+  const [submittedUserIds, setSubmittedUserIds] = useState([]); 
 
-  // Search for people already on TripSync AI
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searched, setSearched] = useState(false);
@@ -98,11 +91,12 @@ function MembersPage() {
 
   // Organiser cancels an invitation that hasn't been answered
   function handleCancelInvite(invitedEmail) {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Cancel this invitation?",
-      text: invitedEmail + " will no longer be able to join this trip.",
-      confirmLabel: "Cancel invite",
-      danger: true,
+      centered: true,
+      children: <Text size="sm">{invitedEmail + " will no longer be able to join this trip."}</Text>,
+      labels: { confirm: "Cancel invite", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: () => cancelInvite(invitedEmail)
     });
   }
@@ -123,11 +117,12 @@ function MembersPage() {
 
   // Organiser removes a member
   function handleRemove(member) {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Remove " + member.name + "?",
-      text: "Their preferences and votes for this trip will be deleted.",
-      confirmLabel: "Remove",
-      danger: true,
+      centered: true,
+      children: <Text size="sm">Their preferences and votes for this trip will be deleted.</Text>,
+      labels: { confirm: "Remove", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: () => removeMember(member)
     });
   }
@@ -222,7 +217,6 @@ function MembersPage() {
           )}
         </Card>
 
-        {/* People who were invited but haven't accepted yet */}
         {trip.invitedEmails.length > 0 && (
           <Card mb="lg">
             <Title order={3}>Waiting for reply</Title>

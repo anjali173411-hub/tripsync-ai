@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Paper, Card, Title, Text, Button, Badge, Avatar, Group, SimpleGrid, Alert, Loader, Center, ThemeIcon } from "@mantine/core";
+import { Paper, Card, Title, Text, Button, Badge, Avatar, Group, SimpleGrid, Alert, ThemeIcon, Center, Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { Plus, MapPin, CalendarDays, Users, Wallet, ArrowRight, Plane, Mail, Archive } from "lucide-react";
@@ -242,7 +242,6 @@ function DashboardPage() {
         </Group>
       </Paper>
 
-      {/* Three small number tiles */}
       <SimpleGrid cols={{ base: 1, sm: 3 }} mb="lg">
         <Paper withBorder radius="lg" p="md">
           <Group>

@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
-    // Default interests and pace, used to pre-fill the preference form of new trips (FR-1.4)
+
     defaultPreferences: {
       interests: {
         type: [String],
@@ -40,8 +40,7 @@ const userSchema = new mongoose.Schema(
         default: "balanced"
       }
     },
-    // Goes up by 1 every time the user logs out.
-    // Login tokens remember this number, so old tokens stop working after logout (FR-1.6).
+    
     tokenVersion: {
       type: Number,
       default: 0

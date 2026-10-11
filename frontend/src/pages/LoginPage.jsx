@@ -12,7 +12,6 @@ import api, { getErrorMessage, saveLogin, getCurrentUser } from "../api/axios.js
 function LoginPage() {
   const navigate = useNavigate();
 
-  // If we came here from the sign-up page, it sends a message like "Account created!"
   const location = useLocation();
   let successMessage = "";
   if (location.state && location.state.message) {
@@ -84,7 +83,6 @@ function LoginPage() {
             required
           />
 
-          {/* PasswordInput has the eye button built in */}
           <PasswordInput
             label="Password"
             placeholder="Your password"

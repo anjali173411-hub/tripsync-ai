@@ -1,8 +1,6 @@
 
 import mongoose from "mongoose";
 
-// The day-by-day plan of one trip (SRS 6.3).
-// Conflicts are stored separately in the ConflictVote collection (SRS 6.5).
 const itinerarySchema = new mongoose.Schema(
   {
     trip: {

@@ -8,9 +8,9 @@ import { verifyToken } from "../middleware/auth.js";
 const router = express.Router();
 
 // ---------- Settings ----------
-export const MIN_PASSWORD_LENGTH = 8; // shortest password allowed
-const SALT_ROUNDS = 10;               // how strongly bcrypt scrambles passwords
-const TOKEN_EXPIRES_IN = "1d";        // users must log in again after 1 day
+export const MIN_PASSWORD_LENGTH = 8; 
+const SALT_ROUNDS = 10;               
+const TOKEN_EXPIRES_IN = "1d";        
 
 // REGISTER
 router.post("/register", async (req, res) => {
@@ -137,8 +137,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// LOG OUT (FR-1.6)
-// Raising tokenVersion makes every token this user already has stop working.
 router.post("/logout", verifyToken, async (req, res) => {
   try {
     await User.findByIdAndUpdate(req.user.id, { $inc: { tokenVersion: 1 } });

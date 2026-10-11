@@ -1,8 +1,6 @@
 
 import mongoose from "mongoose";
 
-// One document = one conflict the AI found in a group trip (SRS 6.5).
-// It holds the compromise options, every member's vote, and the result.
 const conflictVoteSchema = new mongoose.Schema(
   {
     trip: {
@@ -10,22 +8,22 @@ const conflictVoteSchema = new mongoose.Schema(
       ref: "Trip",
       required: true
     },
-    // What the clash is, e.g. "Asha wants parasailing, Ravi wants no water sports"
+    
     conflictDescription: {
       type: String,
       required: true
     },
-    // Why the AI flagged it
+    
     reasoning: {
       type: String,
       default: ""
     },
-    // Names of the members involved
+    
     affectedMembers: {
       type: [String],
       default: []
     },
-    // The compromise options the group votes on
+    
     options: [
       {
         description: {
@@ -42,7 +40,7 @@ const conflictVoteSchema = new mongoose.Schema(
         }
       }
     ],
-    // One entry per member who voted
+  
     votes: [
       {
         user: {
@@ -60,7 +58,7 @@ const conflictVoteSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    // Which option was chosen (null until resolved)
+    
     chosenOption: {
       type: Number,
       default: null
@@ -69,7 +67,6 @@ const conflictVoteSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Counts the votes again and stores the number on each option
 conflictVoteSchema.methods.recountVotes = function () {
   for (let i = 0; i < this.options.length; i++) {
     let count = 0;

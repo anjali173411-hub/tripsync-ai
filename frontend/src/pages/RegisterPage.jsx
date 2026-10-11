@@ -11,12 +11,10 @@ import api, { getErrorMessage } from "../api/axios.js";
 function RegisterPage() {
   const navigate = useNavigate();
 
-  // What the user types
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // The minimum password length comes from the backend settings
   const [minPasswordLength, setMinPasswordLength] = useState(0);
 
   const [error, setError] = useState("");

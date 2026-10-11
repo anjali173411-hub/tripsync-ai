@@ -1,21 +1,19 @@
-// Admin dashboard (FR-10): platform numbers, popular destinations, and all user accounts.
-// Built with Mantine components (Paper, SimpleGrid, Progress, Table, Badge ...).
 
 import { useEffect, useState } from "react";
 import { Paper, Card, Title, Text, Button, Badge, Avatar, Group, Stack, SimpleGrid, Table, Progress, Alert, ThemeIcon } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Users, Plane, User, UsersRound, Ruler, Clock, CheckCircle2 } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate } from "../api/axios.js";
-import { confirmAction } from "../components/ui/confirm.jsx";
 
 function AdminPage() {
   const user = getCurrentUser();
 
-  const [summary, setSummary] = useState(null); // totalUsers, totalTrips, planningTrips, completedTrips ...
+  const [summary, setSummary] = useState(null); 
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
 
-  // Runs once when the page opens
+
   useEffect(() => {
     loadPage();
   }, []);
@@ -32,20 +30,21 @@ function AdminPage() {
     }
   }
 
-  // Turn a user account on or off - first asks "Are you sure?"
+
   function handleToggleActive(account) {
     let action = "Activate";
     if (account.isActive) {
       action = "Deactivate";
     }
 
-    confirmAction({
+    modals.openConfirmModal({
       title: action + " " + account.name + "?",
-      text: account.isActive
+      centered: true,
+      children: <Text size="sm">{account.isActive
         ? "They will be logged out and won't be able to log in until you activate them again."
-        : "They will be able to log in again.",
-      confirmLabel: action,
-      danger: account.isActive,
+        : "They will be able to log in again."}</Text>,
+      labels: { confirm: action, cancel: "Cancel" },
+      confirmProps: { color: account.isActive ? "red" : "maroon" },
       onConfirm: () => toggleActive(account)
     });
   }
@@ -62,7 +61,6 @@ function AdminPage() {
     }
   }
 
-  // The number tiles: icon, number and label
   let tiles = [];
   if (summary) {
     tiles = [
@@ -88,15 +86,13 @@ function AdminPage() {
       </Paper>
 
       {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
-
-      {/* Platform analytics (FR-10.2) */}
       {summary && (
         <div>
           <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} mb="lg">
             {tiles.map((tile) => (
               <Paper key={tile.label} withBorder radius="lg" p="md">
                 <Group>
-                  <ThemeIcon size={42} radius="md" variant="light">{tile.icon}</ThemeIcon>
+                  <ThemeIcon size={42} radius="md" variant="light">tile.icon</ThemeIcon>
                   <div>
                     <Text size="xl" fw={800}>{tile.value}</Text>
                     <Text size="sm" c="dimmed">{tile.label}</Text>
@@ -124,7 +120,7 @@ function AdminPage() {
         </div>
       )}
 
-      {/* Table of all users */}
+  
       <Card>
         <Title order={3} mb="sm">Users</Title>
         <Table.ScrollContainer minWidth={700}>

@@ -28,15 +28,11 @@ const tripSchema = new mongoose.Schema(
       trim: true
     },
 
-    // How the group travels from "startingFrom" to the destination.
-    // The frontend fetches this list from GET /api/options.
     travelMode: {
       type: String,
       enum: ["train", "bus", "car"]
     },
 
-    // Map position of the destination, used for the weather.
-    // Looked up the first time someone views the weather, then saved here.
     destinationLat: {
       type: Number,
       default: null
@@ -50,8 +46,6 @@ const tripSchema = new mongoose.Schema(
       default: ""
     },
 
-    // A photo of the destination for the trip card (from Wikipedia).
-    // null = not looked up yet, "" = looked up but no photo found.
     destinationImage: {
       type: String,
       default: null

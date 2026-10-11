@@ -1,10 +1,8 @@
-// The preference form each member fills in (FR-3.1, FR-3.2).
-// The AI uses these answers to plan the itinerary.
-// Built with Mantine components (Chip, SegmentedControl, TagsInput, Textarea ...).
+
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, Title, Text, Textarea, TagsInput, NumberInput, Chip, SegmentedControl, Button, Group, Stack, Alert, Loader, Center } from "@mantine/core";
+import { Card, Title, Text, Textarea, TagsInput, NumberInput, Chip, SegmentedControl, Button, Group, Stack, Alert, Center, Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { Sparkles, Save, Wallet } from "lucide-react";
 import api, { getErrorMessage } from "../api/axios.js";
@@ -15,7 +13,6 @@ function PreferencesPage() {
 
   const [trip, setTrip] = useState(null);
 
-  // Choices that come from the backend
   const [interestOptions, setInterestOptions] = useState([]);
   const [paceOptions, setPaceOptions] = useState([]);
   const [foodOptions, setFoodOptions] = useState([]);
@@ -23,9 +20,8 @@ function PreferencesPage() {
   const [stayTypes, setStayTypes] = useState([]);
   const [currency, setCurrency] = useState("");
 
-  // What the user fills in
-  const [interests, setInterests] = useState([]);           // ticked chips, e.g. ["beaches", "food"]
-  const [otherInterests, setOtherInterests] = useState([]); // typed tags, e.g. ["scuba diving"]
+  const [interests, setInterests] = useState([]);         
+  const [otherInterests, setOtherInterests] = useState([]); 
   const [pace, setPace] = useState("");
   const [budgetContribution, setBudgetContribution] = useState("");
   const [mustDo, setMustDo] = useState([]);
@@ -35,7 +31,6 @@ function PreferencesPage() {
   const [stayBudget, setStayBudget] = useState("");
   const [stayType, setStayType] = useState("");
 
-  // "Describe your trip" box: the AI fills in the form from this text (FR-3.2)
   const [description, setDescription] = useState("");
   const [filling, setFilling] = useState(false);
 
@@ -78,7 +73,7 @@ function PreferencesPage() {
         setDealBreakers(saved.dealBreakers);
         setFreeTextNotes(saved.freeTextNotes);
       } else {
-        // Nothing saved for this trip yet: start from my profile defaults (FR-1.4)
+      
         const profileResponse = await api.get("/profile");
         const defaults = profileResponse.data.user.defaultPreferences;
         setInterests(defaults.interests);
@@ -89,7 +84,6 @@ function PreferencesPage() {
     }
   }
 
-  // The AI reads the description and fills in the form below. Nothing is saved yet.
   async function handleFillFromText() {
     setError("");
     setFilling(true);
@@ -105,7 +99,6 @@ function PreferencesPage() {
       setMustDo(filled.mustDo);
       setDealBreakers(filled.dealBreakers);
 
-      // Only change these if the description mentioned them
       if (filled.pace) {
         setPace(filled.pace);
       }
@@ -122,7 +115,6 @@ function PreferencesPage() {
         setBudgetContribution(filled.budgetContribution);
       }
 
-      // Keep the description too, so the AI planner can read it
       setFreeTextNotes(description);
 
       notifications.show({
@@ -137,7 +129,6 @@ function PreferencesPage() {
     setFilling(false);
   }
 
-  // Runs when the form is submitted
   async function handleSave(event) {
     event.preventDefault();
     setError("");

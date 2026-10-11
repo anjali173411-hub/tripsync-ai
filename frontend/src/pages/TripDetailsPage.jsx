@@ -1,27 +1,24 @@
-// Main page of one trip: a photo banner, the key details and the weather.
-// Built with Mantine components (Paper, SimpleGrid, ThemeIcon, Badge, Button ...).
+
 
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { Paper, Card, Title, Text, Badge, Button, Group, SimpleGrid, ThemeIcon, Alert, Anchor, Loader, Center } from "@mantine/core";
+import { Paper, Card, Title, Text, Badge, Button, Group, SimpleGrid, ThemeIcon, Alert, Anchor, Center, Loader } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { Navigation, TrainFront, CalendarDays, Wallet, Users, Crown, Archive, Trash2, Flag } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import { confirmAction } from "../components/ui/confirm.jsx";
 
 function TripDetailsPage() {
-  const { tripId } = useParams(); // the trip id from the web address
+  const { tripId } = useParams(); 
   const navigate = useNavigate();
   const user = getCurrentUser();
 
   const [trip, setTrip] = useState(null);
   const [currency, setCurrency] = useState("");
-  const [weather, setWeather] = useState(null);        // { place, type, days }
+  const [weather, setWeather] = useState(null);     
   const [weatherMessage, setWeatherMessage] = useState("Loading weather...");
   const [error, setError] = useState("");
-
-  // Runs when the page opens
   useEffect(() => {
     loadPage();
   }, [tripId]);
@@ -40,7 +37,6 @@ function TripDetailsPage() {
     loadWeather();
   }
 
-  // Weather is loaded separately, so the page still works if the weather service is down
   async function loadWeather() {
     try {
       const response = await api.get("/trips/" + tripId + "/weather");
@@ -50,7 +46,6 @@ function TripDetailsPage() {
     }
   }
 
-  // The heading above the weather, depending on what kind of weather we got
   function getWeatherTitle() {
     if (weather.type === "forecast") {
       return "Weather forecast";
@@ -61,12 +56,13 @@ function TripDetailsPage() {
     return "Typical weather for these dates";
   }
 
-  // Organiser archives the trip: it is kept, but moved to "Archived trips" (FR-2.7)
   function handleArchive() {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Archive this trip?",
-      text: "It will move to 'Archived trips' on your dashboard. Nothing is deleted.",
-      confirmLabel: "Archive",
+      centered: true,
+      children: <Text size="sm">It will move to 'Archived trips' on your dashboard. Nothing is deleted.</Text>,
+      labels: { confirm: "Archive", cancel: "Cancel" },
+      confirmProps: { color: "maroon" },
       onConfirm: archiveTrip
     });
   }
@@ -80,14 +76,13 @@ function TripDetailsPage() {
       setError(getErrorMessage(err));
     }
   }
-
-  // Organiser deletes the trip and everything in it (FR-2.7)
   function handleDelete() {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Delete this trip for everyone?",
-      text: "The itinerary, votes, expenses and preferences will be deleted. This cannot be undone.",
-      confirmLabel: "Delete trip",
-      danger: true,
+      centered: true,
+      children: <Text size="sm">The itinerary, votes, expenses and preferences will be deleted. This cannot be undone.</Text>,
+      labels: { confirm: "Delete trip", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       onConfirm: deleteTrip
     });
   }
@@ -102,12 +97,13 @@ function TripDetailsPage() {
     }
   }
 
-  // Organiser clicks "Mark trip as completed" (this unlocks reviews)
   function handleComplete() {
-    confirmAction({
+    modals.openConfirmModal({
       title: "Mark this trip as completed?",
-      text: "Members can then write reviews of the destination.",
-      confirmLabel: "Yes, completed",
+      centered: true,
+      children: <Text size="sm">Members can then write reviews of the destination.</Text>,
+      labels: { confirm: "Yes, completed", cancel: "Cancel" },
+      confirmProps: { color: "maroon" },
       onConfirm: completeTrip
     });
   }
@@ -122,7 +118,6 @@ function TripDetailsPage() {
     }
   }
 
-  // "Solo trip", "Group trip · 1 member" or "Group trip · 4 members"
   function getTypeText() {
     if (trip.type === "solo") {
       return "Solo trip";
@@ -133,7 +128,6 @@ function TripDetailsPage() {
     return "Group trip · " + trip.members.length + " members";
   }
 
-  // Still loading
   if (!trip) {
     if (error) {
       return <Alert color="red" variant="light">{error}</Alert>;
@@ -147,7 +141,6 @@ function TripDetailsPage() {
 
   const isOrganiser = trip.organiser._id === user.id;
 
-  // The small info tiles: icon, label and value
   const tiles = [
     { icon: <Navigation size={18} />, label: "Route", value: (trip.startingFrom ? trip.startingFrom + " → " : "") + trip.destination },
     { icon: <TrainFront size={18} />, label: "Travelling by", value: travelModeText(trip.travelMode) },
@@ -157,7 +150,6 @@ function TripDetailsPage() {
     { icon: <Crown size={18} />, label: "Organiser", value: trip.organiser.name }
   ];
 
-  // The banner shows the place photo if there is one
   let bannerStyle = {};
   if (trip.destinationImage) {
     bannerStyle = { backgroundImage: "url(" + trip.destinationImage + ")" };

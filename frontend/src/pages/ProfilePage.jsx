@@ -1,6 +1,4 @@
-// My profile (FR-1.4): change my name and my default travel preferences.
-// The defaults fill in the "My Preferences" form whenever I join a new trip.
-// Built with Mantine components (Avatar, TextInput, Chip, SegmentedControl ...).
+
 
 import { useEffect, useState } from "react";
 import { Card, Title, Text, TextInput, Chip, SegmentedControl, Button, Avatar, Group, Stack, Divider, Alert } from "@mantine/core";
