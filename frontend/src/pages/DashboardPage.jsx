@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, MapPin, CalendarDays, Users, Wallet, ArrowRight } from "lucide-react";
 import api, { getErrorMessage, formatDateRange, travelModeText, formatMoney } from "../api/axios.js";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
 
 function DashboardPage() {
   const [trips, setTrips] = useState([]);
@@ -209,20 +214,19 @@ function DashboardPage() {
   }
 
   if (loading) {
-    return <p>Loading your trips...</p>;
+    return <Loading text="Loading your trips..." />;
   }
 
   return (
     <div className="dashboard">
       {/* Welcome banner */}
-      <div className="card hero">
+      <Card className="hero">
         <p className="eyebrow">Your travel dashboard</p>
-        <h1>Plan something amazing.</h1>
-        <p className="muted">Your trips, your people, one shared plan.</p>
-      </div>
+        <PageHeader title="Plan something amazing.">Your trips, your people, one shared plan.</PageHeader>
+      </Card>
 
-      {error && <p className="error">{error}</p>}
-      {message && <p className="success">{message}</p>}
+      <Message type="error" text={error} />
+      <Message type="success" text={message} />
 
       {/* Invitations from other people (FR-2.4) */}
       {invitations.length > 0 && (
@@ -240,8 +244,8 @@ function DashboardPage() {
               </div>
 
               <div className="invitation-buttons">
-                <button onClick={() => handleAccept(trip._id)}>Accept</button>
-                <button className="btn-outline" onClick={() => handleDecline(trip._id)}>Decline</button>
+                <Button onClick={() => handleAccept(trip._id)}>Accept</Button>
+                <Button variant="outline" onClick={() => handleDecline(trip._id)}>Decline</Button>
               </div>
             </div>
           ))}

@@ -2142,3 +2142,11 @@ tbody tr:hover {
     padding: 28px 16px 40px;
   }
 }
+
+/* ---------- UI components (components/ui) ---------- */
+
+/* <Loading />: spinner in the middle of the page */
+.loading {
+  padding: 60px 0;
+  text-align: center;
+}

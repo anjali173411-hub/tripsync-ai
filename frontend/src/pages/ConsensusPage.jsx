@@ -7,6 +7,10 @@ import { Link, useParams } from "react-router-dom";
 import { Scale, CheckCircle2, Clock, Users } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
 
 function ConsensusPage() {
   const { tripId } = useParams();
@@ -106,9 +110,9 @@ function ConsensusPage() {
 
   if (!trip) {
     if (error) {
-      return <p className="error">{error}</p>;
+      return <Message type="error" text={error} />;
     }
-    return <p>Loading...</p>;
+    return <Loading text="Loading..." />;
   }
 
   const isOrganiser = trip.organiser._id === user.id;
@@ -118,27 +122,26 @@ function ConsensusPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <h1>Group Decisions</h1>
-        <p className="muted">
+        <PageHeader title="Group Decisions">
           When members want different things, the AI suggests compromises here. Vote for the one you prefer.
           An option is chosen once more than half of the group votes for it.
-        </p>
+        </PageHeader>
 
-        {error && <p className="error">{error}</p>}
+        <Message type="error" text={error} />
 
         {/* No itinerary yet */}
         {!itinerary && (
-          <div className="card center">
+          <Card className="center">
             <p>Nothing to decide yet. The AI finds conflicts when the itinerary is generated.</p>
             <Link to={"/trips/" + tripId + "/itinerary"}>Go to Itinerary</Link>
-          </div>
+          </Card>
         )}
 
         {/* Itinerary exists but no conflicts */}
         {itinerary && conflicts.length === 0 && (
-          <div className="card center">
+          <Card className="center">
             <p>🎉 No conflicts – the AI found a plan that suits everyone.</p>
-          </div>
+          </Card>
         )}
 
         {/* Small summary: how many decisions are open, how many are done */}

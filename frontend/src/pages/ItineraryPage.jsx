@@ -13,6 +13,10 @@ import { Link, useParams } from "react-router-dom";
 import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash, BedDouble } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
 
 function ItineraryPage() {
   const { tripId } = useParams();
@@ -305,9 +309,9 @@ function ItineraryPage() {
   // 1. Still loading the trip
   if (!trip) {
     if (error) {
-      return <p className="error">{error}</p>;
+      return <Message type="error" text={error} />;
     }
-    return <p>Loading itinerary...</p>;
+    return <Loading text="Loading itinerary..." />;
   }
 
   const isOrganiser = trip.organiser._id === user.id;
@@ -318,11 +322,11 @@ function ItineraryPage() {
       <div className="trip-layout">
         <Sidebar trip={trip} />
         <section className="trip-content">
-          <div className="card center">
+          <Card className="center">
             <div className="spinner" />
             <h2>{aiWorking === "day" ? "The AI is planning this day again..." : "The AI is planning your trip..."}</h2>
             <p className="muted">This can take up to a minute.</p>
-          </div>
+          </Card>
         </section>
       </div>
     );
@@ -335,14 +339,14 @@ function ItineraryPage() {
         <Sidebar trip={trip} />
         <section className="trip-content">
           <h1>Itinerary</h1>
-          <div className="card center">
+          <Card className="center">
             <div className="empty-icon"><Sparkles size={30} /></div>
             <h2>No itinerary yet</h2>
 
             {isOrganiser && (
               <div>
                 <p className="muted">Make sure everyone has saved their preferences, then let the AI plan the trip.</p>
-                <button onClick={handleGenerate}><Sparkles size={18} /> Generate with AI</button>
+                <Button onClick={handleGenerate}><Sparkles size={18} /> Generate with AI</Button>
               </div>
             )}
 
@@ -350,8 +354,8 @@ function ItineraryPage() {
               <p className="muted">Save your preferences. The organiser will generate the itinerary once everyone is ready.</p>
             )}
 
-            {error && <p className="error">{error}</p>}
-          </div>
+            <Message type="error" text={error} />
+          </Card>
         </section>
       </div>
     );
@@ -394,28 +398,28 @@ function ItineraryPage() {
       <section className="trip-content">
         <h1>Itinerary</h1>
 
-        {error && <p className="error">{error}</p>}
+        <Message type="error" text={error} />
         {isFinalised && <p className="success">✅ This itinerary is finalised.</p>}
 
         {/* People who joined after the plan was made, and aren't in it yet */}
         {!isFinalised && membersNotInPlan.length > 0 && (
-          <div className="card notice">
+          <Card className="notice">
             👥 Not in this plan yet: <strong>{membersNotInPlan.join(", ")}</strong> (no preferences saved).
             {" "}They should fill in{" "}
             <Link to={"/trips/" + tripId + "/preferences"}>My Preferences</Link>.
             {isOrganiser && " Then click \"Plan whole trip again\" below so the plan includes them."}
-          </div>
+          </Card>
         )}
 
         {openDecisions > 0 && (
-          <div className="card notice">
+          <Card className="notice">
             ⚖️ The AI found {openDecisions} thing(s) the group needs to decide.{" "}
             <Link to={"/trips/" + tripId + "/consensus"}>Go to Group Decisions →</Link>
-          </div>
+          </Card>
         )}
 
         {/* Cost summary: per person, for everyone, and the total trip budget */}
-        <div className="card cost-summary">
+        <Card className="cost-summary">
           <div>
             <span className="muted small">Activities per person</span>
             <strong>{formatMoney(costPerPerson, currency)}</strong>
@@ -432,28 +436,28 @@ function ItineraryPage() {
             <span className="muted small">Total trip budget</span>
             <strong>{formatMoney(trip.budget, currency)}</strong>
           </div>
-        </div>
+        </Card>
 
         {overBudget && (
-          <div className="card over-budget">
+          <Card className="over-budget">
             <p className="error">
               This plan costs about {formatMoney(costForEveryone, currency)}, which is{" "}
               {formatMoney(costForEveryone - trip.budget, currency)} more than the trip budget.
             </p>
             {canEdit && (
-              <button onClick={() => handleMakeCheaper(costForEveryone)}>
+              <Button onClick={() => handleMakeCheaper(costForEveryone)}>
                 💰 Make it cheaper with AI
-              </button>
+              </Button>
             )}
             {!canEdit && !isFinalised && (
               <p className="muted small">The organiser can ask the AI for a cheaper plan.</p>
             )}
-          </div>
+          </Card>
         )}
 
         {/* Where to stay: the AI's suggestion (not a booking) */}
         {itinerary.stay && itinerary.stay.area && (
-          <div className="card stay-card">
+          <Card className="stay-card">
             <div className="stay-icon"><BedDouble size={26} /></div>
             <div>
               <span className="muted small">Where to stay (suggestion, not a booking)</span>
@@ -469,7 +473,7 @@ function ItineraryPage() {
                 <span className="tag tag-match">Matches: {itinerary.stay.matchedMembers.join(", ")}</span>
               )}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* One tab button per day */}
@@ -547,26 +551,24 @@ function ItineraryPage() {
 
                       {canEdit && isOpen && !isEditing && (
                         <div className="button-row activity-buttons">
-                          <button className="btn-small btn-outline" onClick={() => startEditing(activity)}>
+                          <Button variant="outline" size="small" onClick={() => startEditing(activity)}>
                             <Pencil size={14} /> Edit
-                          </button>
-                          <button
-                            className="btn-small btn-outline"
+                          </Button>
+                          <Button variant="outline" size="small"
                             onClick={() => handleMove(activity._id, "up")}
                             disabled={index === 0}
                           >
                             <ArrowUp size={14} /> Earlier
-                          </button>
-                          <button
-                            className="btn-small btn-outline"
+                          </Button>
+                          <Button variant="outline" size="small"
                             onClick={() => handleMove(activity._id, "down")}
                             disabled={index === day.activities.length - 1}
                           >
                             <ArrowDown size={14} /> Later
-                          </button>
-                          <button className="btn-small btn-danger" onClick={() => handleRemove(activity)}>
+                          </Button>
+                          <Button variant="danger" size="small" onClick={() => handleRemove(activity)}>
                             <Trash size={14} /> Remove
-                          </button>
+                          </Button>
                         </div>
                       )}
 
@@ -591,8 +593,8 @@ function ItineraryPage() {
                           <textarea rows="2" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
 
                           <div className="button-row">
-                            <button type="submit">Save</button>
-                            <button type="button" className="btn-outline" onClick={() => setEditingId("")}>Cancel</button>
+                            <Button type="submit">Save</Button>
+                            <Button type="button" variant="outline" onClick={() => setEditingId("")}>Cancel</Button>
                           </div>
                         </form>
                       )}
@@ -606,11 +608,11 @@ function ItineraryPage() {
 
         {/* Organiser: finalise (always visible) */}
         {canEdit && (
-          <div className="card">
-            <button onClick={handleFinalise} disabled={openDecisions > 0}>Finalise itinerary</button>
+          <Card>
+            <Button onClick={handleFinalise} disabled={openDecisions > 0}>Finalise itinerary</Button>
             {openDecisions > 0 && <p className="muted small">Resolve all open group decisions first.</p>}
             {openDecisions === 0 && <p className="muted small">Happy with the plan? Finalise it to lock it for everyone.</p>}
-          </div>
+          </Card>
         )}
 
         {/* Organiser: asking the AI again, hidden until opened */}
@@ -625,9 +627,9 @@ function ItineraryPage() {
               onChange={(e) => setDayInstructions(e.target.value)}
               placeholder="e.g. make this day less physically demanding"
             />
-            <button className="btn-outline" onClick={() => handleRegenerateDay(day.dayNumber)}>
+            <Button variant="outline" onClick={() => handleRegenerateDay(day.dayNumber)}>
               <RefreshCw size={16} /> Plan Day {day.dayNumber} again
-            </button>
+            </Button>
 
             <hr />
 
@@ -638,7 +640,7 @@ function ItineraryPage() {
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="What should the AI change?"
             />
-            <button className="btn-outline" onClick={handleGenerate}><RefreshCw size={16} /> Plan whole trip again</button>
+            <Button variant="outline" onClick={handleGenerate}><RefreshCw size={16} /> Plan whole trip again</Button>
           </details>
         )}
       </section>

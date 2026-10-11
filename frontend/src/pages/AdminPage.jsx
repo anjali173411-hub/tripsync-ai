@@ -1,6 +1,10 @@
 
 import { useEffect, useState } from "react";
 import api, { getErrorMessage, getCurrentUser, formatDate } from "../api/axios.js";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
 
 function AdminPage() {
   const user = getCurrentUser();
@@ -51,31 +55,30 @@ function AdminPage() {
   return (
     <div>
       {/* Purple banner, like the traveller dashboard */}
-      <div className="card hero">
+      <Card className="hero">
         <p className="eyebrow">Administrator</p>
-        <h1>Admin Dashboard</h1>
-        <p className="muted">
+        <PageHeader title="Admin Dashboard">
           See how TripSync AI is being used, manage user accounts, and add destinations
           from the Destinations page.
-        </p>
-      </div>
-      {error && <p className="error">{error}</p>}
+        </PageHeader>
+      </Card>
+      <Message type="error" text={error} />
 
       {/* Platform numbers */}
       {summary && (
         <div>
           {/* Platform analytics (FR-10.2) */}
           <div className="stats">
-            <div className="card stat"><h2>{summary.totalUsers}</h2><p>Users</p></div>
-            <div className="card stat"><h2>{summary.totalTrips}</h2><p>Trips</p></div>
-            <div className="card stat"><h2>{summary.soloTrips}</h2><p>Solo trips</p></div>
-            <div className="card stat"><h2>{summary.groupTrips}</h2><p>Group trips</p></div>
-            <div className="card stat"><h2>{summary.averageGroupSize}</h2><p>Average group size</p></div>
-            <div className="card stat"><h2>{summary.planningTrips}</h2><p>Planning</p></div>
-            <div className="card stat"><h2>{summary.completedTrips}</h2><p>Completed</p></div>
+            <Card className="stat"><h2>{summary.totalUsers}</h2><p>Users</p></Card>
+            <Card className="stat"><h2>{summary.totalTrips}</h2><p>Trips</p></Card>
+            <Card className="stat"><h2>{summary.soloTrips}</h2><p>Solo trips</p></Card>
+            <Card className="stat"><h2>{summary.groupTrips}</h2><p>Group trips</p></Card>
+            <Card className="stat"><h2>{summary.averageGroupSize}</h2><p>Average group size</p></Card>
+            <Card className="stat"><h2>{summary.planningTrips}</h2><p>Planning</p></Card>
+            <Card className="stat"><h2>{summary.completedTrips}</h2><p>Completed</p></Card>
           </div>
 
-          <div className="card">
+          <Card>
             <h2>Most popular destinations</h2>
             {summary.popularDestinations.length === 0 && <p className="muted">No trips yet.</p>}
             {summary.popularDestinations.map((place, index) => (
@@ -90,12 +93,12 @@ function AdminPage() {
                 <span>{place.trips} trip{place.trips === 1 ? "" : "s"}</span>
               </div>
             ))}
-          </div>
+          </Card>
         </div>
       )}
 
       {/* Table of all users */}
-      <div className="card">
+      <Card>
         <h2>Users</h2>
         <table>
           <thead>
@@ -119,16 +122,16 @@ function AdminPage() {
                 <td>
             
                   {account._id !== user.id && (
-                    <button className="btn-small btn-outline" onClick={() => handleToggleActive(account)}>
+                    <Button variant="outline" size="small" onClick={() => handleToggleActive(account)}>
                       {account.isActive ? "Deactivate" : "Activate"}
-                    </button>
+                    </Button>
                   )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   );
 }

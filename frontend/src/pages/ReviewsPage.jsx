@@ -6,6 +6,9 @@
 
 import { useEffect, useState } from "react";
 import api, { getErrorMessage, getCurrentUser } from "../api/axios.js";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
 
 function ReviewsPage() {
   const user = getCurrentUser();
@@ -244,8 +247,8 @@ function ReviewsPage() {
   return (
     <div>
       <h1>{isAdmin ? "Destinations" : "Destinations & Reviews"}</h1>
-      {error && <p className="error">{error}</p>}
-      {message && <p className="success">{message}</p>}
+      <Message type="error" text={error} />
+      <Message type="success" text={message} />
 
       {/* Admin only: add or edit a destination */}
       {isAdmin && (
@@ -284,9 +287,9 @@ function ReviewsPage() {
           <textarea rows="2" value={formImages} onChange={(e) => setFormImages(e.target.value)} />
 
           <div className="button-row">
-            <button type="submit">{editingId ? "Save changes" : "Add destination"}</button>
+            <Button type="submit">{editingId ? "Save changes" : "Add destination"}</Button>
             {editingId && (
-              <button type="button" className="btn-outline" onClick={clearDestinationForm}>Cancel</button>
+              <Button type="button" variant="outline" onClick={clearDestinationForm}>Cancel</Button>
             )}
           </div>
         </form>
@@ -324,18 +327,16 @@ function ReviewsPage() {
 
             {isAdmin && (
               <div className="button-row">
-                <button
-                  className="btn-small btn-outline"
+                <Button variant="outline" size="small"
                   onClick={(e) => { e.stopPropagation(); startEditing(destination); }}
                 >
                   Edit
-                </button>
-                <button
-                  className="btn-small btn-danger"
+                </Button>
+                <Button variant="danger" size="small"
                   onClick={(e) => { e.stopPropagation(); handleDeleteDestination(destination); }}
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -344,7 +345,7 @@ function ReviewsPage() {
 
       {/* Reviews of the selected destination */}
       {selectedDestination && (
-        <div className="card">
+        <Card>
           <h2>Reviews for {selectedDestination.name}</h2>
 
           {reviews.length === 0 && <p className="muted">No reviews yet.</p>}
@@ -358,12 +359,12 @@ function ReviewsPage() {
               {/* Admin moderation (FR-9.3) */}
               {isAdmin && (
                 <div className="button-row">
-                  <button className="btn-small btn-outline" onClick={() => handleToggleReview(review)}>
+                  <Button variant="outline" size="small" onClick={() => handleToggleReview(review)}>
                     {review.visible ? "Hide" : "Show again"}
-                  </button>
-                  <button className="btn-small btn-danger" onClick={() => handleDeleteReview(review)}>
+                  </Button>
+                  <Button variant="danger" size="small" onClick={() => handleDeleteReview(review)}>
                     Remove
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -385,10 +386,10 @@ function ReviewsPage() {
               <label>Comment</label>
               <textarea rows="3" value={comment} onChange={(e) => setComment(e.target.value)} />
 
-              <button type="submit">Submit review</button>
+              <Button type="submit">Submit review</Button>
             </form>
           )}
-        </div>
+        </Card>
       )}
     </div>
   );

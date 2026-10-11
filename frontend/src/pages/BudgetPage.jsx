@@ -9,6 +9,11 @@ import { useParams } from "react-router-dom";
 import { Lightbulb } from "lucide-react";
 import api, { getErrorMessage, formatDate, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
 
 function BudgetPage() {
   const { tripId } = useParams();
@@ -161,9 +166,9 @@ function BudgetPage() {
 
   if (!trip || !budget) {
     if (error) {
-      return <p className="error">{error}</p>;
+      return <Message type="error" text={error} />;
     }
-    return <p>Loading budget...</p>;
+    return <Loading text="Loading budget..." />;
   }
 
   // How full the progress bar should be (0 to 100)
@@ -180,15 +185,14 @@ function BudgetPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <h1>Budget</h1>
-        <p className="muted">
+        <PageHeader title="Budget">
           Write down money you actually spend on this trip – hotel, food, tickets, taxis.
           Everyone in the trip can add what they paid. The page adds it all up so you can see
           how much of the trip budget is left and who has paid what.
-        </p>
+        </PageHeader>
 
         {/* Summary with a progress bar */}
-        <div className="card">
+        <Card>
           <h2>{formatMoney(budget.totalSpent, currency)} spent of {formatMoney(budget.budget, currency)}</h2>
           <p className="muted small">Total trip budget for everyone. Every member's expenses count towards it.</p>
 
@@ -205,18 +209,18 @@ function BudgetPage() {
           {!budget.overBudget && (
             <p className="muted">{formatMoney(budget.remaining, currency)} left ({budget.percentUsed}% used)</p>
           )}
-        </div>
+        </Card>
 
         {/* AI money-saving tips, once spending is near or over the budget (FR-7.4) */}
         {budget.canAskForSuggestions && (
-          <div className="card notice">
+          <Card className="notice">
             <h3><Lightbulb size={18} /> You have used {budget.percentUsed}% of the budget</h3>
             <p className="small">Ask the AI for ideas to spend less on the rest of the trip.</p>
 
             {loadingSuggestions && <div className="spinner" />}
 
             {!loadingSuggestions && suggestions.length === 0 && (
-              <button onClick={handleGetSuggestions}>Get money-saving tips</button>
+              <Button onClick={handleGetSuggestions}>Get money-saving tips</Button>
             )}
 
             {suggestions.map((suggestion, index) => (
@@ -230,12 +234,12 @@ function BudgetPage() {
                 <p className="small">{suggestion.detail}</p>
               </div>
             ))}
-          </div>
+          </Card>
         )}
 
         {/* Spending by category (FR-7.2) */}
         {hasExpenses && (
-          <div className="card">
+          <Card>
             <h3>By category</h3>
             {totalsByCategory.map((item) => (
               <div key={item.name} className="bar-row">
@@ -246,12 +250,12 @@ function BudgetPage() {
                 <span>{formatMoney(item.amount, currency)}</span>
               </div>
             ))}
-          </div>
+          </Card>
         )}
 
         {/* Each member's contribution and share (FR-7.3) */}
         {trip.type === "group" && (
-          <div className="card">
+          <Card>
             <h3>Who paid what</h3>
             <p className="muted small">
               "Fair share" is everything spent so far divided equally between the members.
@@ -278,7 +282,7 @@ function BudgetPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         )}
 
         {/* Add an expense (FR-7.1) */}
@@ -324,13 +328,13 @@ function BudgetPage() {
           <label>Notes (optional)</label>
           <input value={notes} onChange={(e) => setNotes(e.target.value)} />
 
-          <button type="submit">Add expense</button>
-          {error && <p className="error">{error}</p>}
+          <Button type="submit">Add expense</Button>
+          <Message type="error" text={error} />
         </form>
 
         {/* List of all expenses */}
         {hasExpenses && (
-          <div className="card">
+          <Card>
             <h3>All expenses</h3>
             <table>
               <thead>
@@ -356,7 +360,7 @@ function BudgetPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         )}
       </section>
     </div>

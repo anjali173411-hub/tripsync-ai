@@ -3,6 +3,9 @@
 
 import { useEffect, useState } from "react";
 import api, { getErrorMessage, getCurrentUser, saveLogin } from "../api/axios.js";
+import Button from "../components/ui/Button.jsx";
+import Message from "../components/ui/Message.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
 
 function ProfilePage() {
   // Choices that come from the backend
@@ -80,8 +83,7 @@ function ProfilePage() {
 
   return (
     <form className="card narrow-wide" onSubmit={handleSave}>
-      <h1>My Profile</h1>
-      <p className="muted">{email}</p>
+      <PageHeader title="My Profile">{email}</PageHeader>
 
       <label>Name</label>
       <input value={name} onChange={(e) => setName(e.target.value)} required />
@@ -120,10 +122,10 @@ function ProfilePage() {
         ))}
       </div>
 
-      <button type="submit">Save profile</button>
+      <Button type="submit">Save profile</Button>
 
-      {message && <p className="success">{message}</p>}
-      {error && <p className="error">{error}</p>}
+      <Message type="success" text={message} />
+      <Message type="error" text={error} />
     </form>
   );
 }

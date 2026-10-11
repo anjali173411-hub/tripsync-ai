@@ -5,6 +5,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api, { getErrorMessage, splitByComma } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
 
 function PreferencesPage() {
   const { tripId } = useParams();
@@ -176,9 +181,9 @@ function PreferencesPage() {
 
   if (!trip) {
     if (error) {
-      return <p className="error">{error}</p>;
+      return <Message type="error" text={error} />;
     }
-    return <p>Loading your preferences...</p>;
+    return <Loading text="Loading your preferences..." />;
   }
 
   return (
@@ -186,13 +191,12 @@ function PreferencesPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <h1>My Preferences</h1>
-        <p className="muted">
+        <PageHeader title="My Preferences">
           Tell the AI what you want. You can change this until the organiser generates the itinerary.
-        </p>
+        </PageHeader>
 
         {/* The easy way: describe the trip, and the AI fills in the form */}
-        <div className="card describe-card">
+        <Card className="describe-card">
           <h3>✨ Describe your ideal trip</h3>
           <p className="muted small">
             Write it like a message to a friend. The AI fills in the form below for you.
@@ -203,12 +207,12 @@ function PreferencesPage() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. I'm vegetarian and want a relaxed trip with beaches and old churches. I must see Dudhsagar falls. No water sports or nightclubs. A cheap homestay is fine."
           />
-          <button type="button" onClick={handleFillFromText} disabled={filling || description.trim().length < 10}>
+          <Button type="button" onClick={handleFillFromText} disabled={filling || description.trim().length < 10}>
             {filling ? "Reading your description..." : "✨ Fill in the form for me"}
-          </button>
-        </div>
+          </Button>
+        </Card>
 
-        {fillMessage && <p className="success">{fillMessage}</p>}
+        <Message type="success" text={fillMessage} />
 
         <form className="card" onSubmit={handleSave}>
           <h3>Your answers</h3>
@@ -309,10 +313,10 @@ function PreferencesPage() {
           <label>Anything else? Describe your ideal trip in your own words</label>
           <textarea rows="3" value={freeTextNotes} onChange={(e) => setFreeTextNotes(e.target.value)} />
 
-          <button type="submit">Save preferences</button>
+          <Button type="submit">Save preferences</Button>
 
-          {message && <p className="success">{message}</p>}
-          {error && <p className="error">{error}</p>}
+          <Message type="success" text={message} />
+          <Message type="error" text={error} />
         </form>
       </section>
     </div>

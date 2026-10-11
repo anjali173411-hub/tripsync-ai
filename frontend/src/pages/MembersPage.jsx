@@ -8,6 +8,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api, { getErrorMessage, getCurrentUser } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
 
 function MembersPage() {
   const { tripId } = useParams();
@@ -143,9 +147,9 @@ function MembersPage() {
 
   if (!trip) {
     if (error) {
-      return <p className="error">{error}</p>;
+      return <Message type="error" text={error} />;
     }
-    return <p>Loading members...</p>;
+    return <Loading text="Loading members..." />;
   }
 
   const isOrganiser = trip.organiser._id === user.id;
@@ -159,7 +163,7 @@ function MembersPage() {
         <h1>Members</h1>
 
         {canChangeMembers && (
-          <div className="card">
+          <Card>
             <h3>Invite someone already on TripSync AI</h3>
             <form onSubmit={handleSearch} className="inline-form">
               <input
@@ -169,7 +173,7 @@ function MembersPage() {
                 minLength={2}
                 required
               />
-              <button type="submit">Search</button>
+              <Button type="submit">Search</Button>
             </form>
 
             {searched && searchResults.length === 0 && (
@@ -184,7 +188,7 @@ function MembersPage() {
                 {isAlreadyAdded(person) ? (
                   <span className="tag">Already added</span>
                 ) : (
-                  <button className="btn-small" onClick={() => sendInvite(person.email)}>Invite</button>
+                  <Button size="small" onClick={() => sendInvite(person.email)}>Invite</Button>
                 )}
               </div>
             ))}
@@ -204,17 +208,17 @@ function MembersPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button type="submit">Send invite</button>
+              <Button type="submit">Send invite</Button>
             </form>
-          </div>
+          </Card>
         )}
 
-        {message && <p className="success">{message}</p>}
-        {error && <p className="error">{error}</p>}
+        <Message type="success" text={message} />
+        <Message type="error" text={error} />
 
         {/* People who were invited but haven't accepted yet */}
         {trip.invitedEmails.length > 0 && (
-          <div className="card">
+          <Card>
             <h3>Waiting for reply</h3>
             <p className="muted small">
               The itinerary can be generated once everyone invited has accepted or declined.
@@ -225,16 +229,16 @@ function MembersPage() {
                   ✉️ {invitedEmail} <span className="tag">Invited</span>
                 </span>
                 {canChangeMembers && (
-                  <button className="btn-small btn-outline" onClick={() => handleCancelInvite(invitedEmail)}>
+                  <Button variant="outline" size="small" onClick={() => handleCancelInvite(invitedEmail)}>
                     Cancel invite
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}
-          </div>
+          </Card>
         )}
 
-        <div className="card">
+        <Card>
           <h3>Members</h3>
           <table>
             <thead>
@@ -259,9 +263,9 @@ function MembersPage() {
                   {canChangeMembers && (
                     <td>
                       {member._id !== trip.organiser._id && (
-                        <button className="btn-small btn-outline" onClick={() => handleRemove(member)}>
+                        <Button variant="outline" size="small" onClick={() => handleRemove(member)}>
                           Remove
-                        </button>
+                        </Button>
                       )}
                     </td>
                   )}
@@ -273,7 +277,7 @@ function MembersPage() {
           {isOrganiser && (
             <p className="muted small">Everyone must submit preferences before you can generate the itinerary.</p>
           )}
-        </div>
+        </Card>
       </section>
     </div>
   );

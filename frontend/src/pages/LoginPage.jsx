@@ -5,6 +5,7 @@ import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage, saveLogin, getCurrentUser } from "../api/axios.js";
+import Message from "../components/ui/Message.jsx";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ function LoginPage() {
       <h2 className="auth-title">Log in to TripSync AI</h2>
       <p className="muted">Pick up where your group left off.</p>
 
-      {successMessage && <p className="success">{successMessage}</p>}
+      <Message type="success" text={successMessage} />
 
       <form onSubmit={handleLogin}>
         <label>Email</label>
@@ -97,7 +98,7 @@ function LoginPage() {
           </button>
         </div>
 
-        {error && <p className="error">{error}</p>}
+        <Message type="error" text={error} />
 
         <button type="submit" className="auth-button" disabled={loading}>
           {loading ? "Logging in..." : "Log in"} {!loading && <ArrowRight size={18} />}

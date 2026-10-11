@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { getErrorMessage, travelModeText } from "../api/axios.js";
+import Button from "../components/ui/Button.jsx";
+import Message from "../components/ui/Message.jsx";
 
 function CreateTripPage() {
   const navigate = useNavigate();
@@ -145,9 +147,9 @@ function CreateTripPage() {
         For a group trip, this is the budget for everyone together, not per person.
       </p>
 
-      {error && <p className="error">{error}</p>}
+      <Message type="error" text={error} />
 
-      <button type="submit">Create trip</button>
+      <Button type="submit">Create trip</Button>
     </form>
   );
 }

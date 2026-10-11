@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage } from "../api/axios.js";
+import Message from "../components/ui/Message.jsx";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ function RegisterPage() {
           </button>
         </div>
 
-        {error && <p className="error">{error}</p>}
+        <Message type="error" text={error} />
 
         <button type="submit" className="auth-button" disabled={loading}>
           {loading ? "Creating account..." : "Sign up"} {!loading && <ArrowRight size={18} />}

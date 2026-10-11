@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
+import Message from "../components/ui/Message.jsx";
+import Loading from "../components/ui/Loading.jsx";
 
 function TripDetailsPage() {
   const { tripId } = useParams(); // the trip id from the web address
@@ -106,9 +110,9 @@ function TripDetailsPage() {
   // Still loading
   if (!trip) {
     if (error) {
-      return <p className="error">{error}</p>;
+      return <Message type="error" text={error} />;
     }
-    return <p>Loading trip...</p>;
+    return <Loading text="Loading trip..." />;
   }
 
   const isOrganiser = trip.organiser._id === user.id;
@@ -121,7 +125,7 @@ function TripDetailsPage() {
         <h1>{trip.title}</h1>
 
         {/* Trip details */}
-        <div className="card">
+        <Card>
           <div className="details">
             <div>
               <span className="muted">Route</span>
@@ -154,10 +158,10 @@ function TripDetailsPage() {
               <p>{trip.status}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Weather for each day of the trip */}
-        <div className="card">
+        <Card>
           {!weather && (
             <div>
               <h2>Weather</h2>
@@ -187,39 +191,39 @@ function TripDetailsPage() {
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Only the organiser sees this, and only after the itinerary is finalised */}
         {/* Organiser only: archive or delete the trip */}
         {isOrganiser && (
-          <div className="card">
+          <Card>
             <h2>Manage trip</h2>
             <p className="muted small">
               Archive keeps the trip but hides it from your main list. Delete removes it for everyone.
             </p>
             <div className="button-row">
               {trip.status !== "archived" && (
-                <button className="btn-outline" onClick={handleArchive}>Archive trip</button>
+                <Button variant="outline" onClick={handleArchive}>Archive trip</Button>
               )}
-              <button className="btn-danger" onClick={handleDelete}>Delete trip</button>
+              <Button variant="danger" onClick={handleDelete}>Delete trip</Button>
             </div>
-          </div>
+          </Card>
         )}
 
         {isOrganiser && trip.status === "finalised" && (
-          <div className="card">
+          <Card>
             <h2>Back from the trip?</h2>
-            <button onClick={handleComplete}>Mark trip as completed</button>
-          </div>
+            <Button onClick={handleComplete}>Mark trip as completed</Button>
+          </Card>
         )}
 
         {trip.status === "completed" && (
-          <div className="card">
+          <Card>
             <p>This trip is completed. <Link to="/reviews">Write a review</Link> of {trip.destination}.</p>
-          </div>
+          </Card>
         )}
 
-        {error && <p className="error">{error}</p>}
+        <Message type="error" text={error} />
       </section>
     </div>
   );
