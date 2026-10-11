@@ -1,13 +1,14 @@
-// Main page of one trip: the key details and the steps to plan it.
+// Main page of one trip: a photo banner, the key details and the weather.
+// Built with Mantine components (Paper, SimpleGrid, ThemeIcon, Badge, Button ...).
 
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { Paper, Card, Title, Text, Badge, Button, Group, SimpleGrid, ThemeIcon, Alert, Anchor, Loader, Center } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Navigation, TrainFront, CalendarDays, Wallet, Users, Crown, Archive, Trash2, Flag } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import Button from "../components/ui/Button.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
-import Loading from "../components/ui/Loading.jsx";
+import { confirmAction } from "../components/ui/confirm.jsx";
 
 function TripDetailsPage() {
   const { tripId } = useParams(); // the trip id from the web address
@@ -61,14 +62,19 @@ function TripDetailsPage() {
   }
 
   // Organiser archives the trip: it is kept, but moved to "Archived trips" (FR-2.7)
-  async function handleArchive() {
-    const sure = window.confirm("Archive this trip? It will move to 'Archived trips' on your dashboard.");
-    if (!sure) {
-      return;
-    }
+  function handleArchive() {
+    confirmAction({
+      title: "Archive this trip?",
+      text: "It will move to 'Archived trips' on your dashboard. Nothing is deleted.",
+      confirmLabel: "Archive",
+      onConfirm: archiveTrip
+    });
+  }
 
+  async function archiveTrip() {
     try {
       await api.patch("/trips/" + tripId + "/archive");
+      notifications.show({ message: "Trip archived" });
       navigate("/");
     } catch (err) {
       setError(getErrorMessage(err));
@@ -76,16 +82,20 @@ function TripDetailsPage() {
   }
 
   // Organiser deletes the trip and everything in it (FR-2.7)
-  async function handleDelete() {
-    const sure = window.confirm(
-      "Delete this trip for everyone? The itinerary, votes, expenses and preferences will be deleted. This cannot be undone."
-    );
-    if (!sure) {
-      return;
-    }
+  function handleDelete() {
+    confirmAction({
+      title: "Delete this trip for everyone?",
+      text: "The itinerary, votes, expenses and preferences will be deleted. This cannot be undone.",
+      confirmLabel: "Delete trip",
+      danger: true,
+      onConfirm: deleteTrip
+    });
+  }
 
+  async function deleteTrip() {
     try {
       await api.delete("/trips/" + tripId);
+      notifications.show({ message: "Trip deleted", color: "red" });
       navigate("/");
     } catch (err) {
       setError(getErrorMessage(err));
@@ -93,137 +103,166 @@ function TripDetailsPage() {
   }
 
   // Organiser clicks "Mark trip as completed" (this unlocks reviews)
-  async function handleComplete() {
-    const sure = window.confirm("Mark this trip as completed? Members can then write reviews.");
-    if (!sure) {
-      return;
-    }
+  function handleComplete() {
+    confirmAction({
+      title: "Mark this trip as completed?",
+      text: "Members can then write reviews of the destination.",
+      confirmLabel: "Yes, completed",
+      onConfirm: completeTrip
+    });
+  }
 
+  async function completeTrip() {
     try {
       await api.patch("/trips/" + tripId + "/complete");
+      notifications.show({ title: "Welcome back! 🏡", message: "You can now write a review.", color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
+  // "Solo trip", "Group trip · 1 member" or "Group trip · 4 members"
+  function getTypeText() {
+    if (trip.type === "solo") {
+      return "Solo trip";
+    }
+    if (trip.members.length === 1) {
+      return "Group trip · 1 member";
+    }
+    return "Group trip · " + trip.members.length + " members";
+  }
+
   // Still loading
   if (!trip) {
     if (error) {
-      return <Message type="error" text={error} />;
+      return <Alert color="red" variant="light">{error}</Alert>;
     }
-    return <Loading text="Loading trip..." />;
+    return (
+      <Center h={300}>
+        <Loader />
+      </Center>
+    );
   }
 
   const isOrganiser = trip.organiser._id === user.id;
+
+  // The small info tiles: icon, label and value
+  const tiles = [
+    { icon: <Navigation size={18} />, label: "Route", value: (trip.startingFrom ? trip.startingFrom + " → " : "") + trip.destination },
+    { icon: <TrainFront size={18} />, label: "Travelling by", value: travelModeText(trip.travelMode) },
+    { icon: <CalendarDays size={18} />, label: "Dates", value: formatDate(trip.startDate) + " – " + formatDate(trip.endDate) },
+    { icon: <Wallet size={18} />, label: "Total budget (everyone)", value: formatMoney(trip.budget, currency) },
+    { icon: <Users size={18} />, label: "Type", value: getTypeText() },
+    { icon: <Crown size={18} />, label: "Organiser", value: trip.organiser.name }
+  ];
+
+  // The banner shows the place photo if there is one
+  let bannerStyle = {};
+  if (trip.destinationImage) {
+    bannerStyle = { backgroundImage: "url(" + trip.destinationImage + ")" };
+  }
 
   return (
     <div className="trip-layout">
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <h1>{trip.title}</h1>
-
-        {/* Trip details */}
-        <Card>
-          <div className="details">
-            <div>
-              <span className="muted">Route</span>
-              <p>{trip.startingFrom ? trip.startingFrom + " → " : "📍 "}{trip.destination}</p>
-            </div>
-            {trip.travelMode && (
-              <div>
-                <span className="muted">Travelling by</span>
-                <p>{travelModeText(trip.travelMode)}</p>
-              </div>
-            )}
-            <div>
-              <span className="muted">Dates</span>
-              <p>{formatDate(trip.startDate)} – {formatDate(trip.endDate)}</p>
-            </div>
-            <div>
-              <span className="muted">Total budget (everyone)</span>
-              <p>{formatMoney(trip.budget, currency)}</p>
-            </div>
-            <div>
-              <span className="muted">Type</span>
-              <p>{trip.type}</p>
-            </div>
-            <div>
-              <span className="muted">Organiser</span>
-              <p>{trip.organiser.name}</p>
-            </div>
-            <div>
-              <span className="muted">Status</span>
-              <p>{trip.status}</p>
-            </div>
+        {/* Photo banner with the trip name */}
+        <Paper className="trip-banner" radius="lg" mb="lg" style={bannerStyle}>
+          <div className="trip-banner-text">
+            <Badge color="yellow.4" c="dark.8" size="lg" mb="xs">{trip.status}</Badge>
+            <Title order={1} c="white">{trip.title}</Title>
+            <Text c="white" opacity={0.85}>
+              {trip.startingFrom ? trip.startingFrom + " → " : ""}{trip.destination}
+            </Text>
           </div>
-        </Card>
+        </Paper>
+
+        {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
+
+        {/* Trip details as tiles */}
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} mb="lg">
+          {tiles.map((tile) => (
+            <Paper key={tile.label} withBorder radius="lg" p="md">
+              <Group wrap="nowrap">
+                <ThemeIcon size={40} radius="md" variant="light">{tile.icon}</ThemeIcon>
+                <div>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>{tile.label}</Text>
+                  <Text fw={700}>{tile.value}</Text>
+                </div>
+              </Group>
+            </Paper>
+          ))}
+        </SimpleGrid>
 
         {/* Weather for each day of the trip */}
-        <Card>
+        <Card mb="lg">
           {!weather && (
             <div>
-              <h2>Weather</h2>
-              <p className="muted">{weatherMessage}</p>
+              <Title order={3}>Weather</Title>
+              <Text c="dimmed">{weatherMessage}</Text>
             </div>
           )}
 
           {weather && (
             <div>
-              <h2>{getWeatherTitle()}</h2>
-              <p className="muted small">
+              <Title order={3}>{getWeatherTitle()}</Title>
+              <Text c="dimmed" size="sm" mb="md">
                 {weather.place}
                 {weather.type === "typical" &&
                   " · Your trip is too far away for a real forecast, so this shows the weather on the same dates last year."}
-              </p>
+              </Text>
 
-              <div className="weather-row">
+              <SimpleGrid cols={{ base: 2, xs: 3, sm: 4, md: 5 }}>
                 {weather.days.map((day) => (
-                  <div key={day.date} className="weather-day">
-                    <span className="muted small">{formatDate(day.date)}</span>
-                    <span className="weather-emoji">{day.emoji}</span>
-                    <strong>{day.maxTemp}° / {day.minTemp}°</strong>
-                    <span className="small">{day.label}</span>
-                    <span className="muted small">{day.rain}</span>
-                  </div>
+                  <Paper key={day.date} radius="md" p="sm" bg="maroon.0" ta="center">
+                    <Text size="xs" c="dimmed">{formatDate(day.date)}</Text>
+                    <Text fz={30}>{day.emoji}</Text>
+                    <Text fw={800}>{day.maxTemp}° / {day.minTemp}°</Text>
+                    <Text size="sm">{day.label}</Text>
+                    <Text size="xs" c="dimmed">{day.rain}</Text>
+                  </Paper>
                 ))}
-              </div>
+              </SimpleGrid>
             </div>
           )}
         </Card>
 
-        {/* Only the organiser sees this, and only after the itinerary is finalised */}
-        {/* Organiser only: archive or delete the trip */}
-        {isOrganiser && (
-          <Card>
-            <h2>Manage trip</h2>
-            <p className="muted small">
-              Archive keeps the trip but hides it from your main list. Delete removes it for everyone.
-            </p>
-            <div className="button-row">
-              {trip.status !== "archived" && (
-                <Button variant="outline" onClick={handleArchive}>Archive trip</Button>
-              )}
-              <Button variant="danger" onClick={handleDelete}>Delete trip</Button>
-            </div>
-          </Card>
-        )}
-
+        {/* Organiser only, after the plan is final: mark the trip as completed */}
         {isOrganiser && trip.status === "finalised" && (
-          <Card>
-            <h2>Back from the trip?</h2>
-            <Button onClick={handleComplete}>Mark trip as completed</Button>
+          <Card mb="lg">
+            <Group justify="space-between">
+              <div>
+                <Title order={3}>Back from the trip?</Title>
+                <Text c="dimmed" size="sm">Marking it completed lets everyone write a review.</Text>
+              </div>
+              <Button leftSection={<Flag size={16} />} onClick={handleComplete}>Mark trip as completed</Button>
+            </Group>
           </Card>
         )}
 
         {trip.status === "completed" && (
-          <Card>
-            <p>This trip is completed. <Link to="/reviews">Write a review</Link> of {trip.destination}.</p>
-          </Card>
+          <Alert color="green" variant="light" mb="lg" title="Trip completed 🎉">
+            <Anchor component={Link} to="/reviews">Write a review</Anchor> of {trip.destination}.
+          </Alert>
         )}
 
-        <Message type="error" text={error} />
+        {/* Organiser only: archive or delete the trip */}
+        {isOrganiser && (
+          <Card>
+            <Title order={3}>Manage trip</Title>
+            <Text c="dimmed" size="sm" mb="md">
+              Archive keeps the trip but hides it from your main list. Delete removes it for everyone.
+            </Text>
+            <Group>
+              {trip.status !== "archived" && (
+                <Button variant="default" leftSection={<Archive size={16} />} onClick={handleArchive}>Archive trip</Button>
+              )}
+              <Button color="red" variant="light" leftSection={<Trash2 size={16} />} onClick={handleDelete}>Delete trip</Button>
+            </Group>
+          </Card>
+        )}
       </section>
     </div>
   );

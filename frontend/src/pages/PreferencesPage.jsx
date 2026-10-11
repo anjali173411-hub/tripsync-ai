@@ -1,15 +1,14 @@
 // The preference form each member fills in (FR-3.1, FR-3.2).
 // The AI uses these answers to plan the itinerary.
+// Built with Mantine components (Chip, SegmentedControl, TagsInput, Textarea ...).
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api, { getErrorMessage, splitByComma } from "../api/axios.js";
+import { Card, Title, Text, Textarea, TagsInput, NumberInput, Chip, SegmentedControl, Button, Group, Stack, Alert, Loader, Center } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Sparkles, Save, Wallet } from "lucide-react";
+import api, { getErrorMessage } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import Button from "../components/ui/Button.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
-import Loading from "../components/ui/Loading.jsx";
-import PageHeader from "../components/ui/PageHeader.jsx";
 
 function PreferencesPage() {
   const { tripId } = useParams();
@@ -25,12 +24,12 @@ function PreferencesPage() {
   const [currency, setCurrency] = useState("");
 
   // What the user fills in
-  const [interests, setInterests] = useState([]);
-  const [otherInterests, setOtherInterests] = useState(""); // typed in, separated by commas
+  const [interests, setInterests] = useState([]);           // ticked chips, e.g. ["beaches", "food"]
+  const [otherInterests, setOtherInterests] = useState([]); // typed tags, e.g. ["scuba diving"]
   const [pace, setPace] = useState("");
   const [budgetContribution, setBudgetContribution] = useState("");
-  const [mustDo, setMustDo] = useState("");
-  const [dealBreakers, setDealBreakers] = useState("");
+  const [mustDo, setMustDo] = useState([]);
+  const [dealBreakers, setDealBreakers] = useState([]);
   const [freeTextNotes, setFreeTextNotes] = useState("");
   const [foodPreference, setFoodPreference] = useState("");
   const [stayBudget, setStayBudget] = useState("");
@@ -39,9 +38,8 @@ function PreferencesPage() {
   // "Describe your trip" box: the AI fills in the form from this text (FR-3.2)
   const [description, setDescription] = useState("");
   const [filling, setFilling] = useState(false);
-  const [fillMessage, setFillMessage] = useState("");
 
-  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   // Runs when the page opens
@@ -70,14 +68,14 @@ function PreferencesPage() {
 
       if (saved) {
         setInterests(saved.interests);
-        setOtherInterests(saved.otherInterests.join(", "));
+        setOtherInterests(saved.otherInterests);
         setPace(saved.pace);
         setFoodPreference(saved.foodPreference);
         setStayBudget(saved.stayBudget);
         setStayType(saved.stayType);
         setBudgetContribution(saved.budgetContribution);
-        setMustDo(saved.mustDo.join(", "));
-        setDealBreakers(saved.dealBreakers.join(", "));
+        setMustDo(saved.mustDo);
+        setDealBreakers(saved.dealBreakers);
         setFreeTextNotes(saved.freeTextNotes);
       } else {
         // Nothing saved for this trip yet: start from my profile defaults (FR-1.4)
@@ -91,28 +89,8 @@ function PreferencesPage() {
     }
   }
 
-  // Tick or untick one interest
-  function toggleInterest(interest) {
-    if (interests.includes(interest)) {
-      // Already ticked: remove it
-      const newList = [];
-      for (let i = 0; i < interests.length; i++) {
-        if (interests[i] !== interest) {
-          newList.push(interests[i]);
-        }
-      }
-      setInterests(newList);
-    } else {
-      // Not ticked: add it
-      setInterests([...interests, interest]);
-    }
-  }
-
-  // Runs when the form is submitted
   // The AI reads the description and fills in the form below. Nothing is saved yet.
   async function handleFillFromText() {
-    setFillMessage("");
-    setMessage("");
     setError("");
     setFilling(true);
 
@@ -123,9 +101,9 @@ function PreferencesPage() {
       const filled = response.data.preferences;
 
       setInterests(filled.interests);
-      setOtherInterests(filled.otherInterests.join(", "));
-      setMustDo(filled.mustDo.join(", "));
-      setDealBreakers(filled.dealBreakers.join(", "));
+      setOtherInterests(filled.otherInterests);
+      setMustDo(filled.mustDo);
+      setDealBreakers(filled.dealBreakers);
 
       // Only change these if the description mentioned them
       if (filled.pace) {
@@ -147,7 +125,11 @@ function PreferencesPage() {
       // Keep the description too, so the AI planner can read it
       setFreeTextNotes(description);
 
-      setFillMessage("Done! Check the answers below, change anything you like, then click Save preferences.");
+      notifications.show({
+        title: "Form filled in ✨",
+        message: "Check the answers below, change anything you like, then click Save.",
+        color: "green"
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -155,35 +137,42 @@ function PreferencesPage() {
     setFilling(false);
   }
 
+  // Runs when the form is submitted
   async function handleSave(event) {
     event.preventDefault();
-    setMessage("");
     setError("");
+    setSaving(true);
 
     try {
       await api.put("/trips/" + tripId + "/preferences", {
         interests: interests,
-        otherInterests: splitByComma(otherInterests),
+        otherInterests: otherInterests,
         pace: pace,
         foodPreference: foodPreference || undefined,
         stayBudget: stayBudget || undefined,
         stayType: stayType || undefined,
         budgetContribution: Number(budgetContribution),
-        mustDo: splitByComma(mustDo),
-        dealBreakers: splitByComma(dealBreakers),
+        mustDo: mustDo,
+        dealBreakers: dealBreakers,
         freeTextNotes: freeTextNotes
       });
-      setMessage("Preferences saved!");
+      notifications.show({ message: "Preferences saved ✓", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
+
+    setSaving(false);
   }
 
   if (!trip) {
     if (error) {
-      return <Message type="error" text={error} />;
+      return <Alert color="red" variant="light">{error}</Alert>;
     }
-    return <Loading text="Loading your preferences..." />;
+    return (
+      <Center h={300}>
+        <Loader />
+      </Center>
+    );
   }
 
   return (
@@ -191,133 +180,136 @@ function PreferencesPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <PageHeader title="My Preferences">
+        <Title order={1}>My Preferences</Title>
+        <Text c="dimmed" mb="lg">
           Tell the AI what you want. You can change this until the organiser generates the itinerary.
-        </PageHeader>
+        </Text>
 
         {/* The easy way: describe the trip, and the AI fills in the form */}
-        <Card className="describe-card">
-          <h3>✨ Describe your ideal trip</h3>
-          <p className="muted small">
+        <Card mb="lg" className="describe-card">
+          <Title order={3}>✨ Describe your ideal trip</Title>
+          <Text c="dimmed" size="sm" mb="sm">
             Write it like a message to a friend. The AI fills in the form below for you.
-          </p>
-          <textarea
-            rows="4"
+          </Text>
+          <Textarea
+            autosize
+            minRows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g. I'm vegetarian and want a relaxed trip with beaches and old churches. I must see Dudhsagar falls. No water sports or nightclubs. A cheap homestay is fine."
+            placeholder="I'm vegetarian and want a relaxed trip with beaches and old churches. I must see Dudhsagar falls. No water sports. A cheap homestay is fine."
           />
-          <Button type="button" onClick={handleFillFromText} disabled={filling || description.trim().length < 10}>
-            {filling ? "Reading your description..." : "✨ Fill in the form for me"}
-          </Button>
+          <Group mt="sm">
+            <Button
+              leftSection={<Sparkles size={16} />}
+              loading={filling}
+              disabled={description.trim().length < 10}
+              onClick={handleFillFromText}
+            >
+              Fill in the form for me
+            </Button>
+          </Group>
         </Card>
 
-        <Message type="success" text={fillMessage} />
+        {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
 
-        <form className="card" onSubmit={handleSave}>
-          <h3>Your answers</h3>
-          <p className="muted small">Fill these in yourself, or let the AI fill them in above. Then click Save.</p>
+        <Card>
+          <form onSubmit={handleSave}>
+            <Stack gap="lg">
+              <div>
+                <Title order={3}>Your answers</Title>
+                <Text c="dimmed" size="sm">Fill these in yourself, or let the AI fill them in above. Then click Save.</Text>
+              </div>
 
-          <label>What are you interested in? (pick any)</label>
-          <div className="chip-list">
-            {interestOptions.map((interest) => (
-              <button
-                type="button"
-                key={interest}
-                className={interests.includes(interest) ? "chip selected" : "chip"}
-                onClick={() => toggleInterest(interest)}
-              >
-                {interest}
-              </button>
-            ))}
-          </div>
+              <div>
+                <Text fw={600} size="sm" mb={8}>What are you interested in? (pick any)</Text>
+                {/* "multiple" lets you pick many chips; Mantine keeps the list in "interests" */}
+                <Chip.Group multiple value={interests} onChange={setInterests}>
+                  <Group gap="xs">
+                    {interestOptions.map((interest) => (
+                      <Chip key={interest} value={interest} className="capitalize">{interest}</Chip>
+                    ))}
+                  </Group>
+                </Chip.Group>
+              </div>
 
-          <label>Not in the list? Type your own interests (separate with commas)</label>
-          <input
-            value={otherInterests}
-            onChange={(e) => setOtherInterests(e.target.value)}
-            placeholder="e.g. scuba diving, street art, live music"
-          />
+              <TagsInput
+                label="Not in the list? Add your own interests"
+                description="Type one and press Enter"
+                placeholder="scuba diving, street art ..."
+                value={otherInterests}
+                onChange={setOtherInterests}
+              />
 
-          <label>How busy should each day be?</label>
-          <div className="chip-list">
-            {paceOptions.map((option) => (
-              <button
-                type="button"
-                key={option}
-                className={pace === option ? "chip selected" : "chip"}
-                onClick={() => setPace(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+              <div>
+                <Text fw={600} size="sm" mb={8}>How busy should each day be?</Text>
+                <SegmentedControl fullWidth data={paceOptions} value={pace} onChange={setPace} className="capitalize" />
+              </div>
 
-          <label>What do you eat?</label>
-          <div className="chip-list">
-            {foodOptions.map((option) => (
-              <button
-                type="button"
-                key={option}
-                className={foodPreference === option ? "chip selected" : "chip"}
-                onClick={() => setFoodPreference(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+              <div>
+                <Text fw={600} size="sm" mb={8}>What do you eat?</Text>
+                <Chip.Group value={foodPreference} onChange={setFoodPreference}>
+                  <Group gap="xs">
+                    {foodOptions.map((option) => (
+                      <Chip key={option} value={option} className="capitalize">{option}</Chip>
+                    ))}
+                  </Group>
+                </Chip.Group>
+              </div>
 
-          <label>Where would you like to stay? – budget</label>
-          <div className="chip-list">
-            {stayBudgets.map((option) => (
-              <button
-                type="button"
-                key={option}
-                className={stayBudget === option ? "chip selected" : "chip"}
-                onClick={() => setStayBudget(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+              <div>
+                <Text fw={600} size="sm" mb={8}>Where would you like to stay?</Text>
+                <SegmentedControl fullWidth data={stayBudgets} value={stayBudget} onChange={setStayBudget} className="capitalize" mb="xs" />
+                <Chip.Group value={stayType} onChange={setStayType}>
+                  <Group gap="xs">
+                    {stayTypes.map((option) => (
+                      <Chip key={option} value={option} className="capitalize">{option}</Chip>
+                    ))}
+                  </Group>
+                </Chip.Group>
+                <Text c="dimmed" size="xs" mt={6}>The AI suggests where the group should stay. It does not book anything.</Text>
+              </div>
 
-          <label>Where would you like to stay? – type of place</label>
-          <div className="chip-list">
-            {stayTypes.map((option) => (
-              <button
-                type="button"
-                key={option}
-                className={stayType === option ? "chip selected" : "chip"}
-                onClick={() => setStayType(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          <p className="muted small">The AI suggests where the group should stay. It does not book anything.</p>
+              <NumberInput
+                label={"My budget contribution (" + currency + ")"}
+                description="How much you plan to put into the trip"
+                leftSection={<Wallet size={16} />}
+                min={0}
+                thousandSeparator=","
+                value={budgetContribution}
+                onChange={setBudgetContribution}
+              />
 
-          <label>My budget contribution ({currency})</label>
-          <input
-            type="number"
-            min="0"
-            value={budgetContribution}
-            onChange={(e) => setBudgetContribution(e.target.value)}
-          />
+              <TagsInput
+                label="Must do"
+                description="Places or activities you really want. Press Enter after each."
+                placeholder="Dudhsagar falls"
+                value={mustDo}
+                onChange={setMustDo}
+              />
 
-          <label>Must do – places or activities you really want (separate with commas)</label>
-          <input value={mustDo} onChange={(e) => setMustDo(e.target.value)} />
+              <TagsInput
+                label="Deal-breakers"
+                description="Things to avoid. Press Enter after each."
+                placeholder="water sports"
+                value={dealBreakers}
+                onChange={setDealBreakers}
+              />
 
-          <label>Deal-breakers – things to avoid (separate with commas)</label>
-          <input value={dealBreakers} onChange={(e) => setDealBreakers(e.target.value)} />
+              <Textarea
+                label="Anything else?"
+                description="Describe your ideal trip in your own words"
+                autosize
+                minRows={2}
+                value={freeTextNotes}
+                onChange={(e) => setFreeTextNotes(e.target.value)}
+              />
 
-          <label>Anything else? Describe your ideal trip in your own words</label>
-          <textarea rows="3" value={freeTextNotes} onChange={(e) => setFreeTextNotes(e.target.value)} />
-
-          <Button type="submit">Save preferences</Button>
-
-          <Message type="success" text={message} />
-          <Message type="error" text={error} />
-        </form>
+              <Group justify="flex-end">
+                <Button type="submit" size="md" loading={saving} leftSection={<Save size={16} />}>Save preferences</Button>
+              </Group>
+            </Stack>
+          </form>
+        </Card>
       </section>
     </div>
   );

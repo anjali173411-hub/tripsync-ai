@@ -35,6 +35,9 @@ export const theme = createTheme({
     Button: { defaultProps: { radius: "md" } },
     Card: { defaultProps: { radius: "lg", shadow: "sm", withBorder: true, padding: "lg" } },
     TextInput: { defaultProps: { size: "md" } },
+    PasswordInput: { defaultProps: { size: "md" } },
+    Textarea: { defaultProps: { size: "md" } },
+    TagsInput: { defaultProps: { size: "md" } },
     NumberInput: { defaultProps: { size: "md" } },
     Select: { defaultProps: { size: "md" } },
     DatePickerInput: { defaultProps: { size: "md" } }

@@ -2159,3 +2159,42 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
 .invitation-card {
   border-left: 5px solid var(--primary-bright);
 }
+
+/* Trip Details: big banner with the place photo (or the maroon gradient) */
+.trip-banner {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 210px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(194, 65, 107, 0.6), transparent 50%),
+    linear-gradient(135deg, var(--primary-dark), var(--primary));
+  background-size: cover;
+  background-position: center;
+}
+
+/* Dark fade at the bottom so the white text is readable on any photo */
+.trip-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 5, 8, 0.8), rgba(15, 5, 8, 0.05) 70%);
+}
+
+.trip-banner-text {
+  position: relative;
+  z-index: 1;
+  padding: 24px 26px;
+}
+
+/* Members page: a thin line between people */
+.member-row + .member-row {
+  border-top: 1px solid var(--border);
+}
+
+/* Show choices like "no preference" as "No Preference" */
+.capitalize,
+.capitalize label {
+  text-transform: capitalize;
+}

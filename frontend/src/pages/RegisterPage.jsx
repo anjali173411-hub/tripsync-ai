@@ -1,11 +1,12 @@
 // Sign-up page
+// Built with Mantine components (TextInput, PasswordInput, Button, Alert).
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack } from "@mantine/core";
+import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage } from "../api/axios.js";
-import Message from "../components/ui/Message.jsx";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -14,16 +15,14 @@ function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
 
   // The minimum password length comes from the backend settings
   const [minPasswordLength, setMinPasswordLength] = useState(0);
 
-  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  
+  // Runs once when the page opens
   useEffect(() => {
     loadPage();
   }, []);
@@ -40,7 +39,6 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-    
       await api.post("/auth/register", {
         name: name,
         email: email,
@@ -54,59 +52,60 @@ function RegisterPage() {
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
     <AuthLayout>
       <span className="auth-tag">Join TripSync AI</span>
-      <h2 className="auth-title">Create your account</h2>
-      <p className="muted">Plan trips together with your friends.</p>
+      <Title order={2} className="auth-title">Create your account</Title>
+      <Text c="dimmed" mb="lg">Plan trips together with your friends.</Text>
 
       <form onSubmit={handleRegister}>
-        <label>Name</label>
-        <div className="icon-input">
-          <User size={18} />
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
-        </div>
+        <Stack gap="md">
+          <TextInput
+            label="Name"
+            placeholder="Your name"
+            leftSection={<User size={18} />}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
 
-        <label>Email</label>
-        <div className="icon-input">
-          <Mail size={18} />
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
-        </div>
+          <TextInput
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            description="Use the email your friends invited, so their invites show up."
+            leftSection={<Mail size={18} />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-        <label>Password (at least {minPasswordLength} characters)</label>
-        <div className="icon-input password-field">
-          <Lock size={18} />
-          <input
-            type={showPassword ? "text" : "password"}
-            value={password}
+          {/* PasswordInput has the eye button built in */}
+          <PasswordInput
+            label="Password"
+            description={"At least " + minPasswordLength + " characters"}
+            leftSection={<Lock size={18} />}
             minLength={minPasswordLength}
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {/* Eye button: shows or hides the password */}
-          <button
-            type="button"
-            className="eye-button"
-            onClick={() => setShowPassword(!showPassword)}
-            title={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        </div>
 
-        <Message type="error" text={error} />
+          {error && <Alert color="red" variant="light">{error}</Alert>}
 
-        <button type="submit" className="auth-button" disabled={loading}>
-          {loading ? "Creating account..." : "Sign up"} {!loading && <ArrowRight size={18} />}
-        </button>
+          <Button type="submit" size="lg" fullWidth loading={loading} rightSection={<ArrowRight size={18} />}>
+            Sign up
+          </Button>
+        </Stack>
       </form>
 
-      <p className="auth-switch">Already have an account? <Link to="/login">Log in</Link></p>
+      <Text ta="center" mt="lg" c="dimmed">
+        Already have an account? <Anchor component={Link} to="/login" fw={700}>Log in</Anchor>
+      </Text>
     </AuthLayout>
   );
 }

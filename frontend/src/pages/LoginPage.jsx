@@ -1,11 +1,13 @@
 // Login page
+// Built with Mantine components (TextInput, PasswordInput, Button, Alert).
 
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Mail, Lock, ArrowRight } from "lucide-react";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage, saveLogin, getCurrentUser } from "../api/axios.js";
-import Message from "../components/ui/Message.jsx";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -20,14 +22,12 @@ function LoginPage() {
   // What the user types
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // true = show the password as normal text
 
   // Messages on screen
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  
-  // Already logged in? Admins go to the admin dashboard, everyone else to their trips
+  // Already logged in? Go straight to the right page.
   const loggedInUser = getCurrentUser();
   if (loggedInUser) {
     if (loggedInUser.role === "admin") {
@@ -50,6 +50,8 @@ function LoginPage() {
 
       saveLogin(response.data.token, response.data.user);
 
+      notifications.show({ message: "Welcome back, " + response.data.user.name + " 👋", color: "green" });
+
       // Admins go to the admin dashboard, everyone else to their trips
       if (response.data.user.role === "admin") {
         navigate("/admin");
@@ -58,54 +60,51 @@ function LoginPage() {
       }
     } catch (err) {
       setError(getErrorMessage(err));
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
     <AuthLayout>
       <span className="auth-tag">Welcome back</span>
-      <h2 className="auth-title">Log in to TripSync AI</h2>
-      <p className="muted">Pick up where your group left off.</p>
+      <Title order={2} className="auth-title">Log in to TripSync AI</Title>
+      <Text c="dimmed" mb="lg">Pick up where your group left off.</Text>
 
-      <Message type="success" text={successMessage} />
+      {successMessage && <Alert color="green" variant="light" mb="md">{successMessage}</Alert>}
 
       <form onSubmit={handleLogin}>
-        <label>Email</label>
-        <div className="icon-input">
-          <Mail size={18} />
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
-        </div>
+        <Stack gap="md">
+          <TextInput
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            leftSection={<Mail size={18} />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-        <label>Password</label>
-        <div className="icon-input password-field">
-          <Lock size={18} />
-          <input
-            type={showPassword ? "text" : "password"}
+          {/* PasswordInput has the eye button built in */}
+          <PasswordInput
+            label="Password"
+            placeholder="Your password"
+            leftSection={<Lock size={18} />}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {/* Eye button: shows or hides the password */}
-          <button
-            type="button"
-            className="eye-button"
-            onClick={() => setShowPassword(!showPassword)}
-            title={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        </div>
 
-        <Message type="error" text={error} />
+          {error && <Alert color="red" variant="light">{error}</Alert>}
 
-        <button type="submit" className="auth-button" disabled={loading}>
-          {loading ? "Logging in..." : "Log in"} {!loading && <ArrowRight size={18} />}
-        </button>
+          <Button type="submit" size="lg" fullWidth loading={loading} rightSection={<ArrowRight size={18} />}>
+            Log in
+          </Button>
+        </Stack>
       </form>
 
-      <p className="auth-switch">New here? <Link to="/register">Create an account</Link></p>
+      <Text ta="center" mt="lg" c="dimmed">
+        New here? <Anchor component={Link} to="/register" fw={700}>Create an account</Anchor>
+      </Text>
     </AuthLayout>
   );
 }
