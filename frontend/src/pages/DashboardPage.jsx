@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, MapPin } from "lucide-react";
+import { Plus, MapPin, CalendarDays, Users, Navigation, ArrowRight } from "lucide-react";
 import api, { getErrorMessage, formatDateRange, travelModeText } from "../api/axios.js";
 
 function DashboardPage() {
@@ -98,35 +98,70 @@ function DashboardPage() {
     return trip.members.length + " members · Group trip";
   }
 
+  // A small countdown for the card: "In 12 days", "Tomorrow", "On the trip now" or "Trip over"
+  function getCountdownText(trip) {
+    const oneDay = 24 * 60 * 60 * 1000;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(trip.startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(trip.endDate);
+    end.setHours(0, 0, 0, 0);
+
+    const daysToGo = Math.round((start - today) / oneDay);
+
+    if (daysToGo > 1) {
+      return "In " + daysToGo + " days";
+    }
+    if (daysToGo === 1) {
+      return "Tomorrow";
+    }
+    if (today <= end) {
+      return "On the trip now";
+    }
+    return "Trip over";
+  }
+
   // Draws one trip card. Clicking it opens the trip.
   function drawTripCard(trip) {
     const image = getTripImage(trip);
 
+    let route = trip.destination;
+    if (trip.startingFrom) {
+      route = trip.startingFrom + " → " + trip.destination;
+    }
+
     return (
       <Link to={"/trips/" + trip._id} key={trip._id} className="trip-tile">
-        {/* Top of the card: photo of the place, or a purple box with a pin */}
-        {image && <img className="trip-tile-image" src={image} alt={trip.destination} />}
+        {/* Top of the card: photo of the place (or a coloured box), with the name on top */}
+        <div className="trip-tile-cover">
+          {image && <img className="trip-tile-image" src={image} alt={trip.destination} />}
+          {!image && (
+            <div className="trip-tile-image trip-tile-image-empty">
+              <MapPin size={40} />
+            </div>
+          )}
 
-        {!image && (
-          <div className="trip-tile-image trip-tile-image-empty">
-            <MapPin size={34} />
-            <span>{trip.destination}</span>
-          </div>
-        )}
+          <span className={"pill pill-" + trip.status + " cover-pill"}>{trip.status}</span>
+          <span className="countdown">{getCountdownText(trip)}</span>
 
-        {/* Bottom of the card: the trip details */}
-        <div className="trip-tile-body">
-          <div className="row-between">
+          <div className="cover-text">
             <h3>{trip.title}</h3>
-            <span className={"pill pill-" + trip.status}>{trip.status}</span>
+            <span><MapPin size={14} /> {trip.destination}</span>
           </div>
+        </div>
 
-          <p className="muted">
-            📍 {trip.startingFrom ? trip.startingFrom + " → " : ""}{trip.destination}
-          </p>
-          {trip.travelMode && <p className="muted">{travelModeText(trip.travelMode)}</p>}
-          <p className="muted">{formatDateRange(trip.startDate, trip.endDate)}</p>
-          <p className="muted">{getTripPeopleText(trip)}</p>
+        {/* Bottom of the card: the trip details, one per line with an icon */}
+        <div className="trip-tile-body">
+          <p><Navigation size={15} /> {route}</p>
+          <p><CalendarDays size={15} /> {formatDateRange(trip.startDate, trip.endDate)}</p>
+          <p><Users size={15} /> {getTripPeopleText(trip)}</p>
+          {trip.travelMode && <p className="travel-chip">{travelModeText(trip.travelMode)}</p>}
+        </div>
+
+        <div className="trip-tile-footer">
+          Open trip <ArrowRight size={16} />
         </div>
       </Link>
     );
