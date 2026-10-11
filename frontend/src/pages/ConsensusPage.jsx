@@ -144,7 +144,7 @@ function ConsensusPage() {
                 <p className="muted">Affects: {conflict.affectedMembers.join(", ")}</p>
               )}
 
-              <p><strong>Why the AI flagged this:</strong> {conflict.reasoning}</p>
+              <p className="muted small"><strong>Why:</strong> {conflict.reasoning}</p>
 
               {/* The options, side by side (SRS 4.1) */}
               <div className="options">

@@ -101,6 +101,13 @@ Conflicts (group trips only):
   and 2 or 3 compromise options the group can vote on
   (e.g. an optional add-on for interested members only, splitting the day, or a cheaper alternative).
   Give each option an "extraCost" in the trip's currency (0 if it costs nothing extra).
+- Keep the words SHORT and to the point - people read these on a phone:
+  - "description": one short line, at most 10 words. Name the clash, nothing else.
+    Good: "Asha wants scuba diving, Ravi can't swim"   Bad: a long sentence explaining everything.
+  - "reasoning": one sentence, at most 20 words.
+  - each option "description": at most 10 words, e.g. "Scuba for Asha only, others relax on the beach".
+- Only add a conflict when travellers really disagree. If they want the SAME thing,
+  it is NOT a conflict (just plan it). Being tight on budget alone is not a conflict either.
 - If there is only one traveller, or there are no real conflicts, return an empty "conflicts" array.`;
 
 // Builds the message describing THIS trip and its travellers
