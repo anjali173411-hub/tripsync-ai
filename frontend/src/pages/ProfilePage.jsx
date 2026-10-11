@@ -1,26 +1,21 @@
-
+// My profile (FR-1.4): my name and my usual travel style.
+// The usual travel style fills in "My Preferences" whenever I join a new trip.
 
 import { useEffect, useState } from "react";
-import { Card, Title, Text, TextInput, Chip, SegmentedControl, Button, Avatar, Group, Stack, Divider, Alert } from "@mantine/core";
+import { Chip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Save, User } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, saveLogin } from "../api/axios.js";
 
 function ProfilePage() {
-  // Choices that come from the backend
   const [interestOptions, setInterestOptions] = useState([]);
   const [paceOptions, setPaceOptions] = useState([]);
 
-  // What the user fills in
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [interests, setInterests] = useState([]);
   const [pace, setPace] = useState("");
-
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Runs once when the page opens
   useEffect(() => {
     loadPage();
   }, []);
@@ -45,7 +40,6 @@ function ProfilePage() {
   async function handleSave(event) {
     event.preventDefault();
     setError("");
-    setSaving(true);
 
     try {
       const response = await api.put("/profile", {
@@ -54,71 +48,46 @@ function ProfilePage() {
         defaultPace: pace
       });
 
-      // Keep the new name in the top bar too
+      // Show the new name in the top bar too
       const savedUser = getCurrentUser();
       savedUser.name = response.data.user.name;
       saveLogin(localStorage.getItem("token"), savedUser);
 
-      notifications.show({ message: "Profile saved ✓", color: "green" });
+      notifications.show({ message: "Profile saved", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
-
-    setSaving(false);
   }
 
   return (
-    <Card maw={680} mx="auto" p="xl">
-      <form onSubmit={handleSave}>
-        <Stack gap="lg">
-          {/* Who I am */}
-          <Group>
-            <Avatar size={64} radius="xl" color="maroon" variant="filled">
-              {name ? name.charAt(0).toUpperCase() : <User size={28} />}
-            </Avatar>
-            <div>
-              <Title order={1}>My Profile</Title>
-              <Text c="dimmed">{email}</Text>
-            </div>
-          </Group>
+    <form className="box narrow-box" onSubmit={handleSave}>
+      <h1>My Profile</h1>
+      <p className="muted">{email}</p>
 
-          <TextInput label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+      <label>Name</label>
+      <input value={name} onChange={(e) => setName(e.target.value)} required />
 
-          <Divider />
+      <h3>My usual travel style</h3>
+      <p className="muted small">This fills in your preferences whenever you join a new trip.</p>
 
-          <div>
-            <Title order={3}>My usual travel style</Title>
-            <Text c="dimmed" size="sm">
-              These fill in your preferences automatically whenever you join a new trip.
-              You can still change them for each trip.
-            </Text>
-          </div>
+      <label>Interests</label>
+      <Chip.Group multiple value={interests} onChange={setInterests}>
+        <div className="chip-list">
+          {interestOptions.map((interest) => <Chip key={interest} value={interest}>{interest}</Chip>)}
+        </div>
+      </Chip.Group>
 
-          <div>
-            <Text fw={600} size="sm" mb={8}>Interests</Text>
-            {/* "multiple" lets you pick many chips; Mantine keeps the list in "interests" */}
-            <Chip.Group multiple value={interests} onChange={setInterests}>
-              <Group gap="xs">
-                {interestOptions.map((interest) => (
-                  <Chip key={interest} value={interest} className="capitalize">{interest}</Chip>
-                ))}
-              </Group>
-            </Chip.Group>
-          </div>
+      <label>Pace</label>
+      <select value={pace} onChange={(e) => setPace(e.target.value)}>
+        {paceOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
 
-          <div>
-            <Text fw={600} size="sm" mb={8}>Pace</Text>
-            <SegmentedControl fullWidth data={paceOptions} value={pace} onChange={setPace} className="capitalize" />
-          </div>
+      {error && <p className="error-box">{error}</p>}
 
-          {error && <Alert color="red" variant="light">{error}</Alert>}
-
-          <Group justify="flex-end">
-            <Button type="submit" size="md" loading={saving} leftSection={<Save size={16} />}>Save profile</Button>
-          </Group>
-        </Stack>
-      </form>
-    </Card>
+      <div className="button-row">
+        <button type="submit">Save profile</button>
+      </div>
+    </form>
   );
 }
 

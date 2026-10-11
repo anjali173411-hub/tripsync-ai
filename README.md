@@ -19,9 +19,8 @@ TripSync AI is a MERN web app for planning solo and group trips. Every traveller
 | **AI itinerary** | Full day plan 08:00–21:00 with breakfast, lunch, dinner, travel and hotel check-in/out; a suggested place to stay; cost check against the budget with an automatic cheaper re-plan. Re-plan one day or the whole trip with instructions. Edit, move or remove activities. |
 | **Group decisions** | The AI lists conflicts with 2–3 options; members vote; an option wins with more than half of the votes, or the organiser decides. Then the organiser finalises the plan. |
 | **Budget** | Add expenses by category (linked to an activity if wanted), spending vs budget, who paid what / fair share / balance, AI money-saving tips at 80% of the budget. |
-| **Reviews** | After a completed trip, members rate and review the destination. |
 | **Weather** | Forecast for near trips, last year's weather for trips further away (Open-Meteo). |
-| **Admin** | Platform numbers, popular destinations, activate/deactivate users, manage destinations, hide/remove reviews. |
+| **Admin** | Platform numbers (users, trips, solo vs group, average group size), most popular destinations, activate/deactivate users. |
 
 ---
 
@@ -63,8 +62,8 @@ TripSyncAI/
 │   ├── server.js           Express app, CORS, routes, serves the built frontend
 │   ├── config/db.js        MongoDB connection
 │   ├── middleware/         auth.js (JWT, admin), sanitize.js
-│   ├── models/             User, Trip, Preference, Itinerary, ConflictVote, Expense, Destination, Review
-│   ├── routes/             auth, profile, trip, member, preference, itinerary, consensus, budget, destination, review, admin
+│   ├── models/             User, Trip, Preference, Itinerary, ConflictVote, Expense
+│   ├── routes/             auth, profile, trip, member, preference, itinerary, consensus, budget, admin
 │   └── services/           itineraryConsensusService (AI), emailService, weatherService, placeImageService
 └── frontend/
     ├── index.html
@@ -76,7 +75,7 @@ TripSyncAI/
         ├── api/axios.js    API client (adds the token) + helpers
         ├── components/     Navbar, Sidebar, ProtectedRoute, AuthLayout
         └── pages/          Login, Register, Dashboard, CreateTrip, TripDetails, Members,
-                            Preferences, Itinerary, Consensus, Budget, Reviews, Profile, Admin
+                            Preferences, Itinerary, Consensus, Budget, Profile, Admin
 ```
 
 ---
@@ -194,8 +193,6 @@ All endpoints start with `/api`. Everything except register/login needs `Authori
 | POST | `/trips/:tripId/finalise` | Lock the itinerary |
 | POST / GET | `/trips/:tripId/expenses`, `/trips/:tripId/budget` | Expenses and budget summary |
 | POST | `/trips/:tripId/budget/suggestions` | AI money-saving tips |
-| GET / POST / PUT / DELETE | `/destinations` | Destinations (changes: admin only) |
-| POST / PATCH / DELETE | `/reviews` | Reviews (moderation: admin only) |
 | GET / PATCH | `/admin/summary`, `/admin/users`, `/admin/users/:userId/status` | Admin dashboard |
 
 ---
@@ -213,6 +210,7 @@ All endpoints start with `/api`. Everything except register/login needs `Authori
 ## Future improvements
 
 - Real hotel and transport booking (flights, trains, hotels) through partner APIs
+- Destination pages with ratings and reviews after a trip, moderated by the admin
 - AI chat assistant inside the trip
 - Reminders by email or notification when a vote is needed
 - Editing and deleting expenses, editing trip dates and budget after creation

@@ -5,7 +5,6 @@ import Preference from "../models/Preference.js";
 import Itinerary from "../models/Itinerary.js";
 import ConflictVote from "../models/ConflictVote.js";
 import Expense from "../models/Expense.js";
-import Review from "../models/Review.js";
 import { verifyToken } from "../middleware/auth.js";
 import { findPlace, getWeatherForDates } from "../services/weatherService.js";
 import { findPlaceImage } from "../services/placeImageService.js";
@@ -218,7 +217,7 @@ router.get("/:id/weather", verifyToken, async (req, res) => {
   }
 });
 
-// MARK A FINALISED TRIP AS COMPLETED (organiser only, unlocks reviews)
+// MARK A FINALISED TRIP AS COMPLETED (organiser only)
 router.patch("/:id/complete", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -309,7 +308,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
     await Itinerary.deleteMany({ trip: trip._id });
     await ConflictVote.deleteMany({ trip: trip._id });
     await Expense.deleteMany({ trip: trip._id });
-    await Review.deleteMany({ trip: trip._id });
     await Trip.deleteOne({ _id: trip._id });
 
     res.json({

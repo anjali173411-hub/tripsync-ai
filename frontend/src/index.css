@@ -205,10 +205,6 @@ hr {
 
 /* ---------- Cards and layout ---------- */
 
-.center {
-  text-align: center;
-}
-
 /* ---------- Login and sign-up ---------- */
 
 /* ---------- Forms ---------- */
@@ -281,11 +277,6 @@ button:where(:not([class*="mantine-"])):disabled {
 
 .badge-completed { background: #f1e8ea; color: var(--muted); }
 
-.stars {
-  color: #e0a100;
-  letter-spacing: 1px;
-}
-
 /* ---------- Trip pages: menu on the left, content on the right ---------- */
 
 .trip-layout {
@@ -349,11 +340,6 @@ button:where(:not([class*="mantine-"])):disabled {
 
 /* ---------- Dashboard ---------- */
 
-.dashboard {
-  max-width: 920px;
-  margin: 0 auto;
-}
-
 /* Welcome banner */
 .hero {
   padding: 32px;
@@ -375,85 +361,13 @@ button:where(:not([class*="mantine-"])):disabled {
   color: rgba(255, 255, 255, 0.75);
 }
 
-.hero .eyebrow {
-  color: #f9c5d3;
-}
-
-.eyebrow {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--primary);
-}
-
-.section-title {
-  margin: 28px 0 12px;
-}
-
 /* ---------- Tabs (itinerary days) ---------- */
 
-/* ---------- Itinerary activities (timeline) ---------- */
-
-/* An activity card: a clickable top row, and details that open below it */
-.activity {
-  display: block;
-  padding: 0;
-  overflow: hidden;
-}
-
-.activity.open {
-  border-color: var(--primary-light);
-}
-
 /* ---------- Group decisions ---------- */
-
-/* One decision */
-.decision-card {
-  margin-bottom: 22px;
-  overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--white);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-}
-
-/* Coloured top part of the card */
-.decision-head {
-  padding: 20px 22px 16px;
-  background:
-    radial-gradient(circle at 95% 0%, var(--primary-light), transparent 55%),
-    var(--primary-pale);
-  border-bottom: 1px solid var(--border);
-}
-
-/* "Needs your vote" gently pulses so people notice it */
-.needs-vote {
-  animation: pulse 1.8s ease-in-out infinite;
-}
 
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(224, 161, 0, 0.45); }
   50% { box-shadow: 0 0 0 7px rgba(224, 161, 0, 0); }
-}
-
-.decision-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 12px 0 10px;
-  font-size: 1.3rem;
-  line-height: 1.3;
-  color: var(--primary-darkest);
-}
-
-/* Options shown side by side */
-.options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 14px;
-  padding: 18px 22px 22px;
 }
 
 .option {
@@ -472,11 +386,6 @@ button:where(:not([class*="mantine-"])):disabled {
   box-shadow: var(--shadow);
 }
 
-.option.mine {
-  border-color: var(--primary);
-  background: var(--primary-pale);
-}
-
 .option.chosen {
   border-color: var(--primary);
   background: var(--primary-pale);
@@ -492,19 +401,6 @@ button:where(:not([class*="mantine-"])):disabled {
 /* ---------- Tables ---------- */
 
 /* ---------- Admin and reviews ---------- */
-
-.review {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.review:last-of-type {
-  border-bottom: none;
-}
-
-.review p {
-  margin: 6px 0 0;
-}
 
 /* ---------- Phones ---------- */
 
@@ -673,19 +569,6 @@ button:where(:not([class*="mantine-"])):disabled {
   background: linear-gradient(to top, rgba(15, 5, 8, 0.8) 10%, rgba(15, 5, 8, 0.1) 55%, rgba(15, 5, 8, 0.3));
 }
 
-.countdown {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 1;
-  padding: 4px 11px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--primary-dark);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
 .cover-text {
   position: absolute;
   left: 18px;
@@ -707,17 +590,6 @@ button:where(:not([class*="mantine-"])):disabled {
   opacity: 0.85;
 }
 
-/* Status pill at the bottom-right of the photo, like a tag */
-.cover-pill {
-  position: absolute;
-  right: 16px;
-  bottom: 32px;
-  z-index: 1;
-  margin: 0;
-  background: #f5c542;
-  color: #3a2a00;
-}
-
 /* The white panel. The negative margin pulls it up over the photo. */
 .trip-tile-body {
   position: relative;
@@ -727,70 +599,6 @@ button:where(:not([class*="mantine-"])):disabled {
   padding: 10px 18px 6px;
   border-radius: 22px 22px 0 0;
   background: var(--white);
-}
-
-/* The small grey bar at the top of the panel */
-.panel-handle {
-  display: block;
-  width: 38px;
-  height: 4px;
-  margin: 0 auto 10px;
-  border-radius: 999px;
-  background: var(--border);
-}
-
-.panel-label {
-  margin: 0 0 6px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* One line: icon, label on the left, value on the right */
-.detail-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--primary-pale);
-  font-size: 0.92rem;
-}
-
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-row svg {
-  flex-shrink: 0;
-  color: var(--primary-bright);
-}
-
-.detail-row span {
-  flex: 1;
-  color: var(--muted);
-}
-
-.detail-row b {
-  color: var(--text);
-  text-align: right;
-}
-
-/* "Open trip ->" at the bottom of the card */
-.trip-tile-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 11px 18px;
-  border-top: 1px solid var(--border);
-  color: var(--primary);
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
-.trip-tile:hover .trip-tile-footer {
-  background: var(--primary-pale);
 }
 
 /* ---------- Dashboard: invitations ---------- */
@@ -821,32 +629,6 @@ button:where(:not([class*="mantine-"])):disabled {
 }
 
 /* ---------- Itinerary: stay suggestion and journey ---------- */
-
-/* ---------- Itinerary: the day as a simple timeline ---------- */
-
-/* "Morning", "Afternoon", "Evening" headings */
-.day-part {
-  margin-bottom: 18px;
-}
-
-.day-part-title {
-  margin: 18px 0 10px;
-  font-size: 0.85rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--primary);
-}
-
-/* "Describe your ideal trip" box on My Preferences */
-.describe-card {
-  border: 2px solid var(--primary-light);
-  background: linear-gradient(135deg, var(--white) 60%, var(--primary-tile));
-}
-
-.describe-card h3 {
-  margin-top: 0;
-}
 
 /* ---------- Log in and Sign up: split screen ---------- */
 
@@ -945,19 +727,6 @@ button:where(:not([class*="mantine-"])):disabled {
   max-width: 400px;
 }
 
-.auth-tag {
-  display: inline-block;
-  margin-bottom: 14px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--primary-light);
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .auth-title {
   margin: 0 0 4px;
   font-size: 1.9rem;
@@ -996,11 +765,6 @@ button:where(:not([class*="mantine-"])):disabled {
 
 /* ---------- Small extra styles for Mantine parts ---------- */
 
-/* Mantine invitation card on the dashboard: a coloured line on the left */
-.invitation-card {
-  border-left: 5px solid var(--primary-bright);
-}
-
 /* Trip Details: big banner with the place photo (or the maroon gradient) */
 .trip-banner {
   position: relative;
@@ -1029,46 +793,360 @@ button:where(:not([class*="mantine-"])):disabled {
   padding: 24px 26px;
 }
 
-/* Members page: a thin line between people */
-.member-row + .member-row {
-  border-top: 1px solid var(--border);
-}
-
 /* Show choices like "no preference" as "No Preference" */
 .capitalize {
   text-transform: capitalize;
 }
 
-/* Itinerary: the emoji inside each timeline dot */
-.timeline-emoji {
-  font-size: 1rem;
-  line-height: 1;
+/* ---------- Simple shared styles (Itinerary page) ---------- */
+
+/* A white box with rounded corners */
+.box {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
 }
 
-/* Light dots so the emoji is easy to see */
-.day-part .mantine-Timeline-itemBullet {
+.center-box {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-box {
+  background: #fdecea;
+  color: #c0392b;
+  padding: 12px 16px;
+  border-radius: 10px;
+}
+
+.warning-box {
+  background: #fff4e0;
+  color: #8a5a00;
+  padding: 12px 16px;
+  border-radius: 10px;
+}
+
+/* Small grey heading above a value */
+.label {
+  margin: 12px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Small rounded label, e.g. "Mid-range" */
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
   background: var(--primary-light);
-  border-color: var(--primary-bright);
-  color: var(--primary); /* the small icon inside the dot */
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
 }
 
-/* Reviews page: destination cards can be clicked */
-.destination-card {
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+.tag.green {
+  background: #e3f4ea;
+  color: #1f7a4a;
 }
 
-.destination-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
+.tag.orange {
+  background: #fff1d6;
+  color: #9a6200;
 }
 
-/* Shown when a destination has no photo */
-.destination-no-photo {
+.red-text {
+  color: #c0392b;
+}
+
+/* Day 1 / Day 2 / Day 3 buttons */
+.day-tabs {
   display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.day-tab {
+  background: white;
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.day-tab.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* One activity: time | name and description | cost */
+.activity {
+  display: flex;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.activity-time {
+  width: 50px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.activity-info {
+  flex: 1;
+}
+
+.activity-info p {
+  margin: 4px 0;
+}
+
+.activity-cost {
+  font-weight: 700;
+}
+
+.activity-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.small-button {
+  padding: 4px 10px;
+  font-size: 13px;
+  margin-top: 0;
+  box-shadow: none;
+}
+
+.small-button.danger {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+/* A text box with a button next to it */
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+}
+
+.input-row button {
+  margin-top: 0;
+}
+
+/* The edit pop-up: space between the boxes */
+.edit-form > * {
+  margin-bottom: 12px;
+}
+
+/* ---------- Simple forms and tables (used on every page) ---------- */
+
+label:where(:not([class*="mantine-"])) {
+  display: block;
+  margin: 14px 0 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+input:where(:not([class*="mantine-"])),
+select:where(:not([class*="mantine-"])),
+textarea:where(:not([class*="mantine-"])) {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  background: white;
+}
+
+input:where(:not([class*="mantine-"])):focus,
+select:where(:not([class*="mantine-"])):focus,
+textarea:where(:not([class*="mantine-"])):focus {
+  outline: 2px solid var(--primary-light);
+  border-color: var(--primary);
+}
+
+/* Two boxes side by side (one under the other on phones) */
+.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+@media (max-width: 600px) {
+.two-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* A row of buttons */
+.button-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* White button with a coloured border */
+.outline-button {
+  background: white;
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.outline-button:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.danger-button {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+table:where(:not([class*="mantine-"])) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table:where(:not([class*="mantine-"])) th,
+table:where(:not([class*="mantine-"])) td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+table:where(:not([class*="mantine-"])) th {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* A box that scrolls sideways on phones (for tables) */
+.scroll {
+  overflow-x: auto;
+}
+
+/* A simple bar that fills up, e.g. budget used */
+.bar {
+  height: 10px;
+  background: var(--primary-light);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--primary);
+}
+
+.bar-fill.red {
+  background: #c0392b;
+}
+
+/* A list row: text on the left, something on the right */
+.row {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  height: 160px;
-  color: rgba(255, 255, 255, 0.4);
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.success-box {
+  background: #e3f4ea;
+  color: #1f7a4a;
+  padding: 12px 16px;
+  border-radius: 10px;
+}
+
+/* Boxes in a grid, e.g. numbers or details */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.big-number {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* A narrower box in the middle of the page (forms) */
+.narrow-box {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Trip Details: one day of weather */
+.weather-day {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--primary-pale);
+  text-align: center;
+}
+
+.weather-day p {
+  margin: 2px 0;
+}
+
+.weather-emoji {
+  font-size: 28px;
+}
+
+/* White text on the photo banner */
+.trip-banner-text h1,
+.trip-banner-text p {
+  color: white;
+  margin: 4px 0;
+}
+
+/* Interest chips, side by side */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Group decisions: space between the options */
+.option + .option {
+  margin-top: 10px;
+}
+
+/* Dashboard: white "+ New trip" link on the dark banner */
+.hero h1,
+.hero p {
+  color: white;
+}
+
+.hero-button {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: white;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.trip-tile-body p {
+  margin: 6px 0;
+}
+
+/* A button as wide as the form (Log in, Sign up) */
+.full-width {
+  width: 100%;
+  margin-top: 16px;
 }

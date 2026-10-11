@@ -1,12 +1,8 @@
-
+// Create a new solo or group trip (FR-2.1, FR-2.2)
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Title, Text, TextInput, NumberInput, SegmentedControl, Button, Alert, Group, SimpleGrid, Stack } from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
-import { MapPin, Navigation, CalendarDays, Wallet, User, Users } from "lucide-react";
-import dayjs from "dayjs";
 import api, { getErrorMessage, travelModeText } from "../api/axios.js";
 
 function CreateTripPage() {
@@ -17,23 +13,21 @@ function CreateTripPage() {
   const [travelModes, setTravelModes] = useState([]);
   const [currency, setCurrency] = useState("");
 
-  // What the user types
+  // What the user fills in
   const [title, setTitle] = useState("");
   const [startingFrom, setStartingFrom] = useState("");
   const [destination, setDestination] = useState("");
-  const [type, setType] = useState("");
+  const [type, setType] = useState("solo");
   const [travelMode, setTravelMode] = useState("");
-  const [startDate, setStartDate] = useState(null); // "2026-11-12" once picked
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [budget, setBudget] = useState("");
 
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  // Today, so the calendar can't pick a date in the past
-  const today = dayjs().format("YYYY-MM-DD");
+  // Today as "2026-10-11", so past dates can't be picked
+  const today = new Date().toLocaleDateString("en-CA");
 
-  // Runs once when the page opens
   useEffect(() => {
     loadPage();
   }, []);
@@ -43,32 +37,11 @@ function CreateTripPage() {
     setTripTypes(response.data.tripTypes);
     setTravelModes(response.data.travelModes);
     setCurrency(response.data.currency);
-    setType(response.data.tripTypes[0]); // pick the first type by default
   }
 
-  // When the start date changes, clear an end date that is now before it
-  function handleStartDate(value) {
-    setStartDate(value);
-    if (endDate && value && endDate < value) {
-      setEndDate(null);
-    }
-  }
-
-  // Runs when the form is submitted
   async function handleCreate(event) {
     event.preventDefault();
     setError("");
-
-    if (!travelMode) {
-      setError("Please choose how you are travelling");
-      return;
-    }
-    if (!startDate || !endDate) {
-      setError("Please pick the start and end dates");
-      return;
-    }
-
-    setSaving(true);
 
     try {
       const response = await api.post("/trips", {
@@ -82,128 +55,72 @@ function CreateTripPage() {
         budget: Number(budget)
       });
 
-  
-      notifications.show({
-        title: "Trip created",
-        message: "Now invite people and fill in your preferences.",
-        color: "green"
-      });
-
-  
+      notifications.show({ message: "Trip created", color: "green" });
       navigate("/trips/" + response.data.trip._id);
     } catch (err) {
       setError(getErrorMessage(err));
     }
-
-    setSaving(false);
-  }
-
-  // The choices for the two switches: [{ value: "solo", label: "Just me" }, ...]
-  const typeChoices = [];
-  for (let i = 0; i < tripTypes.length; i++) {
-    const label = tripTypes[i] === "solo" ? "Just me" : "With friends";
-    typeChoices.push({ value: tripTypes[i], label: label });
-  }
-
-  const modeChoices = [];
-  for (let i = 0; i < travelModes.length; i++) {
-    modeChoices.push({ value: travelModes[i], label: travelModeText(travelModes[i]) });
   }
 
   return (
-    <Card maw={680} mx="auto" p="xl">
-      <form onSubmit={handleCreate}>
-        <Stack gap="lg">
-          <div>
-            <Text c="maroon.7" fw={800} size="xs" tt="uppercase">
-              New trip
-            </Text>
-            <Title order={1}>Where are you going?</Title>
-            <Text c="dimmed">Fill this in once. The AI uses it to plan your days.</Text>
-          </div>
+    <form className="box narrow-box" onSubmit={handleCreate}>
+      <h1>Where are you going?</h1>
 
-          <TextInput
-            label="Trip name"
-            placeholder="Goa with college friends"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
+      <label>Trip name</label>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Goa with friends" required />
 
-          <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <TextInput
-              label="From"
-              placeholder="Chennai"
-              leftSection={<Navigation size={16} />}
-              value={startingFrom}
-              onChange={(e) => setStartingFrom(e.target.value)}
-              required
-            />
-            <TextInput
-              label="To"
-              placeholder="Goa"
-              leftSection={<MapPin size={16} />}
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              required
-            />
-          </SimpleGrid>
+      <div className="two-columns">
+        <div>
+          <label>From</label>
+          <input value={startingFrom} onChange={(e) => setStartingFrom(e.target.value)} placeholder="Chennai" required />
+        </div>
+        <div>
+          <label>To</label>
+          <input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Goa" required />
+        </div>
+      </div>
 
-          <div>
-            <Text fw={600} size="sm" mb={6}>Who is going?</Text>
-            <SegmentedControl fullWidth size="md" data={typeChoices} value={type} onChange={setType} />
-            <Text c="dimmed" size="xs" mt={6}>
-              {type === "group" ? <Users size={12} /> : <User size={12} />} You can invite people to a group trip after creating it.
-            </Text>
-          </div>
+      <div className="two-columns">
+        <div>
+          <label>Who is going?</label>
+          <select value={type} onChange={(e) => setType(e.target.value)}>
+            {tripTypes.map((tripType) => (
+              <option key={tripType} value={tripType}>{tripType === "solo" ? "Just me" : "With friends"}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Travelling by</label>
+          <select value={travelMode} onChange={(e) => setTravelMode(e.target.value)} required>
+            <option value="">Choose...</option>
+            {travelModes.map((mode) => (
+              <option key={mode} value={mode}>{travelModeText(mode)}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-          <div>
-            <Text fw={600} size="sm" mb={6}>How are you travelling?</Text>
-            <SegmentedControl fullWidth size="md" data={modeChoices} value={travelMode} onChange={setTravelMode} />
-          </div>
+      <div className="two-columns">
+        <div>
+          <label>Start date</label>
+          <input type="date" min={today} value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+        </div>
+        <div>
+          <label>End date</label>
+          <input type="date" min={startDate || today} value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+        </div>
+      </div>
 
-          <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <DatePickerInput
-              label="Start date"
-              placeholder="Pick a date"
-              leftSection={<CalendarDays size={16} />}
-              minDate={today}
-              value={startDate}
-              onChange={handleStartDate}
-              required
-            />
-            <DatePickerInput
-              label="End date"
-              placeholder="Pick a date"
-              leftSection={<CalendarDays size={16} />}
-              minDate={startDate || today}
-              value={endDate}
-              onChange={setEndDate}
-              required
-            />
-          </SimpleGrid>
+      <label>Total budget for everyone ({currency})</label>
+      <input type="number" min="0" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="50000" required />
 
-          <NumberInput
-            label={"Total budget (" + currency + ")"}
-            description="For a group trip, this is for everyone together, not per person."
-            placeholder="50,000"
-            leftSection={<Wallet size={16} />}
-            min={0}
-            thousandSeparator=","
-            value={budget}
-            onChange={setBudget}
-            required
-          />
+      {error && <p className="error-box">{error}</p>}
 
-          {error && <Alert color="red" variant="light">{error}</Alert>}
-
-          <Group justify="flex-end">
-            <Button variant="default" onClick={() => navigate("/")}>Cancel</Button>
-            <Button type="submit" size="md" loading={saving}>Create trip</Button>
-          </Group>
-        </Stack>
-      </form>
-    </Card>
+      <div className="button-row">
+        <button type="submit">Create trip</button>
+        <button type="button" className="outline-button" onClick={() => navigate("/")}>Cancel</button>
+      </div>
+    </form>
   );
 }
 

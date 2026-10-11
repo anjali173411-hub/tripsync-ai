@@ -1,108 +1,58 @@
 // Login page
-// Built with Mantine components (TextInput, PasswordInput, Button, Alert).
 
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { PasswordInput } from "@mantine/core";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage, saveLogin, getCurrentUser } from "../api/axios.js";
 
 function LoginPage() {
   const navigate = useNavigate();
-
   const location = useLocation();
-  let successMessage = "";
-  if (location.state && location.state.message) {
-    successMessage = location.state.message;
-  }
 
-  // What the user types
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Messages on screen
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   // Already logged in? Go straight to the right page.
   const loggedInUser = getCurrentUser();
   if (loggedInUser) {
-    if (loggedInUser.role === "admin") {
-      return <Navigate to="/admin" />;
-    }
-    return <Navigate to="/" />;
+    return <Navigate to={loggedInUser.role === "admin" ? "/admin" : "/"} />;
   }
 
-  // Runs when the form is submitted
   async function handleLogin(event) {
     event.preventDefault(); // stop the browser from reloading the page
     setError("");
-    setLoading(true);
 
     try {
-      const response = await api.post("/auth/login", {
-        email: email,
-        password: password
-      });
-
+      const response = await api.post("/auth/login", { email: email, password: password });
       saveLogin(response.data.token, response.data.user);
-
-      notifications.show({ message: "Welcome back, " + response.data.user.name, color: "green" });
-
-      // Admins go to the admin dashboard, everyone else to their trips
-      if (response.data.user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+      navigate(response.data.user.role === "admin" ? "/admin" : "/");
     } catch (err) {
       setError(getErrorMessage(err));
-      setLoading(false);
     }
   }
 
   return (
     <AuthLayout>
-      <span className="auth-tag">Welcome back</span>
-      <Title order={2} className="auth-title">Log in to TripSync AI</Title>
-      <Text c="dimmed" mb="lg">Pick up where your group left off.</Text>
+      <h2 className="auth-title">Log in to TripSync AI</h2>
 
-      {successMessage && <Alert color="green" variant="light" mb="md">{successMessage}</Alert>}
+      {/* After signing up, the Register page sends "Account created! Please log in." */}
+      {location.state && location.state.message && <p className="success-box">{location.state.message}</p>}
 
       <form onSubmit={handleLogin}>
-        <Stack gap="md">
-          <TextInput
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            leftSection={<Mail size={18} />}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        <label>Email</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
-          <PasswordInput
-            label="Password"
-            placeholder="Your password"
-            leftSection={<Lock size={18} />}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        <label>Password</label>
+        <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} required />
 
-          {error && <Alert color="red" variant="light">{error}</Alert>}
+        {error && <p className="error-box">{error}</p>}
 
-          <Button type="submit" size="lg" fullWidth loading={loading} rightSection={<ArrowRight size={18} />}>
-            Log in
-          </Button>
-        </Stack>
+        <button type="submit" className="full-width">Log in</button>
       </form>
 
-      <Text ta="center" mt="lg" c="dimmed">
-        New here? <Anchor component={Link} to="/register" fw={700}>Create an account</Anchor>
-      </Text>
+      <p className="auth-switch">New here? <Link to="/register">Create an account</Link></p>
     </AuthLayout>
   );
 }

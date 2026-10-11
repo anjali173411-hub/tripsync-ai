@@ -100,7 +100,7 @@ export function formatDate(date) {
   });
 }
 
-// Turns a travel mode from the backend into text with an emoji, e.g. "train" -> "🚆 Train"
+// Turns a travel mode from the backend into readable text, e.g. "car" -> "Car / bike"
 export function travelModeText(mode) {
   if (mode === "train") return "Train";
   if (mode === "bus") return "Bus";

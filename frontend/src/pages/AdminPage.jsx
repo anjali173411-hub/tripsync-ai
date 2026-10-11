@@ -1,18 +1,14 @@
+// Admin dashboard (FR-10): platform numbers, popular destinations and all user accounts.
 
 import { useEffect, useState } from "react";
-import { Paper, Card, Title, Text, Button, Badge, Avatar, Group, Stack, SimpleGrid, Table, Progress, Alert, ThemeIcon } from "@mantine/core";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
-import { Users, Plane, User, UsersRound, Ruler, Clock, CheckCircle2 } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate } from "../api/axios.js";
 
 function AdminPage() {
   const user = getCurrentUser();
 
-  const [summary, setSummary] = useState(null); 
+  const [summary, setSummary] = useState(null);
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
-
 
   useEffect(() => {
     loadPage();
@@ -30,144 +26,83 @@ function AdminPage() {
     }
   }
 
-
-  function handleToggleActive(account) {
-    let action = "Activate";
-    if (account.isActive) {
-      action = "Deactivate";
+  // Turn a user account on or off
+  async function handleToggleActive(account) {
+    const action = account.isActive ? "Deactivate" : "Activate";
+    if (!window.confirm(action + " " + account.name + "?")) {
+      return;
     }
-
-    modals.openConfirmModal({
-      title: action + " " + account.name + "?",
-      centered: true,
-      children: <Text size="sm">{account.isActive
-        ? "They will be logged out and won't be able to log in until you activate them again."
-        : "They will be able to log in again."}</Text>,
-      labels: { confirm: action, cancel: "Cancel" },
-      confirmProps: { color: account.isActive ? "red" : "maroon" },
-      onConfirm: () => toggleActive(account)
-    });
-  }
-
-  async function toggleActive(account) {
     try {
-      await api.patch("/admin/users/" + account._id + "/status", {
-        isActive: !account.isActive
-      });
-      notifications.show({ message: account.name + (account.isActive ? " deactivated" : " activated") });
+      await api.patch("/admin/users/" + account._id + "/status", { isActive: !account.isActive });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
-  let tiles = [];
-  if (summary) {
-    tiles = [
-      { icon: <Users size={20} />, value: summary.totalUsers, label: "Users" },
-      { icon: <Plane size={20} />, value: summary.totalTrips, label: "Trips" },
-      { icon: <User size={20} />, value: summary.soloTrips, label: "Solo trips" },
-      { icon: <UsersRound size={20} />, value: summary.groupTrips, label: "Group trips" },
-      { icon: <Ruler size={20} />, value: summary.averageGroupSize, label: "Average group size" },
-      { icon: <Clock size={20} />, value: summary.planningTrips, label: "Planning" },
-      { icon: <CheckCircle2 size={20} />, value: summary.completedTrips, label: "Completed" }
-    ];
-  }
-
   return (
     <div>
-      {/* Banner, like the traveller dashboard */}
-      <Paper className="hero" radius="lg" p="xl" mb="lg">
-        <Text className="eyebrow">Administrator</Text>
-        <Title order={1}>Admin Dashboard</Title>
-        <Text c="white" opacity={0.8}>
-          See how TripSync AI is being used, manage user accounts, and add destinations from the Destinations page.
-        </Text>
-      </Paper>
+      <div className="hero">
+        <h1>Admin Dashboard</h1>
+        <p>See how TripSync AI is used and manage user accounts.</p>
+      </div>
 
-      {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
+      {error && <p className="error-box">{error}</p>}
+
+      {/* Platform numbers (FR-10.2) */}
       {summary && (
-        <div>
-          <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} mb="lg">
-            {tiles.map((tile) => (
-              <Paper key={tile.label} withBorder radius="lg" p="md">
-                <Group>
-                  <ThemeIcon size={42} radius="md" variant="light">tile.icon</ThemeIcon>
-                  <div>
-                    <Text size="xl" fw={800}>{tile.value}</Text>
-                    <Text size="sm" c="dimmed">{tile.label}</Text>
-                  </div>
-                </Group>
-              </Paper>
-            ))}
-          </SimpleGrid>
-
-          <Card mb="lg">
-            <Title order={3} mb="sm">Most popular destinations</Title>
-            {summary.popularDestinations.length === 0 && <Text c="dimmed">No trips yet.</Text>}
-            <Stack gap="sm">
-              {summary.popularDestinations.map((place, index) => (
-                <div key={place.name}>
-                  <Group justify="space-between" mb={4}>
-                    <Text fw={600}>{index + 1}. {place.name}</Text>
-                    <Text size="sm" c="dimmed">{place.trips} trip{place.trips === 1 ? "" : "s"}</Text>
-                  </Group>
-                  <Progress value={(place.trips / summary.popularDestinations[0].trips) * 100} size="lg" radius="xl" />
-                </div>
-              ))}
-            </Stack>
-          </Card>
+        <div className="grid">
+          <div className="box"><p className="big-number">{summary.totalUsers}</p><p className="muted">Users</p></div>
+          <div className="box"><p className="big-number">{summary.totalTrips}</p><p className="muted">Trips</p></div>
+          <div className="box"><p className="big-number">{summary.soloTrips}</p><p className="muted">Solo trips</p></div>
+          <div className="box"><p className="big-number">{summary.groupTrips}</p><p className="muted">Group trips</p></div>
+          <div className="box"><p className="big-number">{summary.averageGroupSize}</p><p className="muted">Average group size</p></div>
+          <div className="box"><p className="big-number">{summary.planningTrips}</p><p className="muted">Planning</p></div>
+          <div className="box"><p className="big-number">{summary.completedTrips}</p><p className="muted">Completed</p></div>
         </div>
       )}
 
-  
-      <Card>
-        <Title order={3} mb="sm">Users</Title>
-        <Table.ScrollContainer minWidth={700}>
-          <Table striped highlightOnHover verticalSpacing="sm">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>Role</Table.Th>
-                <Table.Th>Joined</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th></Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {users.map((account) => (
-                <Table.Tr key={account._id}>
-                  <Table.Td>
-                    <Group gap="sm" wrap="nowrap">
-                      <Avatar size={30} radius="xl" color="maroon">{account.name.charAt(0).toUpperCase()}</Avatar>
-                      <Text fw={600} size="sm">{account.name}</Text>
-                    </Group>
-                  </Table.Td>
-                  <Table.Td>{account.email}</Table.Td>
-                  <Table.Td>
-                    <Badge variant="light" color={account.role === "admin" ? "yellow" : "gray"}>{account.role}</Badge>
-                  </Table.Td>
-                  <Table.Td>{formatDate(account.createdAt)}</Table.Td>
-                  <Table.Td>
-                    <Badge color={account.isActive ? "green" : "red"} variant="light">
-                      {account.isActive ? "Active" : "Deactivated"}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    {/* An admin can't deactivate their own account */}
-                    {account._id !== user.id && (
-                      <Button size="xs" variant="light" color={account.isActive ? "red" : "green"} onClick={() => handleToggleActive(account)}>
-                        {account.isActive ? "Deactivate" : "Activate"}
-                      </Button>
-                    )}
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </Table.ScrollContainer>
-      </Card>
+      {summary && (
+        <div className="box">
+          <h3>Most popular destinations</h3>
+          {summary.popularDestinations.length === 0 && <p className="muted">No trips yet.</p>}
+          {summary.popularDestinations.map((place) => (
+            <div key={place.name} className="row">
+              <span>{place.name}</span>
+              <b>{place.trips} trip(s)</b>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* All users */}
+      <div className="box scroll">
+        <h3>Users</h3>
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {users.map((account) => (
+              <tr key={account._id}>
+                <td>{account.name}</td>
+                <td>{account.email}</td>
+                <td>{account.role}</td>
+                <td>{formatDate(account.createdAt)}</td>
+                <td>{account.isActive ? "Active" : "Deactivated"}</td>
+                <td>
+                  {/* An admin can't deactivate their own account */}
+                  {account._id !== user.id && (
+                    <button className="small-button" onClick={() => handleToggleActive(account)}>
+                      {account.isActive ? "Deactivate" : "Activate"}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

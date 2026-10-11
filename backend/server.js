@@ -12,8 +12,6 @@ import { sanitizeInput } from "./middleware/sanitize.js";
 import Trip from "./models/Trip.js";
 import Preference from "./models/Preference.js";
 import Expense from "./models/Expense.js";
-import Review from "./models/Review.js";
-import Destination from "./models/Destination.js";
 
 import authRoutes, { MIN_PASSWORD_LENGTH } from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
@@ -23,8 +21,6 @@ import preferenceRoutes from "./routes/preferenceRoutes.js";
 import itineraryRoutes from "./routes/itineraryRoutes.js";
 import consensusRoutes from "./routes/consensusRoutes.js";
 import budgetRoutes from "./routes/budgetRoutes.js";
-import destinationRoutes from "./routes/destinationRoutes.js";
-import reviewRoutes from "./routes/reviewRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import { CURRENCY } from "./services/itineraryConsensusService.js";
 
@@ -63,20 +59,15 @@ app.get("/api/health", (req, res) => {
 // Lists and settings the frontend needs for its forms.
 // They are read from the models and code, so they are defined in only one place.
 app.get("/api/options", (req, res) => {
-  const ratingPath = Review.schema.path("rating");
-
   res.json({
     tripTypes: Trip.schema.path("type").enumValues,
     travelModes: Trip.schema.path("travelMode").enumValues,
-    costTiers: Destination.schema.path("averageCostTier").enumValues,
     paceOptions: Preference.schema.path("pace").enumValues,
     foodOptions: Preference.schema.path("foodPreference").enumValues,
     stayBudgets: Preference.schema.path("stayBudget").enumValues,
     stayTypes: Preference.schema.path("stayType").enumValues,
     interestOptions: Preference.schema.path("interests").getEmbeddedSchemaType().enumValues,
     expenseCategories: Expense.schema.path("category").enumValues,
-    minRating: ratingPath.options.min,
-    maxRating: ratingPath.options.max,
     currency: CURRENCY,
     minPasswordLength: MIN_PASSWORD_LENGTH
   });
@@ -99,10 +90,6 @@ app.use("/api/trips", consensusRoutes);
 
 // Budget and expenses
 app.use("/api/trips", budgetRoutes);
-
-// Destinations and reviews
-app.use("/api/destinations", destinationRoutes);
-app.use("/api/reviews", reviewRoutes);
 
 // Administrator
 app.use("/api/admin", adminRoutes);

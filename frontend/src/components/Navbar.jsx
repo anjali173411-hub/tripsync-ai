@@ -28,10 +28,8 @@ function Navbar() {
         <div className="nav-links">
           {/* Admin menu */}
           {user.role === "admin" && <NavLink to="/admin">Admin Dashboard</NavLink>}
-          {user.role === "admin" && <NavLink to="/reviews">Destinations</NavLink>}
 
           {user.role !== "admin" && <NavLink to="/" end>My Trips</NavLink>}
-          {user.role !== "admin" && <NavLink to="/reviews">Reviews</NavLink>}
           <NavLink to="/profile">Profile</NavLink>
 
           <span className="nav-user">

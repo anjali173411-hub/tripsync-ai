@@ -13,7 +13,6 @@ import PreferencesPage from "./pages/PreferencesPage.jsx";
 import ItineraryPage from "./pages/ItineraryPage.jsx";
 import ConsensusPage from "./pages/ConsensusPage.jsx";
 import BudgetPage from "./pages/BudgetPage.jsx";
-import ReviewsPage from "./pages/ReviewsPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 
@@ -46,7 +45,6 @@ function App() {
           {/* Logged-in users only */}
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/trips/new" element={<ProtectedRoute><CreateTripPage /></ProtectedRoute>} />
-          <Route path="/reviews" element={<ProtectedRoute><ReviewsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
           {/* Pages of one trip. ":tripId" is replaced by the real trip id */}

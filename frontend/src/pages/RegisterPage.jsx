@@ -1,8 +1,8 @@
+// Sign-up page
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack } from "@mantine/core";
-import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { PasswordInput } from "@mantine/core";
 import AuthLayout from "../components/AuthLayout.jsx";
 import api, { getErrorMessage } from "../api/axios.js";
 
@@ -12,13 +12,9 @@ function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [minPasswordLength, setMinPasswordLength] = useState(0);
-
+  const [minPasswordLength, setMinPasswordLength] = useState(0); // from the backend settings
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  // Runs once when the page opens
   useEffect(() => {
     loadPage();
   }, []);
@@ -28,80 +24,39 @@ function RegisterPage() {
     setMinPasswordLength(response.data.minPasswordLength);
   }
 
-  // Runs when the form is submitted
   async function handleRegister(event) {
     event.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
-      await api.post("/auth/register", {
-        name: name,
-        email: email,
-        password: password
-      });
-
-      // Go to the login page. The user must log in themselves.
-      // "state" passes a message to the login page so it can show it.
-      navigate("/login", {
-        state: { message: "Account created! Please log in." }
-      });
+      await api.post("/auth/register", { name: name, email: email, password: password });
+      // The user logs in themselves; this message is shown on the login page
+      navigate("/login", { state: { message: "Account created! Please log in." } });
     } catch (err) {
       setError(getErrorMessage(err));
-      setLoading(false);
     }
   }
 
   return (
     <AuthLayout>
-      <span className="auth-tag">Join TripSync AI</span>
-      <Title order={2} className="auth-title">Create your account</Title>
-      <Text c="dimmed" mb="lg">Plan trips together with your friends.</Text>
+      <h2 className="auth-title">Create your account</h2>
 
       <form onSubmit={handleRegister}>
-        <Stack gap="md">
-          <TextInput
-            label="Name"
-            placeholder="Your name"
-            leftSection={<User size={18} />}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+        <label>Name</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} required />
 
-          <TextInput
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            description="Use the email your friends invited, so their invites show up."
-            leftSection={<Mail size={18} />}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        <label>Email (use the one your friends invited)</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
-          {/* PasswordInput has the eye button built in */}
-          <PasswordInput
-            label="Password"
-            description={"At least " + minPasswordLength + " characters"}
-            leftSection={<Lock size={18} />}
-            minLength={minPasswordLength}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        <label>Password (at least {minPasswordLength} characters)</label>
+        <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} minLength={minPasswordLength} required />
 
-          {error && <Alert color="red" variant="light">{error}</Alert>}
+        {error && <p className="error-box">{error}</p>}
 
-          <Button type="submit" size="lg" fullWidth loading={loading} rightSection={<ArrowRight size={18} />}>
-            Sign up
-          </Button>
-        </Stack>
+        <button type="submit" className="full-width">Sign up</button>
       </form>
 
-      <Text ta="center" mt="lg" c="dimmed">
-        Already have an account? <Anchor component={Link} to="/login" fw={700}>Log in</Anchor>
-      </Text>
+      <p className="auth-switch">Already have an account? <Link to="/login">Log in</Link></p>
     </AuthLayout>
   );
 }

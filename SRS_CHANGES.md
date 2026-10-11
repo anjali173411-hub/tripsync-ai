@@ -27,10 +27,14 @@ Remove both rows from the use case table (7.3) and from the product functions li
 | Phase 2: Trips & Preferences | Week 3 | Trip CRUD, invitations, preference form |
 | Phase 3: Shared AI Service | Week 4 | Gemini integration, prompt templates, output validation (FR-4.6), solo itineraries, itinerary editing |
 | Phase 4: Group Consensus Engine | **Week 5–6** | Conflict detection, member attribution tags, voting, organiser override, finalisation, prompt tuning with real group test cases |
-| Phase 5: Budget, Admin & Reviews | Week 7 | Expense tracking, destination management, analytics, reviews |
+| Phase 5: Budget & Admin | Week 7 | Expense tracking, analytics, user management |
 | Phase 6: Testing & Deployment | Week 8 | End-to-end testing, deployment, demo preparation |
 
 ## 5. Risk table (section 11)
 
 Update the "inconsistent or low-quality AI itineraries" mitigation to reference FR-4.6 (validate, retry once, then fail safely). Remove the chat and mock-booking items from the scope-creep row.
+
+## 5. Reviews and destination management moved to future scope
+
+Destination reviews/ratings (FR-9.1 – FR-9.3) and destination master records (FR-10.1, Destinations and Reviews collections in 6.7 – 6.8) are moved to **future scope**, so the time goes to the core features: the AI itinerary and the Group Consensus Engine. The admin panel keeps platform analytics, including the most popular destinations (counted from trips), and user management (FR-10.2 – FR-10.4).
 

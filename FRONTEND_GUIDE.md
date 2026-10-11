@@ -1,6 +1,6 @@
 # TripSync AI – Frontend cheat sheet
 
-**Tech:** React 19 + Vite · React Router 7 · Axios · Mantine 9 (UI components) · lucide-react (icons) · one CSS file
+**Tech:** React 19 + Vite · React Router 7 · Axios · plain HTML + CSS (index.css) · a few Mantine parts · lucide-react (icons)
 
 ---
 
@@ -8,8 +8,8 @@
 
 | File | Job |
 |---|---|
-| `main.jsx` | Starts the app. Wraps it in **MantineProvider** (theme), **Notifications** (pop-up messages), **ModalsProvider** ("Are you sure?" pop-ups) and **BrowserRouter** (pages). |
-| `theme.js` | The maroon colour, font and rounded corners for **all** Mantine components – set once. |
+| `main.jsx` | Starts the app. Wraps it in **MantineProvider** (colour for the Mantine parts), **Notifications** (corner messages) and **BrowserRouter** (pages). |
+| `theme.js` | The maroon colour and font for the few Mantine parts we use. |
 | `App.jsx` | The list of pages: which web address shows which page. Hides the top bar on login/sign up. |
 | `index.css` | Our own styles: banners, trip cards, login split-screen, sidebar, top bar. |
 | `api/axios.js` | Talks to the backend + small helpers (`formatMoney`, `formatDate`, `getCurrentUser` …). |
@@ -17,7 +17,7 @@
 | `components/Sidebar.jsx` | Left menu inside a trip (Details, Members, Preferences, Itinerary, Decisions, Budget). |
 | `components/ProtectedRoute.jsx` | Guard: not logged in → login page. `adminOnly` → only admins. |
 | `components/AuthLayout.jsx` | Split screen for login / sign up (maroon story left, form right). |
-| `pages/*.jsx` | One file per screen (13 pages). |
+| `pages/*.jsx` | One file per screen (12 pages). |
 
 ---
 
@@ -66,18 +66,17 @@ function SomePage() {
 
 | Address | Page | Main Mantine parts |
 |---|---|---|
-| `/login`, `/register` | Login / Register | TextInput, PasswordInput (built-in 👁), Button `loading` |
-| `/` | Dashboard | Paper banner, number tiles, invitation cards, trip photo cards |
-| `/trips/new` | Create Trip | SegmentedControl (solo/group, train/bus/car), DatePickerInput (no past dates), NumberInput |
-| `/trips/:tripId` | Trip Details | Photo banner, info tiles, weather cards, Archive/Delete with confirm |
-| `.../members` | Members | Avatar, Badge, invite by email or search |
-| `.../preferences` | My Preferences | **Chip.Group** (interests), SegmentedControl (pace), **TagsInput** (must-do, deal-breakers), "Describe your trip" → AI fills form |
-| `.../itinerary` | Itinerary | **Tabs** (days), **Timeline** (activities), **Menu** ⋮ (edit/move/remove), **Modal** (edit), Progress (budget), Accordion (change plan with AI) |
-| `.../consensus` | Group Decisions | Badge status, Avatar options A/B/C, Progress vote bar, vote buttons |
-| `.../budget` | Budget | **RingProgress** (% used), Table (who paid what), Select, NumberInput |
-| `/reviews` | Reviews / Destinations | Card + Image, **Rating** stars, Modal for reviews and admin form |
-| `/profile` | Profile | Avatar, Chip.Group, SegmentedControl |
-| `/admin` | Admin | Number tiles, Progress bars, users Table with Activate/Deactivate |
+| `/login`, `/register` | Login / Register | label + input, PasswordInput (built-in 👁) |
+| `/` | Dashboard | banner, invitations with Accept/Decline, trip photo cards |
+| `/trips/new` | Create Trip | inputs, `<select>` for type and travel mode, `<input type="date">` (no past dates) |
+| `/trips/:tripId` | Trip Details | photo banner, detail boxes, weather per day, archive/delete/complete |
+| `.../members` | Members | member list, invite by email or search, remove |
+| `.../preferences` | My Preferences | interest **chips**, `<select>` for pace/food/stay, **tag boxes** (must-do, avoid), "Describe your trip" → AI fills the form |
+| `.../itinerary` | Itinerary | cost box, stay box, day buttons, activity list with Edit / Earlier / Later / Remove, edit pop-up, change plan with AI, finalise |
+| `.../consensus` | Group Decisions | each decision with its options, vote counts, Vote / Decide for everyone |
+| `.../budget` | Budget | spent bar, add expense form, by category, who paid what table, all expenses |
+| `/profile` | Profile | name, interest chips, pace `<select>` |
+| `/admin` | Admin | number boxes, popular destinations, users table with Activate/Deactivate |
 
 `:tripId` is read with **`useParams()`**. Going to another page in code uses **`useNavigate()`**.
 
@@ -93,8 +92,8 @@ function SomePage() {
 | **`.map()` in JSX** | Draws one item per list entry: `trips.map((trip) => drawTripCard(trip))`. Each needs a unique `key`. |
 | **`&&` in JSX** | Show only if true: `{error && <Alert>{error}</Alert>}`. |
 | **Controlled input** | `value={name}` + `onChange={(e) => setName(e.target.value)}` – React state always holds what's typed. |
-| **Why Mantine?** | Ready-made, good-looking, accessible components; one theme for the whole app; less CSS to write. |
-| **"Are you sure?" pop-up** | `modals.openConfirmModal({ title, children, labels, onConfirm })` from Mantine. The action (e.g. delete) runs only in `onConfirm`, when the user clicks the button. |
+| **Why so little Mantine?** | Plain HTML + CSS is easier to read and explain; Mantine is used only where it saves a lot of code (password 👁, chips, tag boxes, pop-up, spinner, messages). |
+| **"Are you sure?"** | `if (!window.confirm("Delete this trip?")) { return; }` – the browser's OK / Cancel box. |
 | **"Saved ✓" messages** | `notifications.show({ message: "Saved ✓" })` from Mantine – a small pop-up in the corner. |
 | **Why Axios?** | Simple requests, and interceptors add the token / handle 401 in one place. |
 | **Where's the AI?** | Not in the frontend. The frontend only calls the backend (e.g. `POST /trips/:id/generate`); the backend calls Gemini. |
