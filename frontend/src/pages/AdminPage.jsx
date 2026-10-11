@@ -67,9 +67,15 @@ function AdminPage() {
           <h3>Most popular destinations</h3>
           {summary.popularDestinations.length === 0 && <p className="muted">No trips yet.</p>}
           {summary.popularDestinations.map((place) => (
-            <div key={place.name} className="row">
-              <span>{place.name}</span>
-              <b>{place.trips} trip(s)</b>
+            <div key={place.name}>
+              <div className="row-plain">
+                <span>{place.name}</span>
+                <b>{place.trips} trip(s)</b>
+              </div>
+              {/* The bar is full for the most popular place, shorter for the others */}
+              <div className="bar">
+                <div className="bar-fill" style={{ width: (place.trips / summary.popularDestinations[0].trips) * 100 + "%" }} />
+              </div>
             </div>
           ))}
         </div>

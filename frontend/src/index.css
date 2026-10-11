@@ -1150,3 +1150,10 @@ table:where(:not([class*="mantine-"])) th {
   width: 100%;
   margin-top: 16px;
 }
+
+/* Admin: place name on the left, number on the right (no line under it) */
+.row-plain {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
