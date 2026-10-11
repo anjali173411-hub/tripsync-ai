@@ -821,49 +821,286 @@ button:disabled {
 
 /* ---------- Group decisions ---------- */
 
-.conflict {
-  border-left: 5px solid #e0a100;
+/* "2 to decide · 1 decided" at the top of the page */
+.decision-summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.conflict.resolved {
-  border-left-color: var(--primary);
+.decision-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.decision-count.open {
+  background: #fff1d6;
+  color: #9a6200;
+}
+
+.decision-count.done {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+/* One decision */
+.decision-card {
+  margin-bottom: 22px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* Coloured top part of the card */
+.decision-head {
+  padding: 20px 22px 16px;
+  background:
+    radial-gradient(circle at 95% 0%, var(--primary-light), transparent 55%),
+    var(--primary-pale);
+  border-bottom: 1px solid var(--border);
+}
+
+.decision-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* "Needs your vote" gently pulses so people notice it */
+.decision-status.needs-vote {
+  background: #e0a100;
+  color: var(--white);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.decision-status.waiting {
+  background: #fff1d6;
+  color: #9a6200;
+}
+
+.decision-status.decided {
+  background: var(--primary);
+  color: var(--white);
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 161, 0, 0.45); }
+  50% { box-shadow: 0 0 0 7px rgba(224, 161, 0, 0); }
+}
+
+.decision-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 10px;
+  font-size: 1.3rem;
+  line-height: 1.3;
+  color: var(--primary-darkest);
+}
+
+.decision-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: var(--white);
+  box-shadow: 0 6px 14px var(--primary-glow);
+}
+
+.decision-people {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+}
+
+/* A person's name with the first letter in a circle */
+.person-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+  border-radius: 999px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.person-letter {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary-bright);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.decision-why {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
 /* Options shown side by side */
 .options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 14px;
+  padding: 18px 22px 22px;
 }
 
 .option {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  background: var(--primary-pale);
-  transition: border-color 0.15s, background 0.15s;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--white);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .option:hover {
-  border-color: var(--primary-light);
-  background: var(--white);
+  border-color: var(--primary-bright);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
-.option p {
-  margin: 4px 0;
+.option.mine {
+  border-color: var(--primary);
+  background: var(--primary-pale);
 }
 
-.option p:first-child {
+.option.chosen {
+  border-color: var(--primary);
+  background: var(--primary-pale);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.option-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-letter {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+.option.mine .option-letter,
+.option.chosen .option-letter {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.cost-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff1d6;
+  color: #9a6200;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.cost-badge.free {
+  background: #e3f4ea;
+  color: #1f7a4a;
+}
+
+.option-text {
+  flex: 1;
+  margin: 12px 0;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--text);
 }
 
-.option.chosen {
-  border: 2px solid var(--primary);
+.vote-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  overflow: hidden;
+}
+
+.vote-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-bright), var(--primary));
+  transition: width 0.4s;
+}
+
+.vote-count {
+  margin: 6px 0 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.chosen-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.vote-button {
+  width: 100%;
+  margin: 0;
   background: var(--white);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.vote-button:hover,
+.vote-button.voted {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* Looks like a link: used for "Decide this for everyone" */
+.link-button {
+  margin: 8px 0 0;
+  padding: 4px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  background: none;
+  color: var(--primary);
 }
 
 /* Loading spinner while the AI works */

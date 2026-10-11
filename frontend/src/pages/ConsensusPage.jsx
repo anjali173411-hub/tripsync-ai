@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Scale, CheckCircle2, Clock, Users } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 import NextStep from "../components/NextStep.jsx";
@@ -91,6 +92,17 @@ function ConsensusPage() {
     return -1;
   }
 
+  // How many decisions are still open
+  function countOpen() {
+    let count = 0;
+    for (let i = 0; i < conflicts.length; i++) {
+      if (!conflicts[i].resolved) {
+        count = count + 1;
+      }
+    }
+    return count;
+  }
+
 
 
   if (!trip) {
@@ -131,52 +143,107 @@ function ConsensusPage() {
           </div>
         )}
 
+        {/* Small summary: how many decisions are open, how many are done */}
+        {itinerary && conflicts.length > 0 && (
+          <div className="decision-summary">
+            <span className="decision-count open"><Clock size={16} /> {countOpen()} to decide</span>
+            <span className="decision-count done"><CheckCircle2 size={16} /> {conflicts.length - countOpen()} decided</span>
+          </div>
+        )}
+
         {/* One card for each conflict */}
         {itinerary && conflicts.map((conflict) => {
           const myVote = getMyVote(conflict);
           const canVote = !conflict.resolved && itinerary.status !== "finalised";
+          const letters = ["A", "B", "C", "D"];
+
+          // The coloured label at the top of the card
+          let statusText = "Decided";
+          let statusClass = "decision-status decided";
+          if (canVote && myVote === -1) {
+            statusText = "Needs your vote";
+            statusClass = "decision-status needs-vote";
+          } else if (canVote) {
+            statusText = "Waiting for others";
+            statusClass = "decision-status waiting";
+          }
 
           return (
-            <div key={conflict._id} className={conflict.resolved ? "card conflict resolved" : "card conflict"}>
-              <h3>⚖️ {conflict.conflictDescription}</h3>
+            <div key={conflict._id} className={conflict.resolved ? "decision-card resolved" : "decision-card"}>
+              {/* Top: label, title, who it affects */}
+              <div className="decision-head">
+                <span className={statusClass}>{statusText}</span>
 
-              {conflict.affectedMembers.length > 0 && (
-                <p className="muted">Affects: {conflict.affectedMembers.join(", ")}</p>
-              )}
+                <h2 className="decision-title">
+                  <span className="decision-icon"><Scale size={20} /></span>
+                  {conflict.conflictDescription}
+                </h2>
 
-              <p className="muted small"><strong>Why:</strong> {conflict.reasoning}</p>
+                {conflict.affectedMembers.length > 0 && (
+                  <div className="decision-people">
+                    <Users size={15} />
+                    {conflict.affectedMembers.map((name) => (
+                      <span key={name} className="person-chip">
+                        <span className="person-letter">{name.charAt(0).toUpperCase()}</span>
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <p className="decision-why">{conflict.reasoning}</p>
+              </div>
 
               {/* The options, side by side (SRS 4.1) */}
               <div className="options">
                 {conflict.options.map((option, index) => {
                   const isChosen = conflict.resolved && conflict.chosenOption === index;
+                  const isMine = myVote === index;
+
+                  // How full the vote bar is (0 to 100)
+                  let votePercent = 0;
+                  if (trip.members.length > 0) {
+                    votePercent = (option.voteCount / trip.members.length) * 100;
+                  }
+
+                  let optionClass = "option";
+                  if (isChosen) {
+                    optionClass = "option chosen";
+                  } else if (isMine) {
+                    optionClass = "option mine";
+                  }
 
                   return (
-                    <div key={option._id} className={isChosen ? "option chosen" : "option"}>
-                      <p>{option.description}</p>
+                    <div key={option._id} className={optionClass}>
+                      <div className="option-top">
+                        <span className="option-letter">{letters[index]}</span>
+                        <span className={option.extraCost > 0 ? "cost-badge" : "cost-badge free"}>
+                          {option.extraCost > 0 ? "+" + formatMoney(option.extraCost, currency) : "No extra cost"}
+                        </span>
+                      </div>
 
-                      <p className="muted small">
-                        Extra cost: {option.extraCost > 0 ? formatMoney(option.extraCost, currency) : "none"}
-                      </p>
+                      <p className="option-text">{option.description}</p>
 
-                      <p className="muted small">
-                        Votes: {option.voteCount} of {trip.members.length}
-                      </p>
+                      {/* Vote bar */}
+                      <div className="vote-bar">
+                        <div className="vote-bar-fill" style={{ width: votePercent + "%" }} />
+                      </div>
+                      <p className="vote-count">{option.voteCount} of {trip.members.length} votes</p>
 
-                      {isChosen && <p className="success">✅ Chosen</p>}
+                      {isChosen && <p className="chosen-label"><CheckCircle2 size={16} /> Group's choice</p>}
 
                       {canVote && (
                         <button
-                          className={myVote === index ? "btn-small" : "btn-small btn-outline"}
+                          className={isMine ? "vote-button voted" : "vote-button"}
                           onClick={() => handleVote(conflict._id, index)}
                         >
-                          {myVote === index ? "✓ Your vote" : "Vote for this"}
+                          {isMine ? "✓ Your vote" : "Vote " + letters[index]}
                         </button>
                       )}
 
                       {canVote && isOrganiser && (
-                        <button className="btn-small btn-outline" onClick={() => handleDecide(conflict._id, index)}>
-                          Decide as organiser
+                        <button className="link-button" onClick={() => handleDecide(conflict._id, index)}>
+                          Decide this for everyone
                         </button>
                       )}
                     </div>
