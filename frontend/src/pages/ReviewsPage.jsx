@@ -3,28 +3,33 @@
 // - If you completed a trip to a destination, you can review it (FR-9.1).
 // - Admins add, edit and remove destinations (FR-10.1)
 //   and can hide or remove reviews (FR-9.3).
+// Built with Mantine components (Card, Image, Rating, Modal, SegmentedControl ...).
 
 import { useEffect, useState } from "react";
+import {
+  Card, Image, Title, Text, Button, Badge, Group, Stack, SimpleGrid, Rating, Modal, TextInput, Textarea,
+  SegmentedControl, Alert, Paper, Divider
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Plus, Pencil, Trash2, Eye, EyeOff, MapPin } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser } from "../api/axios.js";
-import Button from "../components/ui/Button.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
+import { confirmAction } from "../components/ui/confirm.jsx";
 
 function ReviewsPage() {
   const user = getCurrentUser();
   const isAdmin = user.role === "admin";
 
   // Choices from the backend
-  const [minRating, setMinRating] = useState(0);
-  const [maxRating, setMaxRating] = useState(0);
+  const [maxRating, setMaxRating] = useState(5);
   const [costTiers, setCostTiers] = useState([]);
 
   const [destinations, setDestinations] = useState([]);
   const [completedTrips, setCompletedTrips] = useState([]); // my trips that are finished
-  const [selectedDestination, setSelectedDestination] = useState(null);
+  const [selectedDestination, setSelectedDestination] = useState(null); // its reviews pop-up is open
   const [reviews, setReviews] = useState([]);
 
-  // Destination form (admin). editingId is "" when adding a new destination.
+  // Destination form (admin), shown in a pop-up. editingId is "" when adding a new destination.
+  const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
   const [formName, setFormName] = useState("");
   const [formLocation, setFormLocation] = useState("");
@@ -33,10 +38,9 @@ function ReviewsPage() {
   const [formImages, setFormImages] = useState(""); // one link per line
 
   // "Write your review" form
-  const [rating, setRating] = useState("");
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   // Runs once when the page opens
@@ -47,7 +51,6 @@ function ReviewsPage() {
   async function loadPage() {
     try {
       const optionsResponse = await api.get("/options");
-      setMinRating(optionsResponse.data.minRating);
       setMaxRating(optionsResponse.data.maxRating);
       setCostTiers(optionsResponse.data.costTiers);
       setFormCostTier(optionsResponse.data.costTiers[0]);
@@ -79,11 +82,12 @@ function ReviewsPage() {
     setReviews(response.data.reviews);
   }
 
-  // User clicks a destination card: show its reviews
+  // User clicks a destination card: open its reviews
   async function handleSelectDestination(destination) {
     setSelectedDestination(destination);
     setReviews([]);
-    setMessage("");
+    setRating(0);
+    setComment("");
     setError("");
 
     try {
@@ -95,16 +99,18 @@ function ReviewsPage() {
 
   // ---------------- Admin: destinations (FR-10.1) ----------------
 
-  function clearDestinationForm() {
+  // Open an empty form for a new destination
+  function startAdding() {
     setEditingId("");
     setFormName("");
     setFormLocation("");
     setFormDescription("");
     setFormCostTier(costTiers[0]);
     setFormImages("");
+    setFormOpen(true);
   }
 
-  // Fill the form with a destination so the admin can change it
+  // Open the form filled with a destination so the admin can change it
   function startEditing(destination) {
     setEditingId(destination._id);
     setFormName(destination.name);
@@ -112,12 +118,11 @@ function ReviewsPage() {
     setFormDescription(destination.description);
     setFormCostTier(destination.averageCostTier);
     setFormImages(destination.images.join("\n"));
-    window.scrollTo(0, 0);
+    setFormOpen(true);
   }
 
   async function handleSaveDestination(event) {
     event.preventDefault();
-    setMessage("");
     setError("");
 
     const data = {
@@ -131,29 +136,34 @@ function ReviewsPage() {
     try {
       if (editingId) {
         await api.put("/destinations/" + editingId, data);
-        setMessage("Destination updated");
+        notifications.show({ message: "Destination updated ✓", color: "green" });
       } else {
         await api.post("/destinations", data);
-        setMessage("Destination added");
+        notifications.show({ message: "Destination added ✓", color: "green" });
       }
 
-      clearDestinationForm();
+      setFormOpen(false);
       await loadDestinations();
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
-  async function handleDeleteDestination(destination) {
-    const sure = window.confirm("Remove " + destination.name + " and all its reviews?");
-    if (!sure) {
-      return;
-    }
+  function handleDeleteDestination(destination) {
+    confirmAction({
+      title: "Remove " + destination.name + "?",
+      text: "The destination and all its reviews will be deleted.",
+      confirmLabel: "Remove",
+      danger: true,
+      onConfirm: () => deleteDestination(destination)
+    });
+  }
 
+  async function deleteDestination(destination) {
     try {
       await api.delete("/destinations/" + destination._id);
       setSelectedDestination(null);
-      setMessage("Destination removed");
+      notifications.show({ message: "Destination removed" });
       await loadDestinations();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -172,12 +182,17 @@ function ReviewsPage() {
     }
   }
 
-  async function handleDeleteReview(review) {
-    const sure = window.confirm("Remove this review for good?");
-    if (!sure) {
-      return;
-    }
+  function handleDeleteReview(review) {
+    confirmAction({
+      title: "Remove this review?",
+      text: "It will be deleted for good.",
+      confirmLabel: "Remove",
+      danger: true,
+      onConfirm: () => deleteReview(review)
+    });
+  }
 
+  async function deleteReview(review) {
     try {
       await api.delete("/reviews/" + review._id);
       await loadReviews(selectedDestination);
@@ -191,19 +206,23 @@ function ReviewsPage() {
 
   async function handleSubmitReview(event, tripId) {
     event.preventDefault();
-    setMessage("");
     setError("");
+
+    if (rating === 0) {
+      setError("Please click the stars to give a rating");
+      return;
+    }
 
     try {
       await api.post("/reviews", {
         destinationId: selectedDestination._id,
         tripId: tripId,
-        rating: Number(rating),
+        rating: rating,
         comment: comment
       });
 
-      setMessage("Thanks! Your review was submitted.");
-      setRating("");
+      notifications.show({ title: "Thanks! ⭐", message: "Your review was submitted.", color: "green" });
+      setRating(0);
       setComment("");
       await loadReviews(selectedDestination);
       await loadDestinations();
@@ -226,171 +245,171 @@ function ReviewsPage() {
     return null;
   }
 
-  // Turns a number into stars, for example 3 -> ★★★
-  function makeStars(count) {
-    return "★".repeat(Math.round(count));
-  }
-
   // ---------------- What to show ----------------
-
-  // Rating choices from highest to lowest, for example [5, 4, 3, 2, 1]
-  const ratingChoices = [];
-  for (let n = maxRating; n >= minRating && n > 0; n--) {
-    ratingChoices.push(n);
-  }
 
   let myTrip = null;
   if (selectedDestination) {
     myTrip = findMyTripToSelectedDestination();
   }
 
+  // The cost choices for the admin form: [{ value: "budget", label: "Budget" }, ...]
+  const costChoices = [];
+  for (let i = 0; i < costTiers.length; i++) {
+    costChoices.push({ value: costTiers[i], label: costTiers[i].charAt(0).toUpperCase() + costTiers[i].substring(1) });
+  }
+
   return (
     <div>
-      <h1>{isAdmin ? "Destinations" : "Destinations & Reviews"}</h1>
-      <Message type="error" text={error} />
-      <Message type="success" text={message} />
+      <Group justify="space-between" mb="lg">
+        <div>
+          <Title order={1}>{isAdmin ? "Destinations" : "Destinations & Reviews"}</Title>
+          <Text c="dimmed">Click a destination to read its reviews.</Text>
+        </div>
+        {isAdmin && (
+          <Button size="md" leftSection={<Plus size={18} />} onClick={startAdding}>Add destination</Button>
+        )}
+      </Group>
 
-      {/* Admin only: add or edit a destination */}
-      {isAdmin && (
-        <form className="card" onSubmit={handleSaveDestination}>
-          <h3>{editingId ? "Edit destination" : "Add a destination"}</h3>
+      {error && !selectedDestination && !formOpen && <Alert color="red" variant="light" mb="md">{error}</Alert>}
 
-          <div className="two-columns">
-            <div>
-              <label>Name</label>
-              <input value={formName} onChange={(e) => setFormName(e.target.value)} required />
-            </div>
-            <div>
-              <label>Country / region</label>
-              <input value={formLocation} onChange={(e) => setFormLocation(e.target.value)} />
-            </div>
-          </div>
-
-          <label>Description</label>
-          <textarea rows="2" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
-
-          <label>Usual cost</label>
-          <div className="chip-list">
-            {costTiers.map((tier) => (
-              <button
-                type="button"
-                key={tier}
-                className={formCostTier === tier ? "chip selected" : "chip"}
-                onClick={() => setFormCostTier(tier)}
-              >
-                {tier}
-              </button>
-            ))}
-          </div>
-
-          <label>Photo links (one per line)</label>
-          <textarea rows="2" value={formImages} onChange={(e) => setFormImages(e.target.value)} />
-
-          <div className="button-row">
-            <Button type="submit">{editingId ? "Save changes" : "Add destination"}</Button>
-            {editingId && (
-              <Button type="button" variant="outline" onClick={clearDestinationForm}>Cancel</Button>
-            )}
-          </div>
-        </form>
-      )}
-
-      {destinations.length === 0 && <p className="muted">No destinations have been added yet.</p>}
+      {destinations.length === 0 && <Text c="dimmed">No destinations have been added yet.</Text>}
 
       {/* One card per destination. Click one to see its reviews. */}
-      <div className="grid">
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
         {destinations.map((destination) => (
-          <div
-            key={destination._id}
-            className="card trip-card"
-            onClick={() => handleSelectDestination(destination)}
-          >
-            {destination.images.length > 0 && (
-              <img className="destination-image" src={destination.images[0]} alt={destination.name} />
-            )}
-            <div className="row-between">
-              <h3>{destination.name}</h3>
-              <span className="tag">{destination.averageCostTier}</span>
-            </div>
-            <p className="muted">{destination.location}</p>
+          <Card key={destination._id} className="destination-card" onClick={() => handleSelectDestination(destination)}>
+            <Card.Section>
+              {destination.images.length > 0 && (
+                <Image src={destination.images[0]} h={160} alt={destination.name} />
+              )}
+              {destination.images.length === 0 && (
+                <div className="destination-no-photo"><MapPin size={36} /></div>
+              )}
+            </Card.Section>
+
+            <Group justify="space-between" mt="md" wrap="nowrap">
+              <Title order={3}>{destination.name}</Title>
+              <Badge variant="light" className="capitalize">{destination.averageCostTier}</Badge>
+            </Group>
+            <Text size="sm" c="dimmed">{destination.location}</Text>
 
             {/* Average rating (FR-9.2) */}
-            {destination.reviewCount > 0 && (
-              <p>
-                <span className="stars">{makeStars(destination.averageRating)}</span>{" "}
-                {destination.averageRating} ({destination.reviewCount} review{destination.reviewCount === 1 ? "" : "s"})
-              </p>
-            )}
-            {destination.reviewCount === 0 && <p className="muted small">No reviews yet</p>}
+            <Group gap={6} my="xs">
+              <Rating value={destination.averageRating} fractions={2} readOnly count={maxRating} />
+              <Text size="sm" c="dimmed">
+                {destination.reviewCount > 0
+                  ? destination.averageRating + " (" + destination.reviewCount + " review" + (destination.reviewCount === 1 ? "" : "s") + ")"
+                  : "No reviews yet"}
+              </Text>
+            </Group>
 
-            <p>{destination.description}</p>
+            <Text size="sm" lineClamp={3}>{destination.description}</Text>
 
             {isAdmin && (
-              <div className="button-row">
-                <Button variant="outline" size="small"
-                  onClick={(e) => { e.stopPropagation(); startEditing(destination); }}
-                >
+              <Group mt="md" gap="xs">
+                <Button size="xs" variant="light" leftSection={<Pencil size={14} />}
+                  onClick={(e) => { e.stopPropagation(); startEditing(destination); }}>
                   Edit
                 </Button>
-                <Button variant="danger" size="small"
-                  onClick={(e) => { e.stopPropagation(); handleDeleteDestination(destination); }}
-                >
+                <Button size="xs" variant="light" color="red" leftSection={<Trash2 size={14} />}
+                  onClick={(e) => { e.stopPropagation(); handleDeleteDestination(destination); }}>
                   Remove
                 </Button>
-              </div>
+              </Group>
             )}
-          </div>
+          </Card>
         ))}
-      </div>
+      </SimpleGrid>
 
-      {/* Reviews of the selected destination */}
-      {selectedDestination && (
-        <Card>
-          <h2>Reviews for {selectedDestination.name}</h2>
+      {/* Pop-up: reviews of the selected destination */}
+      <Modal
+        opened={selectedDestination !== null}
+        onClose={() => setSelectedDestination(null)}
+        title={selectedDestination ? "Reviews for " + selectedDestination.name : ""}
+        size="lg"
+        centered
+      >
+        {selectedDestination && (
+          <Stack>
+            {reviews.length === 0 && <Text c="dimmed">No reviews yet.</Text>}
 
-          {reviews.length === 0 && <p className="muted">No reviews yet.</p>}
+            {reviews.map((review) => (
+              <Paper key={review._id} withBorder radius="md" p="sm" opacity={review.visible ? 1 : 0.55}>
+                <Group justify="space-between">
+                  <Group gap="xs">
+                    <Rating value={review.rating} readOnly size="sm" count={maxRating} />
+                    <Text fw={600} size="sm">{review.user ? review.user.name : "Unknown"}</Text>
+                    {!review.visible && <Badge color="gray" size="sm">Hidden</Badge>}
+                  </Group>
 
-          {reviews.map((review) => (
-            <div key={review._id} className={review.visible ? "review" : "review hidden-review"}>
-              <span className="stars">{makeStars(review.rating)}</span> – {review.user ? review.user.name : "Unknown"}
-              {!review.visible && <span className="tag">Hidden</span>}
-              <p>{review.comment}</p>
+                  {/* Admin moderation (FR-9.3) */}
+                  {isAdmin && (
+                    <Group gap={4}>
+                      <Button size="compact-xs" variant="subtle" color="gray"
+                        leftSection={review.visible ? <EyeOff size={12} /> : <Eye size={12} />}
+                        onClick={() => handleToggleReview(review)}>
+                        {review.visible ? "Hide" : "Show again"}
+                      </Button>
+                      <Button size="compact-xs" variant="subtle" color="red" onClick={() => handleDeleteReview(review)}>
+                        Remove
+                      </Button>
+                    </Group>
+                  )}
+                </Group>
+                {review.comment && <Text size="sm" mt={6}>{review.comment}</Text>}
+              </Paper>
+            ))}
 
-              {/* Admin moderation (FR-9.3) */}
-              {isAdmin && (
-                <div className="button-row">
-                  <Button variant="outline" size="small" onClick={() => handleToggleReview(review)}>
-                    {review.visible ? "Hide" : "Show again"}
-                  </Button>
-                  <Button variant="danger" size="small" onClick={() => handleDeleteReview(review)}>
-                    Remove
-                  </Button>
-                </div>
-              )}
+            {/* Only shown if I completed a trip to this destination */}
+            {myTrip && (
+              <form onSubmit={(e) => handleSubmitReview(e, myTrip._id)}>
+                <Divider mb="md" label="Write your review" labelPosition="left" />
+                <Stack>
+                  <div>
+                    <Text fw={600} size="sm" mb={4}>Your rating</Text>
+                    <Rating value={rating} onChange={setRating} size="xl" count={maxRating} />
+                  </div>
+                  <Textarea label="Comment" autosize minRows={3} value={comment} onChange={(e) => setComment(e.target.value)} />
+                  {error && <Alert color="red" variant="light">{error}</Alert>}
+                  <Group justify="flex-end">
+                    <Button type="submit">Submit review</Button>
+                  </Group>
+                </Stack>
+              </form>
+            )}
+          </Stack>
+        )}
+      </Modal>
+
+      {/* Pop-up: admin adds or edits a destination */}
+      <Modal opened={formOpen} onClose={() => setFormOpen(false)} title={editingId ? "Edit destination" : "Add a destination"} size="lg" centered>
+        <form onSubmit={handleSaveDestination}>
+          <Stack>
+            <SimpleGrid cols={{ base: 1, sm: 2 }}>
+              <TextInput label="Name" value={formName} onChange={(e) => setFormName(e.target.value)} required />
+              <TextInput label="Country / region" value={formLocation} onChange={(e) => setFormLocation(e.target.value)} />
+            </SimpleGrid>
+            <Textarea label="Description" autosize minRows={2} value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
+            <div>
+              <Text fw={600} size="sm" mb={6}>Usual cost</Text>
+              <SegmentedControl fullWidth data={costChoices} value={formCostTier} onChange={setFormCostTier} />
             </div>
-          ))}
-
-          {/* Only shown if I completed a trip to this destination */}
-          {myTrip && (
-            <form onSubmit={(e) => handleSubmitReview(e, myTrip._id)}>
-              <h3>Write your review</h3>
-
-              <label>Rating</label>
-              <select value={rating} onChange={(e) => setRating(e.target.value)} required>
-                <option value="">Choose a rating</option>
-                {ratingChoices.map((n) => (
-                  <option key={n} value={n}>{makeStars(n)} ({n})</option>
-                ))}
-              </select>
-
-              <label>Comment</label>
-              <textarea rows="3" value={comment} onChange={(e) => setComment(e.target.value)} />
-
-              <Button type="submit">Submit review</Button>
-            </form>
-          )}
-        </Card>
-      )}
+            <Textarea
+              label="Photo links"
+              description="One link per line. The first photo is shown on the cards."
+              autosize
+              minRows={2}
+              value={formImages}
+              onChange={(e) => setFormImages(e.target.value)}
+            />
+            {error && <Alert color="red" variant="light">{error}</Alert>}
+            <Group justify="flex-end">
+              <Button variant="default" onClick={() => setFormOpen(false)}>Cancel</Button>
+              <Button type="submit">{editingId ? "Save changes" : "Add destination"}</Button>
+            </Group>
+          </Stack>
+        </form>
+      </Modal>
     </div>
   );
 }

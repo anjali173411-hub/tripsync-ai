@@ -140,19 +140,3 @@ export function formatMoney(amount, currency) {
     maximumFractionDigits: 0
   });
 }
-
-// Turns "a, b , c" into the list ["a", "b", "c"]
-export function splitByComma(text) {
-  const result = [];
-  const parts = text.split(",");
-
-  for (let i = 0; i < parts.length; i++) {
-    const item = parts[i].trim();
-
-    if (item !== "") {
-      result.push(item);
-    }
-  }
-
-  return result;
-}

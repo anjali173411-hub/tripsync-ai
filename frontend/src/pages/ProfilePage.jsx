@@ -1,11 +1,12 @@
 // My profile (FR-1.4): change my name and my default travel preferences.
 // The defaults fill in the "My Preferences" form whenever I join a new trip.
+// Built with Mantine components (Avatar, TextInput, Chip, SegmentedControl ...).
 
 import { useEffect, useState } from "react";
+import { Card, Title, Text, TextInput, Chip, SegmentedControl, Button, Avatar, Group, Stack, Divider, Alert } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Save, User } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, saveLogin } from "../api/axios.js";
-import Button from "../components/ui/Button.jsx";
-import Message from "../components/ui/Message.jsx";
-import PageHeader from "../components/ui/PageHeader.jsx";
 
 function ProfilePage() {
   // Choices that come from the backend
@@ -18,7 +19,7 @@ function ProfilePage() {
   const [interests, setInterests] = useState([]);
   const [pace, setPace] = useState("");
 
-  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   // Runs once when the page opens
@@ -43,25 +44,10 @@ function ProfilePage() {
     }
   }
 
-  // Tick or untick one interest
-  function toggleInterest(interest) {
-    if (interests.includes(interest)) {
-      const newList = [];
-      for (let i = 0; i < interests.length; i++) {
-        if (interests[i] !== interest) {
-          newList.push(interests[i]);
-        }
-      }
-      setInterests(newList);
-    } else {
-      setInterests([...interests, interest]);
-    }
-  }
-
   async function handleSave(event) {
     event.preventDefault();
-    setMessage("");
     setError("");
+    setSaving(true);
 
     try {
       const response = await api.put("/profile", {
@@ -75,58 +61,66 @@ function ProfilePage() {
       savedUser.name = response.data.user.name;
       saveLogin(localStorage.getItem("token"), savedUser);
 
-      setMessage("Profile saved!");
+      notifications.show({ message: "Profile saved ✓", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
+
+    setSaving(false);
   }
 
   return (
-    <form className="card narrow-wide" onSubmit={handleSave}>
-      <PageHeader title="My Profile">{email}</PageHeader>
+    <Card maw={680} mx="auto" p="xl">
+      <form onSubmit={handleSave}>
+        <Stack gap="lg">
+          {/* Who I am */}
+          <Group>
+            <Avatar size={64} radius="xl" color="maroon" variant="filled">
+              {name ? name.charAt(0).toUpperCase() : <User size={28} />}
+            </Avatar>
+            <div>
+              <Title order={1}>My Profile</Title>
+              <Text c="dimmed">{email}</Text>
+            </div>
+          </Group>
 
-      <label>Name</label>
-      <input value={name} onChange={(e) => setName(e.target.value)} required />
+          <TextInput label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
 
-      <h3>My usual travel style</h3>
-      <p className="muted small">
-        These fill in your preferences automatically whenever you join a new trip.
-        You can still change them for each trip.
-      </p>
+          <Divider />
 
-      <label>Interests</label>
-      <div className="chip-list">
-        {interestOptions.map((interest) => (
-          <button
-            type="button"
-            key={interest}
-            className={interests.includes(interest) ? "chip selected" : "chip"}
-            onClick={() => toggleInterest(interest)}
-          >
-            {interest}
-          </button>
-        ))}
-      </div>
+          <div>
+            <Title order={3}>My usual travel style</Title>
+            <Text c="dimmed" size="sm">
+              These fill in your preferences automatically whenever you join a new trip.
+              You can still change them for each trip.
+            </Text>
+          </div>
 
-      <label>Pace</label>
-      <div className="chip-list">
-        {paceOptions.map((option) => (
-          <button
-            type="button"
-            key={option}
-            className={pace === option ? "chip selected" : "chip"}
-            onClick={() => setPace(option)}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
+          <div>
+            <Text fw={600} size="sm" mb={8}>Interests</Text>
+            {/* "multiple" lets you pick many chips; Mantine keeps the list in "interests" */}
+            <Chip.Group multiple value={interests} onChange={setInterests}>
+              <Group gap="xs">
+                {interestOptions.map((interest) => (
+                  <Chip key={interest} value={interest} className="capitalize">{interest}</Chip>
+                ))}
+              </Group>
+            </Chip.Group>
+          </div>
 
-      <Button type="submit">Save profile</Button>
+          <div>
+            <Text fw={600} size="sm" mb={8}>Pace</Text>
+            <SegmentedControl fullWidth data={paceOptions} value={pace} onChange={setPace} className="capitalize" />
+          </div>
 
-      <Message type="success" text={message} />
-      <Message type="error" text={error} />
-    </form>
+          {error && <Alert color="red" variant="light">{error}</Alert>}
+
+          <Group justify="flex-end">
+            <Button type="submit" size="md" loading={saving} leftSection={<Save size={16} />}>Save profile</Button>
+          </Group>
+        </Stack>
+      </form>
+    </Card>
   );
 }
 

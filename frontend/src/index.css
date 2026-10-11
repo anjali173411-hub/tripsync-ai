@@ -2209,3 +2209,24 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
   background: var(--primary-light);
   border-color: var(--primary-bright);
 }
+
+/* Reviews page: destination cards can be clicked */
+.destination-card {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.destination-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Shown when a destination has no photo */
+.destination-no-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  color: rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
