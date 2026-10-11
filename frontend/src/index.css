@@ -2198,3 +2198,15 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
 .capitalize label {
   text-transform: capitalize;
 }
+
+/* Itinerary: the emoji inside each timeline dot */
+.timeline-emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Light dots so the emoji is easy to see */
+.day-part .mantine-Timeline-itemBullet {
+  background: var(--primary-light);
+  border-color: var(--primary-bright);
+}

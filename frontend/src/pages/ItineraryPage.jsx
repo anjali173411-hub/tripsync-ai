@@ -7,16 +7,20 @@
 //      plan one day again (FR-4.3) or the whole trip again.
 //      Group trips vote on conflicts on the Group Decisions page.
 //   3. Nothing left to decide -> organiser clicks "Finalise" (FR-5.7)
+//
+// Built with Mantine components (Tabs, Timeline, Menu, Modal, Accordion, Progress ...).
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash, BedDouble } from "lucide-react";
+import {
+  Card, Paper, Title, Text, Button, Badge, Group, Stack, SimpleGrid, ThemeIcon, Alert, Anchor,
+  Tabs, Timeline, Menu, ActionIcon, Modal, TextInput, NumberInput, Textarea, Accordion, Progress, Loader, Center
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Sparkles, RefreshCw, ArrowUp, ArrowDown, Pencil, Trash2, BedDouble, MoreVertical, Lock, Wallet } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import Button from "../components/ui/Button.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
-import Loading from "../components/ui/Loading.jsx";
+import { confirmAction } from "../components/ui/confirm.jsx";
 
 function ItineraryPage() {
   const { tripId } = useParams();
@@ -30,9 +34,7 @@ function ItineraryPage() {
   const [selectedDay, setSelectedDay] = useState(0);   // which day tab is open (0 = Day 1)
   const [weatherDays, setWeatherDays] = useState([]);  // weather for each trip day (may stay empty)
 
-  const [openActivityId, setOpenActivityId] = useState(""); // which activity card is expanded
-
-  // Editing one activity
+  // Editing one activity (the pop-up is open while editingId is not "")
   const [editingId, setEditingId] = useState("");
   const [editTime, setEditTime] = useState("");
   const [editName, setEditName] = useState("");
@@ -126,14 +128,16 @@ function ItineraryPage() {
   }
 
   // Organiser asks the AI for a cheaper version of the whole trip
-  async function handleMakeCheaper(totalCost) {
-    const sure = window.confirm(
-      "The AI will make a new, cheaper plan for the whole trip. Group decisions will start over. Continue?"
-    );
-    if (!sure) {
-      return;
-    }
+  function handleMakeCheaper(totalCost) {
+    confirmAction({
+      title: "Make a cheaper plan?",
+      text: "The AI will make a new, cheaper plan for the whole trip. Group decisions will start over.",
+      confirmLabel: "Make it cheaper",
+      onConfirm: () => makeCheaper(totalCost)
+    });
+  }
 
+  async function makeCheaper(totalCost) {
     setError("");
     setAiWorking("trip");
 
@@ -173,15 +177,6 @@ function ItineraryPage() {
 
   // ---------------- Changing activities by hand (FR-4.4) ----------------
 
-  // Click an activity to open or close it
-  function toggleActivity(activityId) {
-    if (openActivityId === activityId) {
-      setOpenActivityId("");
-    } else {
-      setOpenActivityId(activityId);
-    }
-  }
-
   // Fill the edit form with the activity's current values
   function startEditing(activity) {
     setEditingId(activity._id);
@@ -204,6 +199,7 @@ function ItineraryPage() {
       });
       setItinerary(response.data.itinerary);
       setEditingId("");
+      notifications.show({ message: "Activity saved ✓", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -223,12 +219,17 @@ function ItineraryPage() {
     }
   }
 
-  async function handleRemove(activity) {
-    const sure = window.confirm("Remove \"" + activity.name + "\" from the itinerary?");
-    if (!sure) {
-      return;
-    }
+  function handleRemove(activity) {
+    confirmAction({
+      title: "Remove this activity?",
+      text: "\"" + activity.name + "\" will be removed from the itinerary.",
+      confirmLabel: "Remove",
+      danger: true,
+      onConfirm: () => removeActivity(activity)
+    });
+  }
 
+  async function removeActivity(activity) {
     try {
       const response = await api.delete("/trips/" + tripId + "/activities/" + activity._id);
       setItinerary(response.data.itinerary);
@@ -238,14 +239,19 @@ function ItineraryPage() {
   }
 
   // Organiser locks the itinerary (FR-5.7)
-  async function handleFinalise() {
-    const sure = window.confirm("Finalise the itinerary? It can't be changed afterwards.");
-    if (!sure) {
-      return;
-    }
+  function handleFinalise() {
+    confirmAction({
+      title: "Finalise the itinerary?",
+      text: "The plan will be locked for everyone. It can't be changed afterwards.",
+      confirmLabel: "Finalise",
+      onConfirm: finalise
+    });
+  }
 
+  async function finalise() {
     try {
       await api.post("/trips/" + tripId + "/finalise");
+      notifications.show({ title: "Plan finalised 🎉", message: "Have a great trip!", color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -309,9 +315,13 @@ function ItineraryPage() {
   // 1. Still loading the trip
   if (!trip) {
     if (error) {
-      return <Message type="error" text={error} />;
+      return <Alert color="red" variant="light">{error}</Alert>;
     }
-    return <Loading text="Loading itinerary..." />;
+    return (
+      <Center h={300}>
+        <Loader />
+      </Center>
+    );
   }
 
   const isOrganiser = trip.organiser._id === user.id;
@@ -322,10 +332,10 @@ function ItineraryPage() {
       <div className="trip-layout">
         <Sidebar trip={trip} />
         <section className="trip-content">
-          <Card className="center">
-            <div className="spinner" />
-            <h2>{aiWorking === "day" ? "The AI is planning this day again..." : "The AI is planning your trip..."}</h2>
-            <p className="muted">This can take up to a minute.</p>
+          <Card p={50} ta="center">
+            <Center mb="md"><Loader size="lg" type="dots" /></Center>
+            <Title order={2}>{aiWorking === "day" ? "The AI is planning this day again..." : "The AI is planning your trip..."}</Title>
+            <Text c="dimmed">It is reading everyone's preferences. This can take up to a minute.</Text>
           </Card>
         </section>
       </div>
@@ -338,23 +348,25 @@ function ItineraryPage() {
       <div className="trip-layout">
         <Sidebar trip={trip} />
         <section className="trip-content">
-          <h1>Itinerary</h1>
-          <Card className="center">
-            <div className="empty-icon"><Sparkles size={30} /></div>
-            <h2>No itinerary yet</h2>
+          <Title order={1} mb="lg">Itinerary</Title>
+          <Card p={40} ta="center">
+            <Center mb="md">
+              <ThemeIcon size={64} radius="xl" variant="light"><Sparkles size={30} /></ThemeIcon>
+            </Center>
+            <Title order={2}>No itinerary yet</Title>
 
             {isOrganiser && (
               <div>
-                <p className="muted">Make sure everyone has saved their preferences, then let the AI plan the trip.</p>
-                <Button onClick={handleGenerate}><Sparkles size={18} /> Generate with AI</Button>
+                <Text c="dimmed" mb="md">Make sure everyone has saved their preferences, then let the AI plan the trip.</Text>
+                <Button size="md" leftSection={<Sparkles size={18} />} onClick={handleGenerate}>Generate with AI</Button>
               </div>
             )}
 
             {!isOrganiser && (
-              <p className="muted">Save your preferences. The organiser will generate the itinerary once everyone is ready.</p>
+              <Text c="dimmed">Save your preferences. The organiser will generate the itinerary once everyone is ready.</Text>
             )}
 
-            <Message type="error" text={error} />
+            {error && <Alert color="red" variant="light" mt="md" ta="left">{error}</Alert>}
           </Card>
         </section>
       </div>
@@ -388,6 +400,12 @@ function ItineraryPage() {
   const costForEveryone = costPerPerson * numberOfPeople + stayCost;
   const overBudget = costForEveryone > trip.budget;
 
+  // How much of the budget the plan uses, for the bar (0 to 100)
+  let budgetPercent = 0;
+  if (trip.budget > 0) {
+    budgetPercent = Math.round((costForEveryone / trip.budget) * 100);
+  }
+
   const day = itinerary.days[selectedDay];
   const dayWeather = getWeatherForDay(day.date);
 
@@ -396,252 +414,268 @@ function ItineraryPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <h1>Itinerary</h1>
+        <Group justify="space-between" mb="lg">
+          <Title order={1}>Itinerary</Title>
+          {isFinalised && <Badge size="lg" color="green" leftSection={<Lock size={14} />}>Finalised</Badge>}
+        </Group>
 
-        <Message type="error" text={error} />
-        {isFinalised && <p className="success">✅ This itinerary is finalised.</p>}
+        {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
 
         {/* People who joined after the plan was made, and aren't in it yet */}
         {!isFinalised && membersNotInPlan.length > 0 && (
-          <Card className="notice">
-            👥 Not in this plan yet: <strong>{membersNotInPlan.join(", ")}</strong> (no preferences saved).
-            {" "}They should fill in{" "}
-            <Link to={"/trips/" + tripId + "/preferences"}>My Preferences</Link>.
-            {isOrganiser && " Then click \"Plan whole trip again\" below so the plan includes them."}
-          </Card>
+          <Alert color="orange" variant="light" mb="md" title={"Not in this plan yet: " + membersNotInPlan.join(", ")}>
+            They have not saved preferences. They should fill in{" "}
+            <Anchor component={Link} to={"/trips/" + tripId + "/preferences"}>My Preferences</Anchor>.
+            {isOrganiser && " Then use \"Plan the whole trip again\" at the bottom so the plan includes them."}
+          </Alert>
         )}
 
         {openDecisions > 0 && (
-          <Card className="notice">
-            ⚖️ The AI found {openDecisions} thing(s) the group needs to decide.{" "}
-            <Link to={"/trips/" + tripId + "/consensus"}>Go to Group Decisions →</Link>
-          </Card>
+          <Alert color="yellow" variant="light" mb="md" title={"⚖️ " + openDecisions + " group decision(s) to make"}>
+            The AI found things the group disagrees on.{" "}
+            <Anchor component={Link} to={"/trips/" + tripId + "/consensus"} fw={700}>Go to Group Decisions →</Anchor>
+          </Alert>
         )}
 
-        {/* Cost summary: per person, for everyone, and the total trip budget */}
-        <Card className="cost-summary">
-          <div>
-            <span className="muted small">Activities per person</span>
-            <strong>{formatMoney(costPerPerson, currency)}</strong>
-          </div>
-          <div>
-            <span className="muted small">Stay ({nights} night{nights === 1 ? "" : "s"}, whole group)</span>
-            <strong>{formatMoney(stayCost, currency)}</strong>
-          </div>
-          <div>
-            <span className="muted small">Total for all {numberOfPeople} {numberOfPeople === 1 ? "person" : "people"}</span>
-            <strong>{formatMoney(costForEveryone, currency)}</strong>
-          </div>
-          <div>
-            <span className="muted small">Total trip budget</span>
-            <strong>{formatMoney(trip.budget, currency)}</strong>
-          </div>
+        {/* Cost summary: per person, stay, for everyone, and the trip budget */}
+        <Card mb="lg">
+          <SimpleGrid cols={{ base: 2, md: 4 }}>
+            <div>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Activities per person</Text>
+              <Text fw={800} size="lg">{formatMoney(costPerPerson, currency)}</Text>
+            </div>
+            <div>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Stay · {nights} night{nights === 1 ? "" : "s"}</Text>
+              <Text fw={800} size="lg">{formatMoney(stayCost, currency)}</Text>
+            </div>
+            <div>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Total for {numberOfPeople} {numberOfPeople === 1 ? "person" : "people"}</Text>
+              <Text fw={800} size="lg" c={overBudget ? "red" : "maroon.7"}>{formatMoney(costForEveryone, currency)}</Text>
+            </div>
+            <div>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Trip budget</Text>
+              <Text fw={800} size="lg">{formatMoney(trip.budget, currency)}</Text>
+            </div>
+          </SimpleGrid>
+
+          <Progress value={budgetPercent > 100 ? 100 : budgetPercent} color={overBudget ? "red" : "maroon"} size="lg" radius="xl" mt="md" />
+          <Text size="sm" c="dimmed" mt={6}>The plan uses {budgetPercent}% of the trip budget.</Text>
         </Card>
 
         {overBudget && (
-          <Card className="over-budget">
-            <p className="error">
+          <Alert color="red" variant="light" mb="lg" title="Over budget" icon={<Wallet size={18} />}>
+            <Text size="sm" mb={canEdit ? "sm" : 0}>
               This plan costs about {formatMoney(costForEveryone, currency)}, which is{" "}
               {formatMoney(costForEveryone - trip.budget, currency)} more than the trip budget.
-            </p>
+            </Text>
             {canEdit && (
-              <Button onClick={() => handleMakeCheaper(costForEveryone)}>
-                💰 Make it cheaper with AI
-              </Button>
+              <Button color="red" onClick={() => handleMakeCheaper(costForEveryone)}>💰 Make it cheaper with AI</Button>
             )}
             {!canEdit && !isFinalised && (
-              <p className="muted small">The organiser can ask the AI for a cheaper plan.</p>
+              <Text size="sm" c="dimmed">The organiser can ask the AI for a cheaper plan.</Text>
             )}
-          </Card>
+          </Alert>
         )}
 
         {/* Where to stay: the AI's suggestion (not a booking) */}
         {itinerary.stay && itinerary.stay.area && (
-          <Card className="stay-card">
-            <div className="stay-icon"><BedDouble size={26} /></div>
+          <Card mb="lg">
+            <Group align="flex-start" wrap="nowrap">
+              <ThemeIcon size={52} radius="md" variant="light"><BedDouble size={26} /></ThemeIcon>
+              <div>
+                <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Where to stay · suggestion, not a booking</Text>
+                <Title order={3}><span className="capitalize">{itinerary.stay.placeType}</span> in {itinerary.stay.area}</Title>
+                <Group gap="xs" my={6}>
+                  <Badge variant="light" className="capitalize">{itinerary.stay.budgetLevel}</Badge>
+                  <Text size="sm">
+                    About <b>{formatMoney(itinerary.stay.costPerNight, currency)}</b> per night for the whole group
+                  </Text>
+                </Group>
+                <Text size="sm" c="dimmed">{itinerary.stay.reason}</Text>
+                {trip.type === "group" && itinerary.stay.matchedMembers.length > 0 && (
+                  <Badge color="green" variant="light" mt="xs">Matches: {itinerary.stay.matchedMembers.join(", ")}</Badge>
+                )}
+              </div>
+            </Group>
+          </Card>
+        )}
+
+        {/* One tab per day */}
+        <Tabs variant="pills" radius="xl" value={String(selectedDay)} onChange={(value) => setSelectedDay(Number(value))} mb="md">
+          <Tabs.List>
+            {itinerary.days.map((oneDay, index) => (
+              <Tabs.Tab key={oneDay._id} value={String(index)}>Day {oneDay.dayNumber}</Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs>
+
+        <Card mb="lg">
+          {/* The day's date, cost and weather */}
+          <Group justify="space-between" mb="md">
             <div>
-              <span className="muted small">Where to stay (suggestion, not a booking)</span>
-              <h3>
-                {itinerary.stay.placeType} in {itinerary.stay.area}
-              </h3>
-              <p className="small">
-                <span className="tag">{itinerary.stay.budgetLevel}</span>
-                About <strong>{formatMoney(itinerary.stay.costPerNight, currency)}</strong> per night for the whole group
-              </p>
-              <p className="muted small">{itinerary.stay.reason}</p>
-              {trip.type === "group" && itinerary.stay.matchedMembers.length > 0 && (
-                <span className="tag tag-match">Matches: {itinerary.stay.matchedMembers.join(", ")}</span>
-              )}
+              <Title order={3}>Day {day.dayNumber} · {formatDate(day.date)}</Title>
+              <Text size="sm" c="dimmed">About {formatMoney(getTotalCost(day.activities), currency)} per person</Text>
             </div>
-          </Card>
-        )}
+            {dayWeather && (
+              <Badge size="lg" variant="light" color="blue">
+                {dayWeather.emoji} {dayWeather.label} · {dayWeather.maxTemp}° / {dayWeather.minTemp}°
+              </Badge>
+            )}
+          </Group>
 
-        {/* One tab button per day */}
-        <div className="tabs">
-          {itinerary.days.map((oneDay, index) => (
-            <button
-              key={oneDay._id}
-              className={selectedDay === index ? "tab active" : "tab"}
-              onClick={() => setSelectedDay(index)}
-            >
-              Day {oneDay.dayNumber}
-            </button>
-          ))}
-        </div>
+          {day.activities.length === 0 && <Text c="dimmed">No activities on this day.</Text>}
 
-        <p className="muted">
-          {formatDate(day.date)} · about {formatMoney(getTotalCost(day.activities), currency)} per person
-          {dayWeather && (
-            <span className="day-weather">
-              {dayWeather.emoji} {dayWeather.label} · {dayWeather.maxTemp}° / {dayWeather.minTemp}°
-            </span>
-          )}
-        </p>
-        {day.activities.length === 0 && <p className="muted">No activities on this day.</p>}
-
-        {/* The day as a timeline: Morning, Afternoon, Evening */}
-        {["Morning", "Afternoon", "Evening"].map((part) => {
-          // The activities that belong to this part of the day (keeping their position in the day)
-          const items = [];
-          for (let i = 0; i < day.activities.length; i++) {
-            if (getPartOfDay(day.activities[i].time) === part) {
-              items.push({ activity: day.activities[i], index: i });
+          {/* The day as a timeline: Morning, Afternoon, Evening */}
+          {["Morning", "Afternoon", "Evening"].map((part) => {
+            // The activities that belong to this part of the day (keeping their position in the day)
+            const items = [];
+            for (let i = 0; i < day.activities.length; i++) {
+              if (getPartOfDay(day.activities[i].time) === part) {
+                items.push({ activity: day.activities[i], index: i });
+              }
             }
-          }
 
-          if (items.length === 0) {
-            return null;
-          }
+            if (items.length === 0) {
+              return null;
+            }
 
-          return (
-            <div key={part} className="day-part">
-              <h3 className="day-part-title">{part}</h3>
+            return (
+              <div key={part} className="day-part">
+                <Text className="day-part-title">{part}</Text>
 
-              {items.map((item) => {
-                const activity = item.activity;
-                const index = item.index;
-                const isOpen = openActivityId === activity._id;
-                const isEditing = editingId === activity._id;
+                <Timeline bulletSize={34} lineWidth={2} color="maroon" active={items.length - 1}>
+                  {items.map((item) => {
+                    const activity = item.activity;
+                    const index = item.index;
 
-                return (
-                  <div key={activity._id} className={"timeline-item" + (activity.category === "travel" ? " travel" : "")}>
-                    <div className="timeline-time">{activity.time}</div>
+                    return (
+                      <Timeline.Item
+                        key={activity._id}
+                        bullet={<span className="timeline-emoji">{getActivityIcon(activity)}</span>}
+                        lineVariant={activity.category === "travel" ? "dashed" : "solid"}
+                      >
+                        <Group justify="space-between" wrap="nowrap" align="flex-start">
+                          <div>
+                            <Group gap={8}>
+                              <Badge variant="light" radius="sm">{activity.time}</Badge>
+                              <Text fw={700}>{activity.name}</Text>
+                            </Group>
+                            <Text size="sm" c="dimmed" mt={4}>{activity.description}</Text>
 
-                    <div className="timeline-body">
-                      <div className="row-between">
-                        <h4>{getActivityIcon(activity)} {activity.name}</h4>
-                        <span className="activity-cost">
-                          {activity.estimatedCost > 0 ? formatMoney(activity.estimatedCost, currency) : "Free"}
-                        </span>
-                      </div>
-
-                      <p className="muted">{activity.description}</p>
-
-                      {/* FR-5.6: which members this activity was chosen for */}
-                      {trip.type === "group" && activity.matchedMembers.length > 0 && (
-                        <span className="tag tag-match">Matches: {activity.matchedMembers.join(", ")}</span>
-                      )}
-
-                      {/* Organiser only: small "Change" link that opens the edit buttons */}
-                      {canEdit && !isEditing && (
-                        <button className="link-button" onClick={() => toggleActivity(activity._id)}>
-                          {isOpen ? "Close" : "Change"}
-                        </button>
-                      )}
-
-                      {canEdit && isOpen && !isEditing && (
-                        <div className="button-row activity-buttons">
-                          <Button variant="outline" size="small" onClick={() => startEditing(activity)}>
-                            <Pencil size={14} /> Edit
-                          </Button>
-                          <Button variant="outline" size="small"
-                            onClick={() => handleMove(activity._id, "up")}
-                            disabled={index === 0}
-                          >
-                            <ArrowUp size={14} /> Earlier
-                          </Button>
-                          <Button variant="outline" size="small"
-                            onClick={() => handleMove(activity._id, "down")}
-                            disabled={index === day.activities.length - 1}
-                          >
-                            <ArrowDown size={14} /> Later
-                          </Button>
-                          <Button variant="danger" size="small" onClick={() => handleRemove(activity)}>
-                            <Trash size={14} /> Remove
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* The edit form */}
-                      {isEditing && (
-                        <form onSubmit={handleSaveEdit}>
-                          <div className="two-columns">
-                            <div>
-                              <label>Time</label>
-                              <input value={editTime} onChange={(e) => setEditTime(e.target.value)} />
-                            </div>
-                            <div>
-                              <label>Cost per person ({currency})</label>
-                              <input type="number" min="0" value={editCost} onChange={(e) => setEditCost(e.target.value)} required />
-                            </div>
+                            {/* FR-5.6: which members this activity was chosen for */}
+                            {trip.type === "group" && activity.matchedMembers.length > 0 && (
+                              <Badge color="green" variant="light" size="sm" mt={6}>
+                                Matches: {activity.matchedMembers.join(", ")}
+                              </Badge>
+                            )}
                           </div>
 
-                          <label>Name</label>
-                          <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                          <Group gap={4} wrap="nowrap">
+                            <Text fw={700} size="sm" c={activity.estimatedCost > 0 ? "dark" : "green"}>
+                              {activity.estimatedCost > 0 ? formatMoney(activity.estimatedCost, currency) : "Free"}
+                            </Text>
 
-                          <label>Description</label>
-                          <textarea rows="2" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                            {/* Organiser only: the ⋮ menu with Edit / Earlier / Later / Remove */}
+                            {canEdit && (
+                              <Menu position="bottom-end" withinPortal>
+                                <Menu.Target>
+                                  <ActionIcon variant="subtle" color="gray" aria-label="Change this activity">
+                                    <MoreVertical size={18} />
+                                  </ActionIcon>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                  <Menu.Item leftSection={<Pencil size={14} />} onClick={() => startEditing(activity)}>Edit</Menu.Item>
+                                  <Menu.Item leftSection={<ArrowUp size={14} />} disabled={index === 0} onClick={() => handleMove(activity._id, "up")}>
+                                    Move earlier
+                                  </Menu.Item>
+                                  <Menu.Item leftSection={<ArrowDown size={14} />} disabled={index === day.activities.length - 1} onClick={() => handleMove(activity._id, "down")}>
+                                    Move later
+                                  </Menu.Item>
+                                  <Menu.Divider />
+                                  <Menu.Item color="red" leftSection={<Trash2 size={14} />} onClick={() => handleRemove(activity)}>Remove</Menu.Item>
+                                </Menu.Dropdown>
+                              </Menu>
+                            )}
+                          </Group>
+                        </Group>
+                      </Timeline.Item>
+                    );
+                  })}
+                </Timeline>
+              </div>
+            );
+          })}
+        </Card>
 
-                          <div className="button-row">
-                            <Button type="submit">Save</Button>
-                            <Button type="button" variant="outline" onClick={() => setEditingId("")}>Cancel</Button>
-                          </div>
-                        </form>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+        {/* The edit pop-up (opens when "Edit" is clicked in the ⋮ menu) */}
+        <Modal opened={editingId !== ""} onClose={() => setEditingId("")} title="Edit activity" centered>
+          <form onSubmit={handleSaveEdit}>
+            <Stack>
+              <SimpleGrid cols={2}>
+                <TextInput label="Time" placeholder="09:00" value={editTime} onChange={(e) => setEditTime(e.target.value)} />
+                <NumberInput label={"Cost per person (" + currency + ")"} min={0} value={editCost} onChange={setEditCost} required />
+              </SimpleGrid>
+              <TextInput label="Name" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+              <Textarea label="Description" autosize minRows={2} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+              <Group justify="flex-end">
+                <Button variant="default" onClick={() => setEditingId("")}>Cancel</Button>
+                <Button type="submit">Save</Button>
+              </Group>
+            </Stack>
+          </form>
+        </Modal>
 
-        {/* Organiser: finalise (always visible) */}
+        {/* Organiser: finalise */}
         {canEdit && (
-          <Card>
-            <Button onClick={handleFinalise} disabled={openDecisions > 0}>Finalise itinerary</Button>
-            {openDecisions > 0 && <p className="muted small">Resolve all open group decisions first.</p>}
-            {openDecisions === 0 && <p className="muted small">Happy with the plan? Finalise it to lock it for everyone.</p>}
+          <Card mb="lg">
+            <Group justify="space-between">
+              <div>
+                <Title order={3}>Happy with the plan?</Title>
+                <Text size="sm" c="dimmed">
+                  {openDecisions > 0 ? "Resolve all open group decisions first." : "Finalise it to lock it for everyone."}
+                </Text>
+              </div>
+              <Button size="md" leftSection={<Lock size={16} />} onClick={handleFinalise} disabled={openDecisions > 0}>
+                Finalise itinerary
+              </Button>
+            </Group>
           </Card>
         )}
 
-        {/* Organiser: asking the AI again, hidden until opened */}
+        {/* Organiser: asking the AI again, folded away until opened */}
         {canEdit && (
-          <details className="card change-plan">
-            <summary>Change the plan with AI</summary>
+          <Accordion variant="separated" radius="lg">
+            <Accordion.Item value="change">
+              <Accordion.Control icon={<Sparkles size={18} />}>Change the plan with AI</Accordion.Control>
+              <Accordion.Panel>
+                <Title order={4}>Plan Day {day.dayNumber} again</Title>
+                <Text size="sm" c="dimmed" mb="xs">The AI re-plans only this day. The other days stay the same.</Text>
+                <Group align="flex-end" wrap="nowrap" mb="lg">
+                  <TextInput
+                    style={{ flex: 1 }}
+                    value={dayInstructions}
+                    onChange={(e) => setDayInstructions(e.target.value)}
+                    placeholder="Make this day less tiring"
+                  />
+                  <Button variant="light" leftSection={<RefreshCw size={16} />} onClick={() => handleRegenerateDay(day.dayNumber)}>
+                    Plan Day {day.dayNumber} again
+                  </Button>
+                </Group>
 
-            <h3>Plan Day {day.dayNumber} again</h3>
-            <p className="muted small">The AI re-plans only this day. The other days stay the same.</p>
-            <input
-              value={dayInstructions}
-              onChange={(e) => setDayInstructions(e.target.value)}
-              placeholder="e.g. make this day less physically demanding"
-            />
-            <Button variant="outline" onClick={() => handleRegenerateDay(day.dayNumber)}>
-              <RefreshCw size={16} /> Plan Day {day.dayNumber} again
-            </Button>
-
-            <hr />
-
-            <h3>Plan the whole trip again</h3>
-            <p className="muted small">The AI makes a completely new plan. Group decisions start over.</p>
-            <input
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="What should the AI change?"
-            />
-            <Button variant="outline" onClick={handleGenerate}><RefreshCw size={16} /> Plan whole trip again</Button>
-          </details>
+                <Title order={4}>Plan the whole trip again</Title>
+                <Text size="sm" c="dimmed" mb="xs">The AI makes a completely new plan. Group decisions start over.</Text>
+                <Group align="flex-end" wrap="nowrap">
+                  <TextInput
+                    style={{ flex: 1 }}
+                    value={instructions}
+                    onChange={(e) => setInstructions(e.target.value)}
+                    placeholder="What should the AI change?"
+                  />
+                  <Button variant="light" leftSection={<RefreshCw size={16} />} onClick={handleGenerate}>Plan whole trip again</Button>
+                </Group>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
         )}
       </section>
     </div>
