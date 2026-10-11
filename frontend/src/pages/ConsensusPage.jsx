@@ -1,16 +1,16 @@
 // Group Decisions: things the AI found the group disagrees on (FR-5.3 to FR-5.5).
 // Each conflict has 2-3 options. Members vote; the organiser can also decide directly.
 // An option is chosen automatically when more than half of the group votes for it.
+// Built with Mantine components (Badge, Avatar, Progress, Button, Alert ...).
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Scale, CheckCircle2, Clock, Users } from "lucide-react";
+import { Card, Title, Text, Button, Badge, Avatar, Group, Progress, Alert, Anchor, Loader, Center, ThemeIcon } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Scale, CheckCircle2, Clock } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
-import Loading from "../components/ui/Loading.jsx";
-import PageHeader from "../components/ui/PageHeader.jsx";
+import { confirmAction } from "../components/ui/confirm.jsx";
 
 function ConsensusPage() {
   const { tripId } = useParams();
@@ -61,6 +61,7 @@ function ConsensusPage() {
       await api.post("/trips/" + tripId + "/conflicts/" + conflictId + "/vote", {
         optionIndex: optionIndex
       });
+      notifications.show({ message: "Vote saved ✓", color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -68,18 +69,23 @@ function ConsensusPage() {
   }
 
   // The organiser picks an option for everyone
-  async function handleDecide(conflictId, optionIndex) {
-    const sure = window.confirm("Choose this option for the whole group?");
-    if (!sure) {
-      return;
-    }
+  function handleDecide(conflictId, optionIndex) {
+    confirmAction({
+      title: "Decide this for everyone?",
+      text: "This option will be chosen for the whole group, and voting on this decision ends.",
+      confirmLabel: "Choose this option",
+      onConfirm: () => decide(conflictId, optionIndex)
+    });
+  }
 
+  async function decide(conflictId, optionIndex) {
     setError("");
 
     try {
       await api.post("/trips/" + tripId + "/conflicts/" + conflictId + "/resolve", {
         optionIndex: optionIndex
       });
+      notifications.show({ message: "Decision made ✓", color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -110,9 +116,13 @@ function ConsensusPage() {
 
   if (!trip) {
     if (error) {
-      return <Message type="error" text={error} />;
+      return <Alert color="red" variant="light">{error}</Alert>;
     }
-    return <Loading text="Loading..." />;
+    return (
+      <Center h={300}>
+        <Loader />
+      </Center>
+    );
   }
 
   const isOrganiser = trip.organiser._id === user.id;
@@ -122,34 +132,37 @@ function ConsensusPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <PageHeader title="Group Decisions">
-          When members want different things, the AI suggests compromises here. Vote for the one you prefer.
+        <Title order={1}>Group Decisions</Title>
+        <Text c="dimmed" mb="lg">
+          When members want different things, the AI suggests compromises. Vote for the one you prefer.
           An option is chosen once more than half of the group votes for it.
-        </PageHeader>
+        </Text>
 
-        <Message type="error" text={error} />
+        {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
 
         {/* No itinerary yet */}
         {!itinerary && (
-          <Card className="center">
-            <p>Nothing to decide yet. The AI finds conflicts when the itinerary is generated.</p>
-            <Link to={"/trips/" + tripId + "/itinerary"}>Go to Itinerary</Link>
+          <Card p={40} ta="center">
+            <Center mb="md"><ThemeIcon size={60} radius="xl" variant="light"><Scale size={28} /></ThemeIcon></Center>
+            <Text mb="xs">Nothing to decide yet. The AI finds conflicts when the itinerary is generated.</Text>
+            <Anchor component={Link} to={"/trips/" + tripId + "/itinerary"} fw={700}>Go to Itinerary →</Anchor>
           </Card>
         )}
 
         {/* Itinerary exists but no conflicts */}
         {itinerary && conflicts.length === 0 && (
-          <Card className="center">
-            <p>🎉 No conflicts – the AI found a plan that suits everyone.</p>
+          <Card p={40} ta="center">
+            <Text fz={40}>🎉</Text>
+            <Text fw={700}>No conflicts – the AI found a plan that suits everyone.</Text>
           </Card>
         )}
 
         {/* Small summary: how many decisions are open, how many are done */}
         {itinerary && conflicts.length > 0 && (
-          <div className="decision-summary">
-            <span className="decision-count open"><Clock size={16} /> {countOpen()} to decide</span>
-            <span className="decision-count done"><CheckCircle2 size={16} /> {conflicts.length - countOpen()} decided</span>
-          </div>
+          <Group mb="md">
+            <Badge size="xl" color="yellow" variant="light" leftSection={<Clock size={16} />}>{countOpen()} to decide</Badge>
+            <Badge size="xl" variant="light" leftSection={<CheckCircle2 size={16} />}>{conflicts.length - countOpen()} decided</Badge>
+          </Group>
         )}
 
         {/* One card for each conflict */}
@@ -160,39 +173,44 @@ function ConsensusPage() {
 
           // The coloured label at the top of the card
           let statusText = "Decided";
-          let statusClass = "decision-status decided";
+          let statusColor = "maroon";
           if (canVote && myVote === -1) {
             statusText = "Needs your vote";
-            statusClass = "decision-status needs-vote";
+            statusColor = "orange";
           } else if (canVote) {
             statusText = "Waiting for others";
-            statusClass = "decision-status waiting";
+            statusColor = "yellow";
           }
 
           return (
-            <div key={conflict._id} className={conflict.resolved ? "decision-card resolved" : "decision-card"}>
+            <div key={conflict._id} className="decision-card">
               {/* Top: label, title, who it affects */}
               <div className="decision-head">
-                <span className={statusClass}>{statusText}</span>
+                <Badge
+                  color={statusColor}
+                  variant={statusText === "Waiting for others" ? "light" : "filled"}
+                  className={statusText === "Needs your vote" ? "needs-vote" : ""}
+                >
+                  {statusText}
+                </Badge>
 
-                <h2 className="decision-title">
-                  <span className="decision-icon"><Scale size={20} /></span>
-                  {conflict.conflictDescription}
-                </h2>
+                <Group gap="sm" my="sm" wrap="nowrap">
+                  <ThemeIcon size={40} radius="md"><Scale size={20} /></ThemeIcon>
+                  <Title order={2} className="decision-title">{conflict.conflictDescription}</Title>
+                </Group>
 
                 {conflict.affectedMembers.length > 0 && (
-                  <div className="decision-people">
-                    <Users size={15} />
+                  <Group gap="xs">
                     {conflict.affectedMembers.map((name) => (
-                      <span key={name} className="person-chip">
-                        <span className="person-letter">{name.charAt(0).toUpperCase()}</span>
+                      <Badge key={name} variant="default" size="lg" radius="xl" pl={3}
+                        leftSection={<Avatar size={20} color="maroon" variant="filled" radius="xl">{name.charAt(0).toUpperCase()}</Avatar>}>
                         {name}
-                      </span>
+                      </Badge>
                     ))}
-                  </div>
+                  </Group>
                 )}
 
-                <p className="decision-why">{conflict.reasoning}</p>
+                <Text size="sm" c="dimmed" mt="sm">{conflict.reasoning}</Text>
               </div>
 
               {/* The options, side by side (SRS 4.1) */}
@@ -216,36 +234,33 @@ function ConsensusPage() {
 
                   return (
                     <div key={option._id} className={optionClass}>
-                      <div className="option-top">
-                        <span className="option-letter">{letters[index]}</span>
-                        <span className={option.extraCost > 0 ? "cost-badge" : "cost-badge free"}>
+                      <Group justify="space-between">
+                        <Avatar radius="xl" color="maroon" variant={isMine || isChosen ? "filled" : "light"}>{letters[index]}</Avatar>
+                        <Badge color={option.extraCost > 0 ? "orange" : "green"} variant="light">
                           {option.extraCost > 0 ? "+" + formatMoney(option.extraCost, currency) : "No extra cost"}
-                        </span>
-                      </div>
+                        </Badge>
+                      </Group>
 
-                      <p className="option-text">{option.description}</p>
+                      <Text fw={600} my="md" style={{ flex: 1 }}>{option.description}</Text>
 
                       {/* Vote bar */}
-                      <div className="vote-bar">
-                        <div className="vote-bar-fill" style={{ width: votePercent + "%" }} />
-                      </div>
-                      <p className="vote-count">{option.voteCount} of {trip.members.length} votes</p>
+                      <Progress value={votePercent} size="md" radius="xl" />
+                      <Text size="xs" c="dimmed" mt={6} mb="sm">{option.voteCount} of {trip.members.length} {trip.members.length === 1 ? "vote" : "votes"}</Text>
 
-                      {isChosen && <p className="chosen-label"><CheckCircle2 size={16} /> Group's choice</p>}
+                      {isChosen && (
+                        <Text c="maroon.7" fw={800}><CheckCircle2 size={16} /> Group's choice</Text>
+                      )}
 
                       {canVote && (
-                        <button
-                          className={isMine ? "vote-button voted" : "vote-button"}
-                          onClick={() => handleVote(conflict._id, index)}
-                        >
+                        <Button fullWidth variant={isMine ? "filled" : "outline"} onClick={() => handleVote(conflict._id, index)}>
                           {isMine ? "✓ Your vote" : "Vote " + letters[index]}
-                        </button>
+                        </Button>
                       )}
 
                       {canVote && isOrganiser && (
-                        <button className="link-button" onClick={() => handleDecide(conflict._id, index)}>
+                        <Button variant="subtle" color="gray" size="xs" mt={6} onClick={() => handleDecide(conflict._id, index)}>
                           Decide this for everyone
-                        </button>
+                        </Button>
                       )}
                     </div>
                   );

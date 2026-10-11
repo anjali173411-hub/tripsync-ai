@@ -882,9 +882,8 @@ button:where(:not([class*="mantine-"])):disabled {
 }
 
 /* "Needs your vote" gently pulses so people notice it */
-.decision-status.needs-vote {
-  background: #e0a100;
-  color: var(--white);
+.decision-status.needs-vote,
+.needs-vote {
   animation: pulse 1.8s ease-in-out infinite;
 }
 
