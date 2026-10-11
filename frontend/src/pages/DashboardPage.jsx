@@ -1,19 +1,17 @@
 // Home page: a welcome banner, invitations, and my trips (FR-2.6)
+// Built with Mantine components (Paper, Card, Badge, Avatar, Button ...).
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, MapPin, CalendarDays, Users, Wallet, ArrowRight } from "lucide-react";
-import api, { getErrorMessage, formatDateRange, travelModeText, formatMoney } from "../api/axios.js";
-import Button from "../components/ui/Button.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
-import Loading from "../components/ui/Loading.jsx";
-import PageHeader from "../components/ui/PageHeader.jsx";
+import { Paper, Card, Title, Text, Button, Badge, Avatar, Group, SimpleGrid, Alert, Loader, Center, ThemeIcon } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
+import { Plus, MapPin, CalendarDays, Users, Wallet, ArrowRight, Plane, Mail, Archive } from "lucide-react";
+import api, { getErrorMessage, formatDateRange, travelModeText, formatMoney, getCurrentUser } from "../api/axios.js";
 
 function DashboardPage() {
   const [trips, setTrips] = useState([]);
   const [invitations, setInvitations] = useState([]); // trips I was invited to
-  const [message, setMessage] = useState("");
   const [destinations, setDestinations] = useState([]); // used to find a photo for each trip
   const [currency, setCurrency] = useState("");
   const [loading, setLoading] = useState(true);
@@ -46,31 +44,34 @@ function DashboardPage() {
 
   // Accept an invitation: I join the trip
   async function handleAccept(tripId) {
-    setMessage("");
     setError("");
 
     try {
       const response = await api.post("/trips/" + tripId + "/invitation/accept");
-      setMessage(response.data.message);
+      notifications.show({ title: "Joined! 🎉", message: response.data.message, color: "green" });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
-  // Decline an invitation
-  async function handleDecline(tripId) {
-    const sure = window.confirm("Decline this invitation?");
-    if (!sure) {
-      return;
-    }
+  // Decline an invitation - first asks "Are you sure?" in a pop-up
+  function handleDecline(trip) {
+    modals.openConfirmModal({
+      title: "Decline this invitation?",
+      children: <Text size="sm">You won't be part of "{trip.title}". The organiser can invite you again later.</Text>,
+      labels: { confirm: "Decline", cancel: "Keep it" },
+      confirmProps: { color: "red" },
+      onConfirm: () => declineInvitation(trip._id)
+    });
+  }
 
-    setMessage("");
+  async function declineInvitation(tripId) {
     setError("");
 
     try {
       const response = await api.post("/trips/" + tripId + "/invitation/decline");
-      setMessage(response.data.message);
+      notifications.show({ message: response.data.message });
       loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -157,13 +158,15 @@ function DashboardPage() {
             </div>
           )}
 
-          <span className="countdown">{getCountdownText(trip)}</span>
+          <Badge className="countdown" color="white" c="maroon.9" size="lg">
+            {getCountdownText(trip)}
+          </Badge>
 
           <div className="cover-text">
             <h3>{trip.title}</h3>
             <span>{fromText}</span>
           </div>
-          <span className={"pill pill-" + trip.status + " cover-pill"}>{trip.status}</span>
+          <Badge className="cover-pill" color="yellow.4" c="dark.8" size="lg">{trip.status}</Badge>
         </div>
 
         {/* The white panel that slides up over the photo */}
@@ -214,45 +217,93 @@ function DashboardPage() {
   }
 
   if (loading) {
-    return <Loading text="Loading your trips..." />;
+    return (
+      <Center h={300}>
+        <Loader />
+      </Center>
+    );
   }
+
+  const user = getCurrentUser();
 
   return (
     <div className="dashboard">
       {/* Welcome banner */}
-      <Card className="hero">
-        <p className="eyebrow">Your travel dashboard</p>
-        <PageHeader title="Plan something amazing.">Your trips, your people, one shared plan.</PageHeader>
-      </Card>
+      <Paper className="hero" radius="lg" p="xl" mb="lg">
+        <Group justify="space-between" align="center">
+          <div>
+            <Text className="eyebrow">Your travel dashboard</Text>
+            <Title order={1}>Hi {user.name}, plan something amazing.</Title>
+            <Text c="white" opacity={0.8}>Your trips, your people, one shared plan.</Text>
+          </div>
+          <Button component={Link} to="/trips/new" size="md" variant="white" leftSection={<Plus size={18} />}>
+            New trip
+          </Button>
+        </Group>
+      </Paper>
 
-      <Message type="error" text={error} />
-      <Message type="success" text={message} />
+      {/* Three small number tiles */}
+      <SimpleGrid cols={{ base: 1, sm: 3 }} mb="lg">
+        <Paper withBorder radius="lg" p="md">
+          <Group>
+            <ThemeIcon size={42} radius="md" variant="light"><Plane size={20} /></ThemeIcon>
+            <div>
+              <Text size="xl" fw={800}>{activeTrips.length}</Text>
+              <Text size="sm" c="dimmed">Active trips</Text>
+            </div>
+          </Group>
+        </Paper>
+        <Paper withBorder radius="lg" p="md">
+          <Group>
+            <ThemeIcon size={42} radius="md" variant="light" color="yellow"><Mail size={20} /></ThemeIcon>
+            <div>
+              <Text size="xl" fw={800}>{invitations.length}</Text>
+              <Text size="sm" c="dimmed">Invitations</Text>
+            </div>
+          </Group>
+        </Paper>
+        <Paper withBorder radius="lg" p="md">
+          <Group>
+            <ThemeIcon size={42} radius="md" variant="light" color="gray"><Archive size={20} /></ThemeIcon>
+            <div>
+              <Text size="xl" fw={800}>{archivedTrips.length}</Text>
+              <Text size="sm" c="dimmed">Archived</Text>
+            </div>
+          </Group>
+        </Paper>
+      </SimpleGrid>
+
+      {error && <Alert color="red" variant="light" mb="md">{error}</Alert>}
 
       {/* Invitations from other people (FR-2.4) */}
       {invitations.length > 0 && (
         <div>
-          <h2 className="section-title">Invitations</h2>
+          <Title order={2} className="section-title">Invitations</Title>
 
           {invitations.map((trip) => (
-            <div key={trip._id} className="card invitation">
-              <div>
-                <h3>{trip.title}</h3>
-                <p className="muted">
-                  {trip.organiser.name} invited you · 📍 {trip.destination} ·{" "}
-                  {formatDateRange(trip.startDate, trip.endDate)}
-                </p>
-              </div>
+            <Card key={trip._id} mb="sm" className="invitation-card">
+              <Group justify="space-between">
+                <Group>
+                  <Avatar color="maroon" radius="xl">{trip.organiser.name.charAt(0).toUpperCase()}</Avatar>
+                  <div>
+                    <Text fw={700}>{trip.title}</Text>
+                    <Text size="sm" c="dimmed">
+                      {trip.organiser.name} invited you · 📍 {trip.destination} · {formatDateRange(trip.startDate, trip.endDate)}
+                    </Text>
+                  </div>
+                </Group>
 
-              <div className="invitation-buttons">
-                <Button onClick={() => handleAccept(trip._id)}>Accept</Button>
-                <Button variant="outline" onClick={() => handleDecline(trip._id)}>Decline</Button>
-              </div>
-            </div>
+                <Group gap="xs">
+                  <Button onClick={() => handleAccept(trip._id)}>Accept</Button>
+                  <Button variant="default" onClick={() => handleDecline(trip)}>Decline</Button>
+                </Group>
+              </Group>
+            </Card>
           ))}
         </div>
       )}
 
-      <h2 className="section-title">Your trips</h2>
+      <Title order={2} className="section-title">Your trips</Title>
 
       <div className="trip-grid">
         {/* First card: the "+" card for adding a new trip */}
@@ -270,7 +321,7 @@ function DashboardPage() {
       {/* Archived trips, kept separately (FR-2.7) */}
       {archivedTrips.length > 0 && (
         <div>
-          <h2 className="section-title">Archived trips</h2>
+          <Title order={2} className="section-title">Archived trips</Title>
           <div className="trip-grid">
             {archivedTrips.map((trip) => drawTripCard(trip))}
           </div>

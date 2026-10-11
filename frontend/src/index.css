@@ -49,13 +49,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a {
+a:where(:not([class*="mantine-"])) {
   color: var(--primary);
   text-decoration: none;
   font-weight: 500;
 }
 
-a:hover {
+a:where(:not([class*="mantine-"])):hover {
   color: var(--primary-hover);
 }
 
@@ -335,8 +335,11 @@ hr {
 }
 
 /* ---------- Forms ---------- */
+/* :where(:not([class*="mantine-"])) means: these plain styles skip Mantine's components,
+   which have their own look (set in theme.js). ":where" keeps the rule as weak as a
+   normal "input" rule, so our other classes can still change it. */
 
-label {
+label:where(:not([class*="mantine-"])) {
   display: block;
   margin: 16px 0 6px;
   font-weight: 600;
@@ -344,7 +347,7 @@ label {
   color: var(--text);
 }
 
-input, select, textarea {
+input:where(:not([class*="mantine-"])), select:where(:not([class*="mantine-"])), textarea:where(:not([class*="mantine-"])) {
   width: 100%;
   padding: 11px 14px;
   margin: 0 0 4px;
@@ -356,11 +359,11 @@ input, select, textarea {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-input:hover, select:hover, textarea:hover {
+input:where(:not([class*="mantine-"])):hover, select:where(:not([class*="mantine-"])):hover, textarea:where(:not([class*="mantine-"])):hover {
   border-color: #e6d3d7;
 }
 
-input:focus, select:focus, textarea:focus {
+input:where(:not([class*="mantine-"])):focus, select:where(:not([class*="mantine-"])):focus, textarea:where(:not([class*="mantine-"])):focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 4px rgba(139, 30, 63, 0.15);
@@ -368,7 +371,7 @@ input:focus, select:focus, textarea:focus {
 
 /* ---------- Buttons ---------- */
 
-button,
+button:where(:not([class*="mantine-"])),
 .button {
   display: inline-flex;
   align-items: center;
@@ -387,7 +390,7 @@ button,
   box-shadow: 0 2px 6px var(--primary-glow);
 }
 
-button:hover,
+button:where(:not([class*="mantine-"])):hover,
 .button:hover {
   background: var(--primary-hover);
   color: var(--white);
@@ -395,12 +398,12 @@ button:hover,
   box-shadow: 0 6px 14px var(--primary-glow);
 }
 
-button:active,
+button:where(:not([class*="mantine-"])):active,
 .button:active {
   transform: translateY(0);
 }
 
-button:disabled {
+button:where(:not([class*="mantine-"])):disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
@@ -1165,7 +1168,7 @@ button:disabled {
 
 /* ---------- Tables ---------- */
 
-table {
+table:where(:not([class*="mantine-"])) {
   width: 100%;
   border-collapse: collapse;
 }
@@ -1175,11 +1178,11 @@ table {
   overflow-x: auto;
 }
 
-thead {
+table:where(:not([class*="mantine-"])) thead {
   background: var(--primary-pale);
 }
 
-th {
+table:where(:not([class*="mantine-"])) th {
   color: var(--primary-dark);
   font-size: 0.8rem;
   font-weight: 700;
@@ -1187,13 +1190,14 @@ th {
   letter-spacing: 0.04em;
 }
 
-th, td {
+table:where(:not([class*="mantine-"])) th,
+table:where(:not([class*="mantine-"])) td {
   text-align: left;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
 }
 
-tbody tr:hover {
+table:where(:not([class*="mantine-"])) tbody tr:hover {
   background: var(--primary-pale);
 }
 
@@ -2149,4 +2153,9 @@ tbody tr:hover {
 .loading {
   padding: 60px 0;
   text-align: center;
+}
+
+/* Mantine invitation card on the dashboard: a coloured line on the left */
+.invitation-card {
+  border-left: 5px solid var(--primary-bright);
 }
