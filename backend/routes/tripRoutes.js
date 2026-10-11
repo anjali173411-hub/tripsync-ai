@@ -8,6 +8,10 @@ import Expense from "../models/Expense.js";
 import Review from "../models/Review.js";
 import { verifyToken } from "../middleware/auth.js";
 import { findPlace, getWeatherForDates } from "../services/weatherService.js";
+import { findPlaceImage } from "../services/placeImageService.js";
+
+// How many old trips without a photo get one per dashboard load (keeps the page fast)
+const PHOTOS_PER_LOAD = 3;
 
 const router = express.Router();
 
@@ -91,6 +95,11 @@ router.post("/", verifyToken, async (req, res) => {
       members: [req.user.id]
     });
 
+    // Find a photo of the place for the trip card.
+    // null means Wikipedia was busy - the dashboard will try again later.
+    trip.destinationImage = await findPlaceImage(destination);
+    await trip.save();
+
     res.status(201).json({
       message: "Trip created successfully",
       trip
@@ -111,6 +120,20 @@ router.get("/", verifyToken, async (req, res) => {
       .populate("organiser", "name email")
       .populate("members", "name email")
       .sort({ createdAt: -1 });
+
+    // Older trips may not have a photo yet - look up a few of them now
+    let looked = 0;
+    for (let i = 0; i < trips.length; i++) {
+      const trip = trips[i];
+      if (trip.destinationImage === null && looked < PHOTOS_PER_LOAD) {
+        looked = looked + 1;
+        const photo = await findPlaceImage(trip.destination);
+        if (photo !== null) {
+          trip.destinationImage = photo;
+          await Trip.updateOne({ _id: trip._id }, { destinationImage: photo });
+        }
+      }
+    }
 
     res.json({ trips });
   } catch (error) {

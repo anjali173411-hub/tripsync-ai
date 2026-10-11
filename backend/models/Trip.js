@@ -50,6 +50,13 @@ const tripSchema = new mongoose.Schema(
       default: ""
     },
 
+    // A photo of the destination for the trip card (from Wikipedia).
+    // null = not looked up yet, "" = looked up but no photo found.
+    destinationImage: {
+      type: String,
+      default: null
+    },
+
     startDate: {
       type: Date,
       required: true

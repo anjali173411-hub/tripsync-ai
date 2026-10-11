@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, MapPin, CalendarDays, Users, Navigation, ArrowRight } from "lucide-react";
-import api, { getErrorMessage, formatDateRange, travelModeText } from "../api/axios.js";
+import { Plus, MapPin, CalendarDays, Users, Wallet, ArrowRight } from "lucide-react";
+import api, { getErrorMessage, formatDateRange, travelModeText, formatMoney } from "../api/axios.js";
 
 function DashboardPage() {
   const [trips, setTrips] = useState([]);
   const [invitations, setInvitations] = useState([]); // trips I was invited to
   const [message, setMessage] = useState("");
   const [destinations, setDestinations] = useState([]); // used to find a photo for each trip
+  const [currency, setCurrency] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -28,6 +29,9 @@ function DashboardPage() {
 
       const destinationsResponse = await api.get("/destinations");
       setDestinations(destinationsResponse.data.destinations);
+
+      const optionsResponse = await api.get("/options");
+      setCurrency(optionsResponse.data.currency);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -68,8 +72,10 @@ function DashboardPage() {
     }
   }
 
-  // Finds the photo for a trip, using the destination with the same name.
-  // Returns "" if the admin hasn't added a photo for that place.
+  // Finds the photo for a trip:
+  //   1. the admin's photo of the destination with the same name, if there is one
+  //   2. otherwise the photo the backend found on Wikipedia
+  // Returns "" if there is no photo at all.
   function getTripImage(trip) {
     const tripPlace = trip.destination.trim().toLowerCase();
 
@@ -80,22 +86,24 @@ function DashboardPage() {
         if (destinations[i].images.length > 0) {
           return destinations[i].images[0];
         }
-        return "";
       }
     }
 
+    if (trip.destinationImage) {
+      return trip.destinationImage;
+    }
     return "";
   }
 
-  // "4 members · Group trip" or "Solo trip"
+  // "4 members", "1 member" or "Just you"
   function getTripPeopleText(trip) {
     if (trip.type === "solo") {
-      return "Solo trip";
+      return "Just you";
     }
     if (trip.members.length === 1) {
-      return "1 member · Group trip";
+      return "1 member";
     }
-    return trip.members.length + " members · Group trip";
+    return trip.members.length + " members";
   }
 
   // A small countdown for the card: "In 12 days", "Tomorrow", "On the trip now" or "Trip over"
@@ -124,17 +132,18 @@ function DashboardPage() {
   }
 
   // Draws one trip card. Clicking it opens the trip.
+  // Top: a photo of the place with the trip name on it. Below: a white panel with the details.
   function drawTripCard(trip) {
     const image = getTripImage(trip);
 
-    let route = trip.destination;
+    let fromText = "Trip to " + trip.destination;
     if (trip.startingFrom) {
-      route = trip.startingFrom + " → " + trip.destination;
+      fromText = trip.startingFrom + " → " + trip.destination;
     }
 
     return (
       <Link to={"/trips/" + trip._id} key={trip._id} className="trip-tile">
-        {/* Top of the card: photo of the place (or a coloured box), with the name on top */}
+        {/* The photo, with the name and status on top of it */}
         <div className="trip-tile-cover">
           {image && <img className="trip-tile-image" src={image} alt={trip.destination} />}
           {!image && (
@@ -143,21 +152,42 @@ function DashboardPage() {
             </div>
           )}
 
-          <span className={"pill pill-" + trip.status + " cover-pill"}>{trip.status}</span>
           <span className="countdown">{getCountdownText(trip)}</span>
 
           <div className="cover-text">
             <h3>{trip.title}</h3>
-            <span><MapPin size={14} /> {trip.destination}</span>
+            <span>{fromText}</span>
           </div>
+          <span className={"pill pill-" + trip.status + " cover-pill"}>{trip.status}</span>
         </div>
 
-        {/* Bottom of the card: the trip details, one per line with an icon */}
+        {/* The white panel that slides up over the photo */}
         <div className="trip-tile-body">
-          <p><Navigation size={15} /> {route}</p>
-          <p><CalendarDays size={15} /> {formatDateRange(trip.startDate, trip.endDate)}</p>
-          <p><Users size={15} /> {getTripPeopleText(trip)}</p>
-          {trip.travelMode && <p className="travel-chip">{travelModeText(trip.travelMode)}</p>}
+          <span className="panel-handle" />
+          <p className="panel-label">Trip details</p>
+
+          <div className="detail-row">
+            <CalendarDays size={16} />
+            <span>Dates</span>
+            <b>{formatDateRange(trip.startDate, trip.endDate)}</b>
+          </div>
+          <div className="detail-row">
+            <Users size={16} />
+            <span>{trip.type === "solo" ? "Solo trip" : "Group trip"}</span>
+            <b>{getTripPeopleText(trip)}</b>
+          </div>
+          <div className="detail-row">
+            <Wallet size={16} />
+            <span>Budget</span>
+            <b>{formatMoney(trip.budget, currency)}</b>
+          </div>
+          {trip.travelMode && (
+            <div className="detail-row">
+              <MapPin size={16} />
+              <span>Travel by</span>
+              <b>{travelModeText(trip.travelMode)}</b>
+            </div>
+          )}
         </div>
 
         <div className="trip-tile-footer">
