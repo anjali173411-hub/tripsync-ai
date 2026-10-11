@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney, travelModeText } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import NextStep from "../components/NextStep.jsx";
 
 function TripDetailsPage() {
   const { tripId } = useParams(); // the trip id from the web address
@@ -112,14 +113,13 @@ function TripDetailsPage() {
   }
 
   const isOrganiser = trip.organiser._id === user.id;
-  const isGroupTrip = trip.type === "group";
-  const tripLink = "/trips/" + trip._id;
 
   return (
     <div className="trip-layout">
       <Sidebar trip={trip} />
 
       <section className="trip-content">
+        <NextStep tripId={tripId} refreshKey={trip.status} />
         <h1>{trip.title}</h1>
 
         {/* Trip details */}
@@ -189,19 +189,6 @@ function TripDetailsPage() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* A simple guide so the user always knows the next step */}
-        <div className="card">
-          <h2>How to plan this trip</h2>
-          <ol className="steps">
-            {isGroupTrip && <li><Link to={tripLink + "/members"}>Add members</Link> who are coming with you.</li>}
-            <li>Everyone fills in <Link to={tripLink + "/preferences"}>their preferences</Link>.</li>
-            <li>The organiser generates the <Link to={tripLink + "/itinerary"}>AI itinerary</Link>.</li>
-            {isGroupTrip && <li>The group votes on any <Link to={tripLink + "/consensus"}>open decisions</Link>.</li>}
-            <li>The organiser finalises the itinerary.</li>
-            <li>Track spending in the <Link to={tripLink + "/budget"}>budget</Link>.</li>
-          </ol>
         </div>
 
         {/* Only the organiser sees this, and only after the itinerary is finalised */}

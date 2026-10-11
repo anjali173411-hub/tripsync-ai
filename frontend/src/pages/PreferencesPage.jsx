@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api, { getErrorMessage, splitByComma } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import NextStep from "../components/NextStep.jsx";
 
 function PreferencesPage() {
   const { tripId } = useParams();
@@ -186,6 +187,7 @@ function PreferencesPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
+        <NextStep tripId={tripId} refreshKey={message} />
         <h1>My Preferences</h1>
         <p className="muted">
           Tell the AI what you want. You can change this until the organiser generates the itinerary.

@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import { Lightbulb } from "lucide-react";
 import api, { getErrorMessage, formatDate, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import NextStep from "../components/NextStep.jsx";
 
 function BudgetPage() {
   const { tripId } = useParams();
@@ -180,6 +181,7 @@ function BudgetPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
+        <NextStep tripId={tripId} />
         <h1>Budget</h1>
         <p className="muted">
           Write down money you actually spend on this trip – hotel, food, tickets, taxis.

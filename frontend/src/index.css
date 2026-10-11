@@ -1789,3 +1789,115 @@ tbody tr:hover {
     padding: 28px 16px 40px;
   }
 }
+
+/* ---------- "Next step" bar at the top of every trip page ---------- */
+
+.next-step {
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* The progress line: numbered dots joined by a line */
+.steps-line {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.step {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* The line between two dots */
+.step + .step::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.step.done + .step::before,
+.step.done + .step.current::before {
+  background: var(--primary-bright);
+}
+
+.step-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.step.done .step-dot {
+  background: var(--primary-bright);
+  border-color: var(--primary-bright);
+  color: var(--white);
+}
+
+.step.current .step-dot {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--white);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.step.current .step-name {
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+/* "Next step: ..." with one button */
+.next-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: var(--radius-small);
+  background: var(--primary-pale);
+}
+
+.next-action p {
+  margin: 2px 0 0;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.next-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.next-action .button {
+  margin: 0;
+  white-space: nowrap;
+}

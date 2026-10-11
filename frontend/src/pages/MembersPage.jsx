@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api, { getErrorMessage, getCurrentUser } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+import NextStep from "../components/NextStep.jsx";
 
 function MembersPage() {
   const { tripId } = useParams();
@@ -156,6 +157,7 @@ function MembersPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
+        <NextStep tripId={tripId} refreshKey={message} />
         <h1>Members</h1>
 
         {canChangeMembers && (
