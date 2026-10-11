@@ -205,174 +205,20 @@ hr {
 
 /* ---------- Cards and layout ---------- */
 
-.card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-
-.narrow {
-  max-width: 420px;
-  margin: 48px auto;
-  padding: 32px;
-}
-
-.narrow-wide {
-  max-width: 620px;
-  margin: 16px auto;
-  padding: 28px;
-}
-
 .center {
   text-align: center;
 }
 
-.row-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.two-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-/* Cards you can click (destinations) */
-.trip-card {
-  color: var(--text);
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-}
-
-.trip-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-  border-color: var(--primary-light);
-}
-
-.trip-card p {
-  margin: 4px 0;
-}
-
-/* Trip details: label on top, value below */
-.details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-
-.details > div {
-  padding: 12px 14px;
-  border-radius: var(--radius-small);
-  background: var(--primary-pale);
-}
-
-.details .muted {
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.details p {
-  margin: 4px 0 0;
-  font-weight: 700;
-  text-transform: capitalize;
-  color: var(--primary-dark);
-}
-
-/* "How to plan this trip" numbered list */
-.steps {
-  margin: 8px 0 0;
-  padding-left: 22px;
-}
-
-.steps li {
-  margin: 10px 0;
-  padding-left: 4px;
-}
-
-.steps li::marker {
-  color: var(--primary);
-  font-weight: 800;
-}
-
-/* Yellow box: "the group needs to decide..." */
-.notice {
-  background: var(--warning-light);
-  border-color: #f3dfa6;
-  color: #6b4a06;
-}
-
 /* ---------- Login and sign-up ---------- */
-
-.narrow h1 {
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.narrow > p:last-child {
-  text-align: center;
-  margin-bottom: 0;
-}
-
-.narrow form button[type="submit"] {
-  width: 100%;
-  padding: 13px;
-  margin-top: 14px;
-}
 
 /* ---------- Forms ---------- */
 /* :where(:not([class*="mantine-"])) means: these plain styles skip Mantine's components,
    which have their own look (set in theme.js). ":where" keeps the rule as weak as a
    normal "input" rule, so our other classes can still change it. */
 
-label:where(:not([class*="mantine-"])) {
-  display: block;
-  margin: 16px 0 6px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text);
-}
-
-input:where(:not([class*="mantine-"])), select:where(:not([class*="mantine-"])), textarea:where(:not([class*="mantine-"])) {
-  width: 100%;
-  padding: 11px 14px;
-  margin: 0 0 4px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-small);
-  font: inherit;
-  color: var(--text);
-  background: var(--white);
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-input:where(:not([class*="mantine-"])):hover, select:where(:not([class*="mantine-"])):hover, textarea:where(:not([class*="mantine-"])):hover {
-  border-color: #e6d3d7;
-}
-
-input:where(:not([class*="mantine-"])):focus, select:where(:not([class*="mantine-"])):focus, textarea:where(:not([class*="mantine-"])):focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(139, 30, 63, 0.15);
-}
-
 /* ---------- Buttons ---------- */
 
-button:where(:not([class*="mantine-"])),
-.button {
+button:where(:not([class*="mantine-"])) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -390,16 +236,14 @@ button:where(:not([class*="mantine-"])),
   box-shadow: 0 2px 6px var(--primary-glow);
 }
 
-button:where(:not([class*="mantine-"])):hover,
-.button:hover {
+button:where(:not([class*="mantine-"])):hover {
   background: var(--primary-hover);
   color: var(--white);
   transform: translateY(-1px);
   box-shadow: 0 6px 14px var(--primary-glow);
 }
 
-button:where(:not([class*="mantine-"])):active,
-.button:active {
+button:where(:not([class*="mantine-"])):active {
   transform: translateY(0);
 }
 
@@ -410,93 +254,7 @@ button:where(:not([class*="mantine-"])):disabled {
   box-shadow: none;
 }
 
-.btn-small {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  margin-right: 6px;
-  border-radius: 8px;
-}
-
-/* White button with purple text */
-.btn-outline {
-  background: var(--white);
-  color: var(--primary);
-  border-color: var(--primary-light);
-  box-shadow: none;
-}
-
-.btn-outline:hover {
-  background: var(--primary-pale);
-  color: var(--primary-dark);
-  border-color: var(--primary);
-  box-shadow: none;
-}
-
-/* Input and button side by side (e.g. "Add member") */
-.inline-form {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.inline-form input {
-  margin: 0;
-}
-
-.inline-form button {
-  margin: 0;
-  white-space: nowrap;
-}
-
-/* Clickable pills for trip type, interests and pace */
-.chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  background: var(--white);
-  color: var(--text);
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  padding: 8px 16px;
-  margin: 0;
-  font-weight: 500;
-  text-transform: capitalize;
-  box-shadow: none;
-}
-
-.chip:hover {
-  background: var(--primary-pale);
-  color: var(--primary-dark);
-  border-color: var(--primary-light);
-  box-shadow: none;
-}
-
-.chip.selected {
-  background: var(--primary);
-  color: var(--white);
-  border-color: var(--primary);
-}
-
 /* ---------- Messages ---------- */
-
-.error {
-  color: var(--error);
-  background: var(--error-light);
-  padding: 10px 14px;
-  border-radius: var(--radius-small);
-  font-weight: 500;
-}
-
-.success {
-  color: var(--primary-dark);
-  background: var(--primary-light);
-  padding: 10px 14px;
-  border-radius: var(--radius-small);
-  font-weight: 500;
-}
 
 .muted {
   color: var(--muted);
@@ -508,8 +266,7 @@ button:where(:not([class*="mantine-"])):disabled {
 
 /* ---------- Badges, pills and tags ---------- */
 
-.badge,
-.pill {
+.badge {
   display: inline-block;
   padding: 3px 12px;
   border-radius: 999px;
@@ -518,36 +275,11 @@ button:where(:not([class*="mantine-"])):disabled {
   text-transform: capitalize;
 }
 
-.badge-planning,
-.pill-planning { background: var(--primary-light); color: var(--primary); }
+.badge-planning { background: var(--primary-light); color: var(--primary); }
 
-.badge-finalised,
-.pill-finalised { background: var(--primary); color: var(--white); }
+.badge-finalised { background: var(--primary); color: var(--white); }
 
-.badge-completed,
-.pill-completed { background: #f1e8ea; color: var(--muted); }
-
-.pill {
-  margin-top: 8px;
-}
-
-.tag {
-  display: inline-block;
-  padding: 3px 10px;
-  margin: 6px 6px 0 0;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: var(--primary-pale);
-  color: var(--muted);
-  text-transform: capitalize;
-}
-
-.tag-match {
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  text-transform: none;
-}
+.badge-completed { background: #f1e8ea; color: var(--muted); }
 
 .stars {
   color: #e0a100;
@@ -647,18 +379,6 @@ button:where(:not([class*="mantine-"])):disabled {
   color: #f9c5d3;
 }
 
-/* White button on the dark banner */
-.hero .button-big {
-  background: var(--white);
-  color: var(--primary-dark);
-  border-color: var(--white);
-}
-
-.hero .button-big:hover {
-  background: var(--primary-light);
-  color: var(--primary-darkest);
-}
-
 .eyebrow {
   margin: 0;
   font-size: 0.8rem;
@@ -668,55 +388,11 @@ button:where(:not([class*="mantine-"])):disabled {
   color: var(--primary);
 }
 
-/* Big full-width button */
-.button-big {
-  width: 100%;
-  padding: 16px;
-  margin-top: 20px;
-  font-size: 1.05rem;
-  border-radius: 12px;
-}
-
 .section-title {
   margin: 28px 0 12px;
 }
 
 /* ---------- Tabs (itinerary days) ---------- */
-
-.tabs {
-  display: flex;
-  gap: 6px;
-  margin: 20px 0 16px;
-  padding: 5px;
-  overflow-x: auto;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.tab {
-  flex-shrink: 0;
-  background: none;
-  color: var(--muted);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 18px;
-  margin: 0;
-  white-space: nowrap;
-  box-shadow: none;
-}
-
-.tab:hover {
-  background: var(--primary-pale);
-  color: var(--primary-dark);
-  transform: none;
-  box-shadow: none;
-}
-
-.tab.active {
-  background: var(--primary);
-  color: var(--white);
-}
 
 /* ---------- Itinerary activities (timeline) ---------- */
 
@@ -731,126 +407,7 @@ button:where(:not([class*="mantine-"])):disabled {
   border-color: var(--primary-light);
 }
 
-/* The top row is a button so the whole row can be clicked */
-.activity-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  margin: 0;
-  padding: 14px 18px;
-  border: none;
-  border-radius: 0;
-  background: var(--white);
-  color: var(--text);
-  text-align: left;
-  box-shadow: none;
-}
-
-.activity-header:hover {
-  background: var(--primary-pale);
-  color: var(--text);
-  transform: none;
-  box-shadow: none;
-}
-
-.activity-title {
-  flex: 1;
-  font-weight: 700;
-  color: var(--primary-dark);
-}
-
-.activity-cost {
-  font-weight: 700;
-  color: var(--primary-dark);
-  white-space: nowrap;
-}
-
-.activity-details {
-  padding: 0 18px 16px 96px; /* lines up with the title, after the time bubble */
-}
-
-.activity-details p {
-  margin: 0 0 8px;
-  color: var(--muted);
-}
-
-.activity-buttons {
-  margin-top: 12px;
-}
-
-@media (max-width: 760px) {
-  .activity-details {
-    padding-left: 18px;
-  }
-}
-
-/* Time in a purple bubble on the left */
-.activity-time {
-  flex-shrink: 0;
-  align-self: flex-start;
-  min-width: 64px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  font-weight: 700;
-  text-align: center;
-}
-
-.activity-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.activity-body h3 {
-  margin: 0;
-}
-
-.activity-body p {
-  margin: 6px 0;
-  color: var(--muted);
-}
-
-.activity-body .row-between span {
-  font-weight: 700;
-  color: var(--primary-dark);
-  white-space: nowrap;
-}
-
-.activity-body .btn-small {
-  margin-top: 10px;
-}
-
 /* ---------- Group decisions ---------- */
-
-/* "2 to decide · 1 decided" at the top of the page */
-.decision-summary {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.decision-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
-.decision-count.open {
-  background: #fff1d6;
-  color: #9a6200;
-}
-
-.decision-count.done {
-  background: var(--primary-light);
-  color: var(--primary-dark);
-}
 
 /* One decision */
 .decision-card {
@@ -871,30 +428,9 @@ button:where(:not([class*="mantine-"])):disabled {
   border-bottom: 1px solid var(--border);
 }
 
-.decision-status {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 /* "Needs your vote" gently pulses so people notice it */
-.decision-status.needs-vote,
 .needs-vote {
   animation: pulse 1.8s ease-in-out infinite;
-}
-
-.decision-status.waiting {
-  background: #fff1d6;
-  color: #9a6200;
-}
-
-.decision-status.decided {
-  background: var(--primary);
-  color: var(--white);
 }
 
 @keyframes pulse {
@@ -910,58 +446,6 @@ button:where(:not([class*="mantine-"])):disabled {
   font-size: 1.3rem;
   line-height: 1.3;
   color: var(--primary-darkest);
-}
-
-.decision-icon {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--primary);
-  color: var(--white);
-  box-shadow: 0 6px 14px var(--primary-glow);
-}
-
-.decision-people {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  color: var(--muted);
-}
-
-/* A person's name with the first letter in a circle */
-.person-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px 3px 3px;
-  border-radius: 999px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.person-letter {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--primary-bright);
-  color: var(--white);
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.decision-why {
-  margin: 10px 0 0;
-  font-size: 0.9rem;
-  color: var(--muted);
 }
 
 /* Options shown side by side */
@@ -999,231 +483,15 @@ button:where(:not([class*="mantine-"])):disabled {
   box-shadow: 0 0 0 4px var(--primary-light);
 }
 
-.option-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.option-letter {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  font-weight: 800;
-}
-
-.option.mine .option-letter,
-.option.chosen .option-letter {
-  background: var(--primary);
-  color: var(--white);
-}
-
-.cost-badge {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #fff1d6;
-  color: #9a6200;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.cost-badge.free {
-  background: #e3f4ea;
-  color: #1f7a4a;
-}
-
-.option-text {
-  flex: 1;
-  margin: 12px 0;
-  font-size: 1.02rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.vote-bar {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--primary-light);
-  overflow: hidden;
-}
-
-.vote-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--primary-bright), var(--primary));
-  transition: width 0.4s;
-}
-
-.vote-count {
-  margin: 6px 0 12px;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.chosen-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  color: var(--primary);
-  font-weight: 800;
-}
-
-.vote-button {
-  width: 100%;
-  margin: 0;
-  background: var(--white);
-  color: var(--primary);
-  border: 2px solid var(--primary);
-}
-
-.vote-button:hover,
-.vote-button.voted {
-  background: var(--primary);
-  color: var(--white);
-}
-
-/* Looks like a link: used for "Decide this for everyone" */
-.link-button {
-  margin: 8px 0 0;
-  padding: 4px;
-  background: none;
-  border: none;
-  box-shadow: none;
-  color: var(--muted);
-  font-size: 0.82rem;
-  text-decoration: underline;
-}
-
-.link-button:hover {
-  background: none;
-  color: var(--primary);
-}
-
-/* Loading spinner while the AI works */
-.spinner {
-  width: 46px;
-  height: 46px;
-  margin: 16px auto;
-  border: 4px solid var(--primary-light);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-}
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
 /* ---------- Budget ---------- */
 
-.progress {
-  height: 12px;
-  background: var(--primary-tile);
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 12px 0;
-}
-
-.progress.small {
-  height: 8px;
-  flex: 1;
-  margin: 0;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--primary-bright), var(--primary));
-  transition: width 0.4s;
-}
-
-.progress-fill.over {
-  background: linear-gradient(90deg, #e05a4a, var(--error));
-}
-
-.bar-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 10px 0;
-}
-
-.bar-row span:first-child {
-  width: 110px;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.bar-row span:last-child {
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 /* ---------- Tables ---------- */
 
-table:where(:not([class*="mantine-"])) {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-/* A card that holds a table can scroll sideways on small screens */
-.card:has(> table) {
-  overflow-x: auto;
-}
-
-table:where(:not([class*="mantine-"])) thead {
-  background: var(--primary-pale);
-}
-
-table:where(:not([class*="mantine-"])) th {
-  color: var(--primary-dark);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-table:where(:not([class*="mantine-"])) th,
-table:where(:not([class*="mantine-"])) td {
-  text-align: left;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-}
-
-table:where(:not([class*="mantine-"])) tbody tr:hover {
-  background: var(--primary-pale);
-}
-
 /* ---------- Admin and reviews ---------- */
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-}
-
-.stat {
-  text-align: center;
-}
-
-.stat h2 {
-  margin: 0;
-  color: var(--primary);
-  font-size: 2.2rem;
-  font-weight: 800;
-}
-
-.stat p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-weight: 600;
-}
 
 .review {
   padding: 14px 0;
@@ -1238,40 +506,32 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
   margin: 6px 0 0;
 }
 
-.destination-image {
-  width: calc(100% + 40px);
-  height: 160px;
-  margin: -20px -20px 14px;
-  object-fit: cover;
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-
 /* ---------- Phones ---------- */
 
 @media (max-width: 760px) {
-  .container {
+.container {
     padding: 16px 16px 40px;
   }
 
-  .navbar {
+.navbar {
     padding: 10px 16px;
   }
 
-  .brand-tagline {
+.brand-tagline {
     display: none;
   }
 
-  .nav-user {
+.nav-user {
     display: none;
   }
 
-  .trip-layout {
+.trip-layout {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  /* On phones the trip menu becomes a row of buttons you can scroll */
-  .sidebar {
+/* On phones the trip menu becomes a row of buttons you can scroll */
+.sidebar {
     position: static;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -1279,73 +539,27 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
     padding: 10px;
   }
 
-  .sidebar h3,
+.sidebar h3,
   .sidebar .badge {
     display: none;
   }
 
-  .sidebar a {
+.sidebar a {
     flex-shrink: 0;
     white-space: nowrap;
   }
 
-  .two-columns {
-    grid-template-columns: 1fr;
-  }
-
-  .inline-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .hero h1 {
+.hero h1 {
     font-size: 1.6rem;
   }
 
-  /* The "+" card does not need to be so tall on phones */
-  .add-trip-card {
+/* The "+" card does not need to be so tall on phones */
+.add-trip-card {
     min-height: 170px;
-  }
-
-  .narrow {
-    margin: 24px auto;
-    padding: 24px;
   }
 }
 
 /* ---------- Small extras ---------- */
-
-/* Round purple logo at the top of the login and sign-up cards */
-.auth-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 12px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--primary-bright), var(--primary-dark));
-  color: var(--white);
-  box-shadow: 0 6px 16px var(--primary-glow);
-}
-
-.auth-subtitle {
-  text-align: center;
-  margin: 0 0 8px;
-}
-
-/* Icon in a pale purple circle for empty pages */
-.empty-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  margin: 8px auto 4px;
-  border-radius: 50%;
-  background: var(--primary-light);
-  color: var(--primary);
-}
 
 /* ---------- Dashboard: trip cards ---------- */
 
@@ -1581,53 +795,7 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
 
 /* ---------- Dashboard: invitations ---------- */
 
-.invitation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  border-left: 5px solid var(--primary-bright);
-}
-
-.invitation h3 {
-  margin: 0;
-}
-
-.invitation p {
-  margin: 4px 0 0;
-}
-
-.invitation-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.invitation-buttons button {
-  margin: 0;
-}
-
 /* ---------- Itinerary: cost summary ---------- */
-
-.cost-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.cost-summary div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  border-radius: var(--radius-small);
-  background: var(--primary-pale);
-}
-
-.cost-summary strong {
-  font-size: 1.15rem;
-  color: var(--primary-dark);
-}
 
 /* Small "Admin" label next to the admin's name in the top bar */
 .admin-badge {
@@ -1643,190 +811,16 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
 
 /* ---------- Password box with an eye button ---------- */
 
-/* The eye button sits inside the right end of the password box */
-.password-field {
-  position: relative;
-}
-
-.password-field input {
-  padding-right: 46px; /* leave room for the eye button */
-}
-
-.eye-button {
-  position: absolute;
-  top: 50%;
-  right: 6px;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  margin: 0;
-  border: none;
-  border-radius: 8px;
-  background: none;
-  color: var(--muted);
-  box-shadow: none;
-}
-
-.eye-button:hover {
-  background: var(--primary-pale);
-  color: var(--primary);
-  transform: translateY(-50%);
-  box-shadow: none;
-}
-
 /* ---------- Weather ---------- */
-
-/* One small box per day, side by side; scrolls sideways on long trips */
-.weather-row {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.weather-day {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-width: 120px;
-  padding: 12px 10px;
-  border-radius: var(--radius-small);
-  background: var(--primary-pale);
-  text-align: center;
-}
-
-.weather-emoji {
-  font-size: 1.8rem;
-  line-height: 1.2;
-}
-
-/* Weather line above the activities of one day (Itinerary page) */
-.day-weather {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 8px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  font-weight: 600;
-}
 
 /* ---------- Small extras for the SRS features ---------- */
 
-/* Buttons side by side */
-.button-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.button-row button {
-  margin-top: 0;
-}
-
-/* Red button for actions that delete things */
-.btn-danger {
-  background: var(--white);
-  color: var(--error);
-  border-color: var(--error-light);
-  box-shadow: none;
-}
-
-.btn-danger:hover {
-  background: var(--error-light);
-  color: var(--error);
-  border-color: var(--error);
-  box-shadow: none;
-}
-
-/* One person found by the member search */
-.search-result {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.search-result button {
-  margin: 0;
-}
-
-.pill-archived,
 .badge-archived {
   background: #f1e8ea;
   color: var(--muted);
 }
 
-/* One AI money-saving tip (Budget page) */
-.suggestion {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-small);
-  background: var(--white);
-}
-
-.suggestion p {
-  margin: 4px 0 0;
-}
-
-.notice h3 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #6b4a06;
-}
-
-/* A review the admin has hidden */
-.hidden-review {
-  opacity: 0.6;
-}
-
 /* ---------- Itinerary: stay suggestion and journey ---------- */
-
-.cost-summary {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-}
-
-/* "Where to stay" card: icon on the left, details on the right */
-.stay-card {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.stay-card h3 {
-  margin: 2px 0 6px;
-  text-transform: capitalize;
-}
-
-.stay-card p {
-  margin: 4px 0;
-}
-
-.stay-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-/* The journey there and back looks different from normal activities */
-.activity.travel .activity-header {
-  background: var(--primary-pale);
-}
-
-.activity.travel .activity-time {
-  background: var(--primary);
-  color: var(--white);
-}
 
 /* ---------- Itinerary: the day as a simple timeline ---------- */
 
@@ -1844,104 +838,6 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
   color: var(--primary);
 }
 
-/* One row: time on the left, details on the right, joined by a line */
-.timeline-item {
-  display: flex;
-  gap: 16px;
-  position: relative;
-  padding-bottom: 14px;
-}
-
-/* The vertical line connecting the times */
-.timeline-item::before {
-  content: "";
-  position: absolute;
-  left: 31px;
-  top: 34px;
-  bottom: 0;
-  width: 2px;
-  background: var(--primary-light);
-}
-
-.timeline-item:last-child::before {
-  display: none;
-}
-
-.timeline-time {
-  flex-shrink: 0;
-  width: 64px;
-  padding: 6px 0;
-  border-radius: 8px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  font-weight: 700;
-  text-align: center;
-  align-self: flex-start;
-  position: relative;
-  z-index: 1;
-}
-
-.timeline-item.travel .timeline-time {
-  background: var(--primary);
-  color: var(--white);
-}
-
-.timeline-body {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 16px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.timeline-item.travel .timeline-body {
-  background: var(--primary-pale);
-}
-
-.timeline-body h4 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--primary-dark);
-}
-
-.timeline-body p {
-  margin: 4px 0 6px;
-}
-
-/* Small text button, e.g. "Change" */
-.link-button {
-  display: inline;
-  margin: 6px 0 0;
-  padding: 0;
-  border: none;
-  background: none;
-  box-shadow: none;
-  color: var(--primary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-.link-button:hover {
-  background: none;
-  color: var(--primary-dark);
-  transform: none;
-  box-shadow: none;
-}
-
-/* "Change the plan with AI" box that opens when clicked */
-.change-plan summary {
-  cursor: pointer;
-  font-weight: 700;
-  color: var(--primary-dark);
-}
-
-.change-plan[open] summary {
-  margin-bottom: 12px;
-}
-
 /* "Describe your ideal trip" box on My Preferences */
 .describe-card {
   border: 2px solid var(--primary-light);
@@ -1949,15 +845,6 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
 }
 
 .describe-card h3 {
-  margin-top: 0;
-}
-
-/* Over-budget warning with the "Make it cheaper" button */
-.over-budget {
-  border-color: var(--error-light);
-}
-
-.over-budget .error {
   margin-top: 0;
 }
 
@@ -2078,81 +965,36 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
   color: var(--primary-dark);
 }
 
-/* Input with an icon inside on the left */
-.icon-input {
-  position: relative;
-}
-
-.icon-input > svg {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
-}
-
-.icon-input input {
-  padding-left: 44px;
-}
-
-.auth-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 22px;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #a1284c, var(--primary));
-  box-shadow: 0 8px 20px var(--primary-glow);
-}
-
-.auth-switch {
-  margin-top: 22px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.auth-switch a {
-  font-weight: 700;
-}
-
 /* Phones: the maroon side becomes a short header above the form */
 @media (max-width: 760px) {
-  .auth-page {
+.auth-page {
     grid-template-columns: 1fr;
   }
 
-  .auth-story {
+.auth-story {
     padding: 28px 20px;
     gap: 16px;
   }
 
-  .auth-story h1 {
+.auth-story h1 {
     font-size: 1.7rem;
   }
 
-  .auth-features,
+.auth-features,
   .auth-footnote {
     display: none;
   }
 
-  .auth-lead {
+.auth-lead {
     margin-bottom: 0;
   }
 
-  .auth-form-side {
+.auth-form-side {
     padding: 28px 16px 40px;
   }
 }
 
 /* ---------- UI components (components/ui) ---------- */
-
-/* <Loading />: spinner in the middle of the page */
-.loading {
-  padding: 60px 0;
-  text-align: center;
-}
 
 /* Mantine invitation card on the dashboard: a coloured line on the left */
 .invitation-card {
@@ -2193,8 +1035,7 @@ table:where(:not([class*="mantine-"])) tbody tr:hover {
 }
 
 /* Show choices like "no preference" as "No Preference" */
-.capitalize,
-.capitalize label {
+.capitalize {
   text-transform: capitalize;
 }
 
