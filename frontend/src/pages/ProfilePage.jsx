@@ -67,20 +67,25 @@ function ProfilePage() {
       <label>Name</label>
       <input value={name} onChange={(e) => setName(e.target.value)} required />
 
-      <h3>My usual travel style</h3>
-      <p className="muted small">This fills in your preferences whenever you join a new trip.</p>
+      {/* Travel style is only for travellers; admins don't plan trips */}
+      {getCurrentUser().role !== "admin" && (
+        <div>
+          <h3>My usual travel style</h3>
+          <p className="muted small">This fills in your preferences whenever you join a new trip.</p>
 
-      <label>Interests</label>
-      <Chip.Group multiple value={interests} onChange={setInterests}>
-        <div className="chip-list">
-          {interestOptions.map((interest) => <Chip key={interest} value={interest}>{interest}</Chip>)}
+          <label>Interests</label>
+          <Chip.Group multiple value={interests} onChange={setInterests}>
+            <div className="chip-list">
+              {interestOptions.map((interest) => <Chip key={interest} value={interest}>{interest}</Chip>)}
+            </div>
+          </Chip.Group>
+
+          <label>Pace</label>
+          <select value={pace} onChange={(e) => setPace(e.target.value)}>
+            {paceOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+          </select>
         </div>
-      </Chip.Group>
-
-      <label>Pace</label>
-      <select value={pace} onChange={(e) => setPace(e.target.value)}>
-        {paceOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-      </select>
+      )}
 
       {error && <p className="error-box">{error}</p>}
 
