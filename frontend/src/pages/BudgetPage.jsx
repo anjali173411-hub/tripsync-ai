@@ -3,17 +3,18 @@
 // - see spent vs budget with a breakdown by category (FR-7.2)
 // - see each member's contribution, what they paid and their fair share (FR-7.3)
 // - ask the AI for money-saving tips when spending is near or over budget (FR-7.4)
+// Built with Mantine components (RingProgress, Table, Select, NumberInput ...).
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Lightbulb } from "lucide-react";
+import {
+  Card, Title, Text, Button, Badge, Group, Stack, SimpleGrid, Table, RingProgress, Progress,
+  TextInput, NumberInput, Select, Alert, Loader, Center, Paper
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { Lightbulb, Plus } from "lucide-react";
 import api, { getErrorMessage, formatDate, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
-import Button from "../components/ui/Button.jsx";
-import Card from "../components/ui/Card.jsx";
-import Message from "../components/ui/Message.jsx";
-import Loading from "../components/ui/Loading.jsx";
-import PageHeader from "../components/ui/PageHeader.jsx";
 
 function BudgetPage() {
   const { tripId } = useParams();
@@ -37,6 +38,7 @@ function BudgetPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   // Runs when the page opens
@@ -89,6 +91,7 @@ function BudgetPage() {
   async function handleAddExpense(event) {
     event.preventDefault();
     setError("");
+    setSaving(true);
 
     try {
       await api.post("/trips/" + tripId + "/expenses", {
@@ -105,9 +108,12 @@ function BudgetPage() {
       setActivityName("");
       setNotes("");
       await loadBudget();
+      notifications.show({ message: "Expense added ✓", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
+
+    setSaving(false);
   }
 
   // Ask the AI how to save money (FR-7.4)
@@ -166,200 +172,226 @@ function BudgetPage() {
 
   if (!trip || !budget) {
     if (error) {
-      return <Message type="error" text={error} />;
+      return <Alert color="red" variant="light">{error}</Alert>;
     }
-    return <Loading text="Loading budget..." />;
+    return (
+      <Center h={300}>
+        <Loader />
+      </Center>
+    );
   }
 
-  // How full the progress bar should be (0 to 100)
-  let barWidth = budget.percentUsed;
-  if (barWidth > 100) {
-    barWidth = 100;
+  // How full the ring should be (0 to 100)
+  let ringValue = budget.percentUsed;
+  if (ringValue > 100) {
+    ringValue = 100;
   }
 
   const totalsByCategory = getTotalsByCategory();
   const hasExpenses = budget.expenses.length > 0;
+
+  // The choices for the two dropdowns
+  const categoryChoices = [];
+  for (let i = 0; i < categories.length; i++) {
+    categoryChoices.push({ value: categories[i], label: categories[i].charAt(0).toUpperCase() + categories[i].substring(1) });
+  }
 
   return (
     <div className="trip-layout">
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        <PageHeader title="Budget">
+        <Title order={1}>Budget</Title>
+        <Text c="dimmed" mb="lg">
           Write down money you actually spend on this trip – hotel, food, tickets, taxis.
-          Everyone in the trip can add what they paid. The page adds it all up so you can see
-          how much of the trip budget is left and who has paid what.
-        </PageHeader>
+          Everyone in the trip can add what they paid, and everyone sees the same numbers.
+        </Text>
 
-        {/* Summary with a progress bar */}
-        <Card>
-          <h2>{formatMoney(budget.totalSpent, currency)} spent of {formatMoney(budget.budget, currency)}</h2>
-          <p className="muted small">Total trip budget for everyone. Every member's expenses count towards it.</p>
-
-          <div className="progress">
-            <div
-              className={budget.overBudget ? "progress-fill over" : "progress-fill"}
-              style={{ width: barWidth + "%" }}
+        {/* Summary: a ring showing how much of the budget is used */}
+        <Card mb="lg">
+          <Group wrap="nowrap" gap="xl">
+            <RingProgress
+              size={130}
+              thickness={14}
+              roundCaps
+              sections={[{ value: ringValue, color: budget.overBudget ? "red" : "maroon" }]}
+              label={<Text ta="center" fw={800} size="xl">{budget.percentUsed}%</Text>}
             />
-          </div>
-
-          {budget.overBudget && (
-            <p className="error">You are {formatMoney(-budget.remaining, currency)} over budget!</p>
-          )}
-          {!budget.overBudget && (
-            <p className="muted">{formatMoney(budget.remaining, currency)} left ({budget.percentUsed}% used)</p>
-          )}
+            <div>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Spent so far</Text>
+              <Title order={2}>{formatMoney(budget.totalSpent, currency)}</Title>
+              <Text c="dimmed">of {formatMoney(budget.budget, currency)} total trip budget (everyone together)</Text>
+              {budget.overBudget && (
+                <Badge color="red" size="lg" mt="xs">{formatMoney(-budget.remaining, currency)} over budget!</Badge>
+              )}
+              {!budget.overBudget && (
+                <Badge color="green" variant="light" size="lg" mt="xs">{formatMoney(budget.remaining, currency)} left</Badge>
+              )}
+            </div>
+          </Group>
         </Card>
 
         {/* AI money-saving tips, once spending is near or over the budget (FR-7.4) */}
         {budget.canAskForSuggestions && (
-          <Card className="notice">
-            <h3><Lightbulb size={18} /> You have used {budget.percentUsed}% of the budget</h3>
-            <p className="small">Ask the AI for ideas to spend less on the rest of the trip.</p>
+          <Alert color="yellow" variant="light" mb="lg" icon={<Lightbulb size={20} />}
+            title={"You have used " + budget.percentUsed + "% of the budget"}>
+            <Text size="sm" mb="sm">Ask the AI for ideas to spend less on the rest of the trip.</Text>
 
-            {loadingSuggestions && <div className="spinner" />}
-
-            {!loadingSuggestions && suggestions.length === 0 && (
-              <Button onClick={handleGetSuggestions}>Get money-saving tips</Button>
+            {suggestions.length === 0 && (
+              <Button color="yellow.8" loading={loadingSuggestions} leftSection={<Lightbulb size={16} />} onClick={handleGetSuggestions}>
+                Get money-saving tips
+              </Button>
             )}
 
-            {suggestions.map((suggestion, index) => (
-              <div key={index} className="suggestion">
-                <div className="row-between">
-                  <strong>{suggestion.title}</strong>
-                  {suggestion.estimatedSaving > 0 && (
-                    <span className="tag tag-match">Save about {formatMoney(suggestion.estimatedSaving, currency)}</span>
-                  )}
-                </div>
-                <p className="small">{suggestion.detail}</p>
-              </div>
-            ))}
-          </Card>
+            <Stack gap="xs">
+              {suggestions.map((suggestion, index) => (
+                <Paper key={index} p="sm" radius="md" withBorder>
+                  <Group justify="space-between" wrap="nowrap">
+                    <Text fw={700}>{suggestion.title}</Text>
+                    {suggestion.estimatedSaving > 0 && (
+                      <Badge color="green" variant="light">Save about {formatMoney(suggestion.estimatedSaving, currency)}</Badge>
+                    )}
+                  </Group>
+                  <Text size="sm" c="dimmed">{suggestion.detail}</Text>
+                </Paper>
+              ))}
+            </Stack>
+          </Alert>
         )}
+
+        {/* Add an expense (FR-7.1) */}
+        <Card mb="lg">
+          <Title order={3} mb="sm">Add an expense</Title>
+          <form onSubmit={handleAddExpense}>
+            <Stack>
+              <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                <TextInput
+                  label="What did you pay for?"
+                  placeholder="Hotel for 2 nights"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+                <NumberInput
+                  label={"Amount (" + currency + ")"}
+                  min={1}
+                  thousandSeparator=","
+                  value={amount}
+                  onChange={setAmount}
+                  required
+                />
+              </SimpleGrid>
+
+              <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                <Select label="Category" data={categoryChoices} value={category} onChange={setCategory} allowDeselect={false} />
+                <Select
+                  label="For which itinerary activity? (optional)"
+                  placeholder="Not linked to an activity"
+                  data={activityNames}
+                  value={activityName || null}
+                  onChange={(value) => setActivityName(value || "")}
+                  searchable
+                  clearable
+                />
+              </SimpleGrid>
+
+              <TextInput label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+
+              {error && <Alert color="red" variant="light">{error}</Alert>}
+
+              <Group justify="flex-end">
+                <Button type="submit" loading={saving} leftSection={<Plus size={16} />}>Add expense</Button>
+              </Group>
+            </Stack>
+          </form>
+        </Card>
 
         {/* Spending by category (FR-7.2) */}
         {hasExpenses && (
-          <Card>
-            <h3>By category</h3>
-            {totalsByCategory.map((item) => (
-              <div key={item.name} className="bar-row">
-                <span>{item.name}</span>
-                <div className="progress small">
-                  <div className="progress-fill" style={{ width: (item.amount / budget.totalSpent) * 100 + "%" }} />
+          <Card mb="lg">
+            <Title order={3} mb="sm">By category</Title>
+            <Stack gap="sm">
+              {totalsByCategory.map((item) => (
+                <div key={item.name}>
+                  <Group justify="space-between" mb={4}>
+                    <Text className="capitalize" fw={600}>{item.name}</Text>
+                    <Text fw={700}>{formatMoney(item.amount, currency)}</Text>
+                  </Group>
+                  <Progress value={(item.amount / budget.totalSpent) * 100} size="lg" radius="xl" />
                 </div>
-                <span>{formatMoney(item.amount, currency)}</span>
-              </div>
-            ))}
+              ))}
+            </Stack>
           </Card>
         )}
 
         {/* Each member's contribution and share (FR-7.3) */}
         {trip.type === "group" && (
-          <Card>
-            <h3>Who paid what</h3>
-            <p className="muted small">
+          <Card mb="lg">
+            <Title order={3}>Who paid what</Title>
+            <Text c="dimmed" size="sm" mb="sm">
               "Fair share" is everything spent so far divided equally between the members.
-            </p>
-            <table>
-              <thead>
-                <tr>
-                  <th>Member</th>
-                  <th>Planned to put in</th>
-                  <th>Paid so far</th>
-                  <th>Fair share</th>
-                  <th>Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {budget.members.map((member) => (
-                  <tr key={member.id}>
-                    <td>{member.name}</td>
-                    <td>{formatMoney(member.contribution, currency)}</td>
-                    <td>{formatMoney(member.paid, currency)}</td>
-                    <td>{formatMoney(member.fairShare, currency)}</td>
-                    <td>{getBalanceText(member.balance)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            </Text>
+            <Table.ScrollContainer minWidth={560}>
+              <Table striped highlightOnHover verticalSpacing="sm">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Member</Table.Th>
+                    <Table.Th>Planned to put in</Table.Th>
+                    <Table.Th>Paid so far</Table.Th>
+                    <Table.Th>Fair share</Table.Th>
+                    <Table.Th>Balance</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {budget.members.map((member) => (
+                    <Table.Tr key={member.id}>
+                      <Table.Td fw={600}>{member.name}</Table.Td>
+                      <Table.Td>{formatMoney(member.contribution, currency)}</Table.Td>
+                      <Table.Td>{formatMoney(member.paid, currency)}</Table.Td>
+                      <Table.Td>{formatMoney(member.fairShare, currency)}</Table.Td>
+                      <Table.Td>
+                        <Badge variant="light" color={member.balance > 0 ? "green" : member.balance < 0 ? "orange" : "gray"}>
+                          {getBalanceText(member.balance)}
+                        </Badge>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
           </Card>
         )}
-
-        {/* Add an expense (FR-7.1) */}
-        <form className="card" onSubmit={handleAddExpense}>
-          <h3>Add an expense</h3>
-
-          <div className="two-columns">
-            <div>
-              <label>What did you pay for?</label>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Hotel for 2 nights, Lunch, Taxi to airport"
-                required
-              />
-            </div>
-            <div>
-              <label>Amount ({currency})</label>
-              <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-            </div>
-          </div>
-
-          <div className="two-columns">
-            <div>
-              <label>Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                {categories.map((oneCategory) => (
-                  <option key={oneCategory} value={oneCategory}>{oneCategory}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label>For which itinerary activity? (optional)</label>
-              <select value={activityName} onChange={(e) => setActivityName(e.target.value)}>
-                <option value="">Not linked to an activity</option>
-                {activityNames.map((name) => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <label>Notes (optional)</label>
-          <input value={notes} onChange={(e) => setNotes(e.target.value)} />
-
-          <Button type="submit">Add expense</Button>
-          <Message type="error" text={error} />
-        </form>
 
         {/* List of all expenses */}
         {hasExpenses && (
           <Card>
-            <h3>All expenses</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>What</th>
-                  <th>Category</th>
-                  <th>Activity</th>
-                  <th>Paid by</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {budget.expenses.map((expense) => (
-                  <tr key={expense._id}>
-                    <td>{formatDate(expense.expenseDate)}</td>
-                    <td>{expense.title}</td>
-                    <td>{expense.category}</td>
-                    <td>{expense.activityName || "–"}</td>
-                    <td>{expense.paidBy ? expense.paidBy.name : "Unknown"}</td>
-                    <td>{formatMoney(expense.amount, currency)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Title order={3} mb="sm">All expenses</Title>
+            <Table.ScrollContainer minWidth={640}>
+              <Table striped highlightOnHover verticalSpacing="sm">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Date</Table.Th>
+                    <Table.Th>What</Table.Th>
+                    <Table.Th>Category</Table.Th>
+                    <Table.Th>Activity</Table.Th>
+                    <Table.Th>Paid by</Table.Th>
+                    <Table.Th>Amount</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {budget.expenses.map((expense) => (
+                    <Table.Tr key={expense._id}>
+                      <Table.Td>{formatDate(expense.expenseDate)}</Table.Td>
+                      <Table.Td fw={600}>{expense.title}</Table.Td>
+                      <Table.Td><Badge variant="light" className="capitalize">{expense.category}</Badge></Table.Td>
+                      <Table.Td>{expense.activityName || "–"}</Table.Td>
+                      <Table.Td>{expense.paidBy ? expense.paidBy.name : "Unknown"}</Table.Td>
+                      <Table.Td fw={700}>{formatMoney(expense.amount, currency)}</Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
           </Card>
         )}
       </section>
