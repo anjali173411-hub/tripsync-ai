@@ -1,103 +1,97 @@
-# TripSync AI – Frontend cheat sheet
+# TripSync AI – Frontend
 
-**Tech:** React 19 + Vite · React Router 7 · Axios · plain HTML + CSS (index.css) · a few Mantine parts · lucide-react (icons)
+The frontend is a React app built with Vite. It shows the screens and talks to the backend through Axios.
 
----
+## Tech used
 
-## 1. Files and what they do
-
-| File | Job |
+| Tool | Used for |
 |---|---|
-| `main.jsx` | Starts the app. Wraps it in **MantineProvider** (colour for the Mantine parts), **Notifications** (corner messages) and **BrowserRouter** (pages). |
-| `theme.js` | The green colour and font for the few Mantine parts we use. |
-| `App.jsx` | The list of pages: which web address shows which page. Hides the top bar on login/sign up. |
-| `index.css` | Our own styles: banners, trip cards, login split-screen, sidebar, top bar. |
-| `api/axios.js` | Talks to the backend + small helpers (`formatMoney`, `formatDate`, `getCurrentUser` …). |
-| `components/Navbar.jsx` | Top bar: logo, menu, logout button. |
-| `components/Sidebar.jsx` | Left menu inside a trip (Details, Members, Preferences, Itinerary, Decisions, Budget). |
-| `components/ProtectedRoute.jsx` | Guard: not logged in → login page. `adminOnly` → only admins. |
-| `components/AuthLayout.jsx` | Split screen for login / sign up (green story left, form right). |
-| `pages/*.jsx` | One file per screen (12 pages). |
+| React 19 | Building the pages |
+| Vite | Running and building the app |
+| React Router 7 | Moving between pages |
+| Axios | Sending requests to the backend |
+| index.css | All the styling (plain CSS) |
+| Mantine | Password box, chips, tag boxes, pop-up, loading spinner, notifications |
+| lucide-react | Icons |
 
----
+## Folder structure
 
-## 2. The pattern every page follows
-
-```jsx
-function SomePage() {
-  // ① STATE – what the page remembers (one useState per thing)
-  const [trip, setTrip] = useState(null);
-
-  // ② LOAD – runs once when the page opens
-  useEffect(() => { loadPage(); }, [tripId]);
-  async function loadPage() {
-    const response = await api.get("/trips/" + tripId);
-    setTrip(response.data.trip);          // changing state re-draws the screen
-  }
-
-  async function handleSave(event) {
-    event.preventDefault();               // stop the browser reloading the page
-    await api.put("/trips/" + tripId + "/preferences", { ... });
-    notifications.show({ message: "Saved ✓" });
-  }
-
-  // ④ SHOW – the screen, built from Mantine components
-  return <Card> ... <Button onClick={handleSave}>Save</Button> </Card>;
-}
+```
+frontend/
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── theme.js
+    ├── index.css
+    ├── api/
+    │   └── axios.js
+    ├── components/
+    │   ├── Navbar.jsx
+    │   ├── Sidebar.jsx
+    │   ├── ProtectedRoute.jsx
+    │   └── AuthLayout.jsx
+    └── pages/
+        ├── LoginPage.jsx
+        ├── RegisterPage.jsx
+        ├── DashboardPage.jsx
+        ├── CreateTripPage.jsx
+        ├── TripDetailsPage.jsx
+        ├── MembersPage.jsx
+        ├── PreferencesPage.jsx
+        ├── ItineraryPage.jsx
+        ├── ConsensusPage.jsx
+        ├── BudgetPage.jsx
+        ├── ProfilePage.jsx
+        └── AdminPage.jsx
 ```
 
-**One sentence for the viva:** *"Each page stores its data in state with useState; useEffect calls loadPage when the page opens, which uses Axios to get data from our Express API; user actions call handle… functions that send requests; and the screen is built with Mantine components."*
+## Main files
 
----
-
-## 3. How login works (very common question)
-
-1. **LoginPage** sends email + password → `POST /api/auth/login`.
-2. Backend replies with a **JWT token** + user details.
-3. `saveLogin()` stores both in the browser's **localStorage**.
-4. `api/axios.js` has an **interceptor** that adds `Authorization: Bearer <token>` to **every** request automatically.
-5. If the backend ever answers **401** (token expired / logged out elsewhere), the other interceptor logs the user out and sends them to the login page.
-6. **ProtectedRoute** checks `getCurrentUser()` – no user → `/login`; `adminOnly` page and not admin → `/`.
-7. **Logout** calls `POST /api/auth/logout` (backend increases `tokenVersion`, so old tokens stop working everywhere) and clears localStorage.
-
----
-
-## 4. Pages (address → page → what it does)
-
-| Address | Page | Main Mantine parts |
-|---|---|---|
-| `/login`, `/register` | Login / Register | label + input, PasswordInput (built-in 👁) |
-| `/` | Dashboard | banner, invitations with Accept/Decline, trip photo cards |
-| `/trips/new` | Create Trip | inputs, `<select>` for type and travel mode, `<input type="date">` (no past dates) |
-| `/trips/:tripId` | Trip Details | photo banner, detail boxes, weather per day, archive/delete/complete |
-| `.../members` | Members | member list, invite by email or search, remove |
-| `.../preferences` | My Preferences | interest **chips**, `<select>` for pace/food/stay, **tag boxes** (must-do, avoid), "Describe your trip" → AI fills the form |
-| `.../itinerary` | Itinerary | cost box, stay box, day buttons, activity list with Edit / Earlier / Later / Remove, edit pop-up, change plan with AI, finalise |
-| `.../consensus` | Group Decisions | each decision with its options, vote counts, Vote / Decide for everyone |
-| `.../budget` | Budget | spent bar, add expense form, by category, who paid what table, all expenses |
-| `/profile` | Profile | name, interest chips, pace `<select>` |
-| `/admin` | Admin | number boxes, popular destinations, users table with Activate/Deactivate |
-
-`:tripId` is read with **`useParams()`**. Going to another page in code uses **`useNavigate()`**.
-
----
-
-## 5. Quick answers
-
-| Question | Answer |
+| File | What it does |
 |---|---|
-| **useState** | Stores data the page remembers; calling `setX` updates it and re-draws the screen. |
-| **useEffect** | Runs code after the page shows – we use it to load data when the page opens. The `[tripId]` list means "run again if tripId changes". |
-| **Props** | Values passed into a component, e.g. `<Sidebar trip={trip} />` → inside: `props.trip`. |
-| **`.map()` in JSX** | Draws one item per list entry: `trips.map((trip) => drawTripCard(trip))`. Each needs a unique `key`. |
-| **`&&` in JSX** | Show only if true: `{error && <Alert>{error}</Alert>}`. |
-| **Controlled input** | `value={name}` + `onChange={(e) => setName(e.target.value)}` – React state always holds what's typed. |
-| **Why so little Mantine?** | Plain HTML + CSS is easier to read and explain; Mantine is used only where it saves a lot of code (password 👁, chips, tag boxes, pop-up, spinner, messages). |
-| **"Are you sure?"** | `if (!window.confirm("Delete this trip?")) { return; }` – the browser's OK / Cancel box. |
-| **"Saved ✓" messages** | `notifications.show({ message: "Saved ✓" })` from Mantine – a small pop-up in the corner. |
-| **Why Axios?** | Simple requests, and interceptors add the token / handle 401 in one place. |
-| **Where's the AI?** | Not in the frontend. The frontend only calls the backend (e.g. `POST /trips/:id/generate`); the backend calls Gemini. |
-| **Environment** | `VITE_API_URL` tells the frontend where the backend is (`.env` locally, `/api` online). |
+| `main.jsx` | Starts the app and wraps it in MantineProvider, Notifications and BrowserRouter |
+| `App.jsx` | Lists all the pages and their web addresses. Hides the top bar on login and register. Sends admins to `/admin` |
+| `theme.js` | Green colour and font for the Mantine parts |
+| `index.css` | Styles for boxes, buttons, tables, bars, cards, sidebar and top bar |
+| `api/axios.js` | Backend connection. Adds the login token to every request and logs the user out if the token has expired. Also has helpers: `getErrorMessage`, `saveLogin`, `getCurrentUser`, `logout`, `formatDate`, `formatDateRange`, `formatMoney` |
 
----
+## Components
 
+| Component | What it does |
+|---|---|
+| `Navbar` | Top bar with logo, menu and logout |
+| `Sidebar` | Left menu inside a trip: Details, Members, Preferences, Itinerary, Decisions, Budget |
+| `ProtectedRoute` | Sends users who are not logged in to the login page. With `adminOnly`, only admins can open the page |
+| `AuthLayout` | Split screen used by the login and register pages |
+
+## Pages
+
+| Address | Page | What it shows | Backend calls |
+|---|---|---|---|
+| `/login` | Login | Email and password form | `POST /auth/login` |
+| `/register` | Register | Name, email and password form | `POST /auth/register` |
+| `/` | Dashboard | Invitations with Accept / Decline, and trip cards | `GET /trips`, `GET /trips/invitations/mine` |
+| `/trips/new` | Create Trip | Trip name, solo or group, destination, dates, travel mode, budget | `POST /trips` |
+| `/trips/:tripId` | Trip Details | Trip banner, details, weather, complete / archive / delete | `GET /trips/:id`, `GET /trips/:id/weather` |
+| `/trips/:tripId/members` | Members | Member list, invite by email, remove a member | invite, cancel invite, remove, `GET /profile/search` |
+| `/trips/:tripId/preferences` | Preferences | Interests, pace, food, stay, must-do, avoid, budget share. "Describe your trip" fills the form using AI | `GET /preferences/me`, `PUT /preferences`, `POST /preferences/from-text` |
+| `/trips/:tripId/itinerary` | Itinerary | Total cost, stay suggestion, day tabs, activities with edit / move / remove icons, AI re-plan, finalise | `POST /generate`, `GET /itinerary`, edit, move, remove, re-plan, finalise |
+| `/trips/:tripId/consensus` | Group Decisions | Conflicts with options, vote counts, vote button, organiser decides | vote, decide |
+| `/trips/:tripId/budget` | Budget | Spent bar, add expense, totals by category, who paid what, all expenses, AI money-saving tips | `GET /budget`, `POST /expenses`, `POST /budget/suggestions` |
+| `/profile` | Profile | Name, default interests and pace | `GET /profile`, `PUT /profile` |
+| `/admin` | Admin (admins only) | Platform numbers, popular destinations, users table with Activate / Deactivate | `GET /admin/summary`, `GET /admin/users`, `PATCH /admin/users/:id/status` |
+
+
+
+## Running the frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+`frontend/.env` holds `VITE_API_URL=http://localhost:5000/api`. On the live site this is not set, so the app uses `/api` on the same server.
