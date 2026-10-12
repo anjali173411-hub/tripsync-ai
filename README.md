@@ -235,7 +235,7 @@ cd frontend
 npm run build      # creates frontend/dist
 ```
 
-`frontend/.env.production` sets the API address used by the production build. It contains no secrets.
+Online there is no `frontend/.env`, so `api/axios.js` uses its default address `/api` (the same server that serves the website).
 
 ---
 
