@@ -129,7 +129,7 @@ User ──< Trip (organiser, members) ──< Preference (one per member per tr
 | otherInterests, mustDo, dealBreakers | [String] | typed by the user |
 | pace | String | `relaxed`, `balanced` or `packed` |
 | foodPreference | String | no preference, vegetarian, non-vegetarian, vegan, jain |
-| stayBudget / stayType | String | budget / mid-range / luxury · hotel / homestay / hostel / resort |
+| stayBudget / stayType | String | budget / mid-range / luxury · hotel / homestay / resort |
 | budgetContribution | Number | what this member plans to put in |
 | freeTextNotes | String | the trip described in their own words |
 

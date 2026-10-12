@@ -77,7 +77,7 @@ const preferenceSchema = new mongoose.Schema(
     },
     stayType: {
       type: String,
-      enum: ["hotel", "homestay", "hostel", "resort"],
+      enum: ["hotel", "homestay", "resort"],
       default: "hotel"
     }
   },

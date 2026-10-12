@@ -59,7 +59,7 @@ Food:
 
 Where to stay:
 - In "stay", suggest ONE area and type of place for the whole group to stay, based on the
-  travellers' stay budget (budget, mid-range, luxury) and stay type (hotel, homestay, hostel, resort).
+  travellers' stay budget (budget, mid-range, luxury) and stay type (hotel, homestay, resort).
   Give an estimated cost per night for the WHOLE group, a short reason, and in "matchedMembers"
   the travellers whose stay preference it matches. This is a suggestion only, not a booking.
 - The stay cost (cost per night x nights) also comes out of the same trip budget.
@@ -749,7 +749,7 @@ Only use what they actually said. Do not invent wishes they did not mention.
         "no onion or garlic" -> jain; "I eat everything", "love seafood or chicken" -> non-vegetarian.
   stayBudget: "cheap", "backpacker", "low budget" -> budget; "5-star", "fancy", "premium" -> luxury;
         "comfortable", "nothing too fancy" -> mid-range.
-  stayType: "dorm", "backpacker place" -> hostel; "with a local family", "home-like" -> homestay;
+  stayType: "with a local family", "home-like" -> homestay;
         "villa", "pool", "beach property", "all-inclusive" -> resort; otherwise a normal hotel -> hotel.
 - budgetContribution: the amount of money they said they will put in, as a plain number
   ("10k" -> 10000, "1.5 lakh" -> 150000, "5 thousand" -> 5000), or 0 if not said.`;
