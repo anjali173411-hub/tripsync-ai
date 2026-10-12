@@ -44,7 +44,6 @@ function AuthLayout(props) {
         <p className="auth-footnote">Plan your perfect trip together</p>
       </section>
 
-
       <section className="auth-form-side">
         <div className="auth-form-card">{props.children}</div>
       </section>

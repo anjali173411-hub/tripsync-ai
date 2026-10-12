@@ -24,14 +24,12 @@ export async function verifyToken(req, res, next) {
   try {
     const user = await User.findById(decoded.id).select("role isActive tokenVersion");
 
-    // Account deleted or deactivated by an admin
     if (!user || !user.isActive) {
       return res.status(401).json({
         message: "Your account is not active"
       });
     }
 
-    // The user logged out after this token was made (FR-1.6)
     if (decoded.tokenVersion !== user.tokenVersion) {
       return res.status(401).json({
         message: "You have been logged out. Please log in again"

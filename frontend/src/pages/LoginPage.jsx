@@ -1,5 +1,3 @@
-// Login page
-
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { PasswordInput } from "@mantine/core";
@@ -14,14 +12,13 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Already logged in? Go straight to the right page.
   const loggedInUser = getCurrentUser();
   if (loggedInUser) {
     return <Navigate to={loggedInUser.role === "admin" ? "/admin" : "/"} />;
   }
 
   async function handleLogin(event) {
-    event.preventDefault(); // stop the browser from reloading the page
+    event.preventDefault();
     setError("");
 
     try {
@@ -37,7 +34,6 @@ function LoginPage() {
     <AuthLayout>
       <h2 className="auth-title">Log in to TripSync AI</h2>
 
-      {/* After signing up, the Register page sends "Account created! Please log in." */}
       {location.state && location.state.message && <p className="success-box">{location.state.message}</p>}
 
       <form onSubmit={handleLogin}>

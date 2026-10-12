@@ -1,5 +1,3 @@
-// The preference form each member fills in (FR-3.1, FR-3.2). The AI uses these answers.
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Chip, TagsInput, Loader } from "@mantine/core";
@@ -11,9 +9,8 @@ function PreferencesPage() {
   const { tripId } = useParams();
 
   const [trip, setTrip] = useState(null);
-  const [options, setOptions] = useState(null); // all the choices, from GET /options
+  const [options, setOptions] = useState(null);
 
-  // What the user fills in
   const [interests, setInterests] = useState([]);
   const [otherInterests, setOtherInterests] = useState([]);
   const [pace, setPace] = useState("");
@@ -25,7 +22,6 @@ function PreferencesPage() {
   const [dealBreakers, setDealBreakers] = useState([]);
   const [freeTextNotes, setFreeTextNotes] = useState("");
 
-  // "Describe your trip": the AI fills in the form from this text
   const [description, setDescription] = useState("");
   const [filling, setFilling] = useState(false);
   const [error, setError] = useState("");
@@ -42,12 +38,10 @@ function PreferencesPage() {
       const optionsResponse = await api.get("/options");
       setOptions(optionsResponse.data);
 
-      // What I saved before (if anything)
       const prefResponse = await api.get("/trips/" + tripId + "/preferences/me");
       if (prefResponse.data.preference) {
         fillForm(prefResponse.data.preference);
       } else {
-        // Nothing saved yet: start from my profile's usual travel style (FR-1.4)
         const profileResponse = await api.get("/profile");
         fillForm(profileResponse.data.user.defaultPreferences);
       }
@@ -56,7 +50,6 @@ function PreferencesPage() {
     }
   }
 
-  // Puts saved (or AI-filled) answers into the form
   function fillForm(data) {
     setInterests(data.interests || []);
     setOtherInterests(data.otherInterests || []);
@@ -70,7 +63,6 @@ function PreferencesPage() {
     if (data.freeTextNotes) setFreeTextNotes(data.freeTextNotes);
   }
 
-  // The AI reads the description and fills in the form. Nothing is saved yet.
   async function handleFillFromText() {
     setError("");
     setFilling(true);
@@ -121,7 +113,6 @@ function PreferencesPage() {
       <section className="trip-content">
         <h1>My Preferences</h1>
 
-        {/* The easy way: describe the trip and let the AI fill in the form */}
         <div className="box">
           <h3>Describe your ideal trip</h3>
           <p className="muted small">Write it like a message to a friend. The AI fills in the form below.</p>

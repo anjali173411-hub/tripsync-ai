@@ -1,8 +1,3 @@
-// Group members:
-// - invite people by email or by searching the app (FR-2.3)
-// - see who hasn't accepted yet (FR-2.4)
-// - the organiser removes members (FR-2.5) and sees who filled in preferences (FR-3.3)
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Loader } from "@mantine/core";
@@ -15,7 +10,7 @@ function MembersPage() {
   const user = getCurrentUser();
 
   const [trip, setTrip] = useState(null);
-  const [submittedUserIds, setSubmittedUserIds] = useState([]); // members who saved preferences
+  const [submittedUserIds, setSubmittedUserIds] = useState([]);
   const [email, setEmail] = useState("");
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -31,7 +26,6 @@ function MembersPage() {
       const loadedTrip = tripResponse.data.trip;
       setTrip(loadedTrip);
 
-      // Only the organiser may see everyone's preferences
       if (loadedTrip.organiser._id === user.id) {
         const prefResponse = await api.get("/trips/" + tripId + "/preferences");
         const ids = [];
@@ -45,7 +39,6 @@ function MembersPage() {
     }
   }
 
-  // Sends an invitation email
   async function sendInvite(emailToInvite) {
     setError("");
     try {
@@ -58,7 +51,6 @@ function MembersPage() {
     }
   }
 
-  // Searches people who already have an account
   async function handleSearch(event) {
     event.preventDefault();
     try {
@@ -112,7 +104,6 @@ function MembersPage() {
 
         {error && <p className="error-box">{error}</p>}
 
-        {/* Everyone in the trip */}
         <div className="box">
           <h3>In this trip ({trip.members.length})</h3>
 
@@ -135,7 +126,6 @@ function MembersPage() {
           ))}
         </div>
 
-        {/* People invited who haven't answered yet */}
         {trip.invitedEmails.length > 0 && (
           <div className="box">
             <h3>Waiting for reply</h3>
@@ -150,7 +140,6 @@ function MembersPage() {
           </div>
         )}
 
-        {/* Inviting people (organiser only) */}
         {canChangeMembers && (
           <div className="box">
             <h3>Invite people</h3>

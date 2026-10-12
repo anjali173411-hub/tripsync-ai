@@ -1,5 +1,3 @@
-// Home page: welcome banner, invitations, and my trips as cards (FR-2.6)
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Loader } from "@mantine/core";
@@ -10,7 +8,7 @@ function DashboardPage() {
   const user = getCurrentUser();
 
   const [trips, setTrips] = useState([]);
-  const [invitations, setInvitations] = useState([]); // trips I was invited to
+  const [invitations, setInvitations] = useState([]);
   const [currency, setCurrency] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,7 +33,6 @@ function DashboardPage() {
     setLoading(false);
   }
 
-  // Accept an invitation: I join the trip
   async function handleAccept(tripId) {
     try {
       const response = await api.post("/trips/" + tripId + "/invitation/accept");
@@ -58,7 +55,6 @@ function DashboardPage() {
     }
   }
 
-  // Draws one trip card: photo with the name on it, then the details
   function drawTripCard(trip) {
     return (
       <Link to={"/trips/" + trip._id} key={trip._id} className="trip-tile">
@@ -84,7 +80,6 @@ function DashboardPage() {
     return <div className="center-box"><Loader /></div>;
   }
 
-  // Split my trips into active and archived (FR-2.7)
   const activeTrips = [];
   const archivedTrips = [];
   for (let i = 0; i < trips.length; i++) {
@@ -97,7 +92,6 @@ function DashboardPage() {
 
   return (
     <div>
-      {/* Welcome banner */}
       <div className="hero">
         <h1>Hi {user.name}, plan something amazing.</h1>
         <p>Your trips, your people, one shared plan.</p>
@@ -106,7 +100,6 @@ function DashboardPage() {
 
       {error && <p className="error-box">{error}</p>}
 
-      {/* Invitations from other people (FR-2.4) */}
       {invitations.length > 0 && (
         <div className="box">
           <h2>Invitations</h2>

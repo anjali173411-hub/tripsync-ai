@@ -1,4 +1,3 @@
-
 import express from "express";
 import Trip from "../models/Trip.js";
 import Itinerary from "../models/Itinerary.js";
@@ -7,7 +6,6 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Checks if an id is in a list of ids
 function listHasId(list, id) {
   for (let i = 0; i < list.length; i++) {
     if (list[i].toString() === id.toString()) {
@@ -17,12 +15,10 @@ function listHasId(list, id) {
   return false;
 }
 
-// Checks that optionIndex is a whole number that matches one of the options
 function isValidOption(conflict, optionIndex) {
   return Number.isInteger(optionIndex) && optionIndex >= 0 && optionIndex < conflict.options.length;
 }
 
-// VOTE ON A CONFLICT OPTION (trip members) - FR-5.4, FR-5.5
 router.post("/:tripId/conflicts/:conflictId/vote", verifyToken, async (req, res) => {
   try {
     const { optionIndex } = req.body;
@@ -66,8 +62,6 @@ router.post("/:tripId/conflicts/:conflictId/vote", verifyToken, async (req, res)
       });
     }
 
-    // Each member has only one vote.
-    // Keep everyone else's votes, drop my old vote (if any), then add my new vote.
     const otherVotes = [];
     for (let i = 0; i < conflict.votes.length; i++) {
       if (conflict.votes[i].user.toString() !== req.user.id) {
@@ -77,10 +71,8 @@ router.post("/:tripId/conflicts/:conflictId/vote", verifyToken, async (req, res)
     otherVotes.push({ user: req.user.id, optionIndex: optionIndex });
     conflict.votes = otherVotes;
 
-    // Update the vote count shown on each option
     conflict.recountVotes();
 
-    // More than half of the group picked it? Then it is chosen.
     if (conflict.options[optionIndex].voteCount > trip.members.length / 2) {
       conflict.resolved = true;
       conflict.chosenOption = optionIndex;
@@ -102,7 +94,6 @@ router.post("/:tripId/conflicts/:conflictId/vote", verifyToken, async (req, res)
   }
 });
 
-// ORGANISER DECIDES A CONFLICT (when voting does not reach a majority) - FR-5.5
 router.post("/:tripId/conflicts/:conflictId/resolve", verifyToken, async (req, res) => {
   try {
     const { optionIndex } = req.body;
@@ -162,7 +153,6 @@ router.post("/:tripId/conflicts/:conflictId/resolve", verifyToken, async (req, r
   }
 });
 
-// FINALISE THE ITINERARY (organiser only) - FR-5.7
 router.post("/:tripId/finalise", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -193,7 +183,6 @@ router.post("/:tripId/finalise", verifyToken, async (req, res) => {
       });
     }
 
-    // Every conflict must be decided before finalising
     const conflicts = await ConflictVote.find({ trip: trip._id });
 
     const unresolvedConflicts = [];

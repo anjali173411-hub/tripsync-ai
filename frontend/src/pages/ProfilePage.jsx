@@ -1,6 +1,3 @@
-// My profile (FR-1.4): my name and my usual travel style.
-// The usual travel style fills in "My Preferences" whenever I join a new trip.
-
 import { useEffect, useState } from "react";
 import { Chip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -48,7 +45,6 @@ function ProfilePage() {
         defaultPace: pace
       });
 
-      // Show the new name in the top bar too
       const savedUser = getCurrentUser();
       savedUser.name = response.data.user.name;
       saveLogin(localStorage.getItem("token"), savedUser);
@@ -67,7 +63,6 @@ function ProfilePage() {
       <label>Name</label>
       <input value={name} onChange={(e) => setName(e.target.value)} required />
 
-      {/* Travel style is only for travellers; admins don't plan trips */}
       {getCurrentUser().role !== "admin" && (
         <div>
           <h3>My usual travel style</h3>

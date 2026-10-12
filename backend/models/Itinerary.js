@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const itinerarySchema = new mongoose.Schema(
@@ -42,7 +41,7 @@ const itinerarySchema = new mongoose.Schema(
               default: 0,
               min: 0
             },
-            // Names of members whose preferences this activity satisfies (FR-5.6)
+
             matchedMembers: {
               type: [String],
               default: []
@@ -51,12 +50,12 @@ const itinerarySchema = new mongoose.Schema(
         ]
       }
     ],
-    // The AI's suggestion of where the group should stay (not a booking)
+
     stay: {
       area: { type: String, default: "" },
-      placeType: { type: String, default: "" }, // hotel, homestay, hostel or resort
+      placeType: { type: String, default: "" },
       budgetLevel: { type: String, default: "" },
-      costPerNight: { type: Number, default: 0, min: 0 }, // for the whole group
+      costPerNight: { type: Number, default: 0, min: 0 },
       reason: { type: String, default: "" },
       matchedMembers: { type: [String], default: [] }
     },

@@ -1,4 +1,3 @@
-
 import express from "express";
 import Trip from "../models/Trip.js";
 import Preference from "../models/Preference.js";
@@ -9,12 +8,10 @@ import { verifyToken } from "../middleware/auth.js";
 import { findPlace, getWeatherForDates } from "../services/weatherService.js";
 import { findPlaceImage } from "../services/placeImageService.js";
 
-// How many old trips without a photo get one per dashboard load (keeps the page fast)
 const PHOTOS_PER_LOAD = 3;
 
 const router = express.Router();
 
-// CREATE TRIP
 router.post("/", verifyToken, async (req, res) => {
   try {
     const {
@@ -43,7 +40,6 @@ router.post("/", verifyToken, async (req, res) => {
       });
     }
 
-    // The allowed travel modes are listed in the Trip model
     const allowedTravelModes = Trip.schema.path("travelMode").enumValues;
 
     if (!allowedTravelModes.includes(travelMode)) {
@@ -94,8 +90,6 @@ router.post("/", verifyToken, async (req, res) => {
       members: [req.user.id]
     });
 
-    // Find a photo of the place for the trip card.
-    // null means Wikipedia was busy - the dashboard will try again later.
     trip.destinationImage = await findPlaceImage(destination);
     await trip.save();
 
@@ -110,7 +104,6 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
-// GET MY TRIPS
 router.get("/", verifyToken, async (req, res) => {
   try {
     const trips = await Trip.find({
@@ -120,7 +113,6 @@ router.get("/", verifyToken, async (req, res) => {
       .populate("members", "name email")
       .sort({ createdAt: -1 });
 
-    // Older trips may not have a photo yet - look up a few of them now
     let looked = 0;
     for (let i = 0; i < trips.length; i++) {
       const trip = trips[i];
@@ -142,7 +134,6 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// GET ONE TRIP
 router.get("/:id", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findOne({
@@ -166,7 +157,6 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// WEATHER FOR THE TRIP (trip members only)
 router.get("/:id/weather", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findOne({
@@ -180,7 +170,6 @@ router.get("/:id/weather", verifyToken, async (req, res) => {
       });
     }
 
-    // Find where the destination is on the map (only the first time, then it is saved)
     if (trip.destinationLat === null || trip.destinationLon === null) {
       const place = await findPlace(trip.destination);
 
@@ -210,14 +199,12 @@ router.get("/:id/weather", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Weather error:", error.message);
 
-    // 502 = the outside weather service had a problem
     res.status(502).json({
       message: "Weather is not available right now. Please try again later."
     });
   }
 });
 
-// MARK A FINALISED TRIP AS COMPLETED (organiser only)
 router.patch("/:id/complete", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -254,8 +241,6 @@ router.patch("/:id/complete", verifyToken, async (req, res) => {
   }
 });
 
-// ARCHIVE A TRIP (organiser only) - FR-2.7
-// The trip is kept but moved to "Archived trips" on the dashboard.
 router.patch("/:id/archive", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -286,8 +271,6 @@ router.patch("/:id/archive", verifyToken, async (req, res) => {
   }
 });
 
-// DELETE A TRIP (organiser only) - FR-2.7
-// Removes the trip and everything that belongs to it.
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);

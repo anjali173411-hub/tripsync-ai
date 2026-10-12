@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { getCurrentUser } from "./api/axios.js";
 import Navbar from "./components/Navbar.jsx";
@@ -16,7 +15,6 @@ import BudgetPage from "./pages/BudgetPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 
-// The home page: admins see the admin dashboard, travellers see their trips
 function HomePage() {
   const user = getCurrentUser();
 
@@ -28,7 +26,6 @@ function HomePage() {
 }
 
 function App() {
-  // The login and sign-up pages use the whole screen (no top bar)
   const location = useLocation();
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
@@ -38,16 +35,13 @@ function App() {
 
       <main className={isAuthPage ? "" : "container"}>
         <Routes>
-          {/* Anyone can see these */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Logged-in users only */}
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/trips/new" element={<ProtectedRoute><CreateTripPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-          {/* Pages of one trip. ":tripId" is replaced by the real trip id */}
           <Route path="/trips/:tripId" element={<ProtectedRoute><TripDetailsPage /></ProtectedRoute>} />
           <Route path="/trips/:tripId/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
           <Route path="/trips/:tripId/preferences" element={<ProtectedRoute><PreferencesPage /></ProtectedRoute>} />
@@ -55,10 +49,8 @@ function App() {
           <Route path="/trips/:tripId/consensus" element={<ProtectedRoute><ConsensusPage /></ProtectedRoute>} />
           <Route path="/trips/:tripId/budget" element={<ProtectedRoute><BudgetPage /></ProtectedRoute>} />
 
-          {/* Admins only */}
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
 
-          {/* Any other address: go to the home page */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

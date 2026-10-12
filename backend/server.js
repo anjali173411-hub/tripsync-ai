@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -7,13 +6,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import connectDB from "./config/db.js";
-import { sanitizeInput } from "./middleware/sanitize.js";
 
 import Trip from "./models/Trip.js";
 import Preference from "./models/Preference.js";
 import Expense from "./models/Expense.js";
 
-import authRoutes, { MIN_PASSWORD_LENGTH } from "./routes/authRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import tripRoutes from "./routes/tripRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
@@ -24,10 +22,6 @@ import budgetRoutes from "./routes/budgetRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import { CURRENCY } from "./services/itineraryConsensusService.js";
 
-// These must be in backend/.env, otherwise the app cannot work.
-// Stop straight away with a clear message if one is missing.
-// (GEMINI_API_KEY is checked only when the AI is used, so the rest of
-// the app still works without it.)
 const REQUIRED_SETTINGS = ["MONGO_URI", "JWT_SECRET", "PORT", "CLIENT_URL"];
 
 const missingSettings = [];
@@ -44,20 +38,45 @@ if (missingSettings.length > 0) {
 
 const app = express();
 
-// Middleware
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
-app.use(sanitizeInput); // remove "$" keys from request bodies (NoSQL injection)
 
-// Health check
+function cleanObject(value) {
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      value[i] = cleanObject(value[i]);
+    }
+    return value;
+  }
+
+  if (value !== null && typeof value === "object") {
+    const keys = Object.keys(value);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (key.startsWith("$") || key.includes(".")) {
+        delete value[key];
+      } else {
+        value[key] = cleanObject(value[key]);
+      }
+    }
+  }
+
+  return value;
+}
+
+app.use((req, res, next) => {
+  if (req.body) {
+    req.body = cleanObject(req.body);
+  }
+  next();
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     message: "TripSync AI backend is running"
   });
 });
 
-// Lists and settings the frontend needs for its forms.
-// They are read from the models and code, so they are defined in only one place.
 app.get("/api/options", (req, res) => {
   res.json({
     tripTypes: Trip.schema.path("type").enumValues,
@@ -68,43 +87,31 @@ app.get("/api/options", (req, res) => {
     stayTypes: Preference.schema.path("stayType").enumValues,
     interestOptions: Preference.schema.path("interests").getEmbeddedSchemaType().enumValues,
     expenseCategories: Expense.schema.path("category").enumValues,
-    currency: CURRENCY,
-    minPasswordLength: MIN_PASSWORD_LENGTH
+    currency: CURRENCY
   });
 });
 
-// Authentication and profile
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 
-// Trips and members
 app.use("/api/trips", tripRoutes);
 app.use("/api/trips", memberRoutes);
 
-// Preferences and itinerary
 app.use("/api/trips", preferenceRoutes);
 app.use("/api/trips", itineraryRoutes);
 
-// Voting and consensus
 app.use("/api/trips", consensusRoutes);
 
-// Budget and expenses
 app.use("/api/trips", budgetRoutes);
 
-// Administrator
 app.use("/api/admin", adminRoutes);
 
-// When the app runs online, the backend also serves the finished React pages
-// (the "frontend/dist" folder made by "npm run build"). On your own computer that
-// folder usually doesn't exist, and the frontend runs separately with "npm run dev".
 const thisFolder = path.dirname(fileURLToPath(import.meta.url));
 const frontendFolder = path.join(thisFolder, "..", "frontend", "dist");
 
 if (fs.existsSync(frontendFolder)) {
   app.use(express.static(frontendFolder));
 
-  // Any other page address (e.g. /trips/123): send the React app,
-  // and React Router shows the right page
   app.use((req, res, next) => {
     if (req.method !== "GET" || req.path.startsWith("/api")) {
       return next();
@@ -113,7 +120,6 @@ if (fs.existsSync(frontendFolder)) {
   });
 }
 
-// Start server
 async function startServer() {
   try {
     await connectDB();

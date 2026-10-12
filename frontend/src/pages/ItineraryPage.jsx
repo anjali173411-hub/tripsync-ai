@@ -1,13 +1,8 @@
-// The AI itinerary, day by day.
-//   1. No itinerary yet -> the organiser clicks "Generate with AI" (FR-4.1)
-//   2. Itinerary ready  -> everyone sees the days; the organiser can edit, move or remove
-//      activities (FR-4.4) and ask the AI to plan a day or the whole trip again (FR-4.3)
-//   3. Everything decided -> the organiser clicks "Finalise" (FR-5.7)
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Loader, Modal, TextInput, NumberInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { Pencil, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 
@@ -24,11 +19,9 @@ function ItineraryPage() {
   const [aiWorking, setAiWorking] = useState(false);
   const [error, setError] = useState("");
 
-  // Asking the AI again
   const [instructions, setInstructions] = useState("");
   const [dayInstructions, setDayInstructions] = useState("");
 
-  // Editing one activity (the pop-up is open while editingId is not "")
   const [editingId, setEditingId] = useState("");
   const [editTime, setEditTime] = useState("");
   const [editName, setEditName] = useState("");
@@ -57,7 +50,6 @@ function ItineraryPage() {
       setConflicts(response.data.conflicts);
       setMembersNotInPlan(response.data.membersNotInPlan);
     } catch (err) {
-      // 404 just means the itinerary has not been generated yet
       if (err.response && err.response.status === 404) {
         setItinerary(null);
       } else {
@@ -66,9 +58,6 @@ function ItineraryPage() {
     }
   }
 
-  // ---------- Asking the AI ----------
-
-  // Plans the whole trip. Used by "Generate", "Plan whole trip again" and "Make it cheaper".
   async function planTrip(instructionsText) {
     setError("");
     setAiWorking(true);
@@ -94,7 +83,6 @@ function ItineraryPage() {
       trip.budget + " " + currency + ". Make a cheaper plan that fits the budget.");
   }
 
-  // Plans only one day again
   async function handleRegenerateDay(dayNumber) {
     setError("");
     setAiWorking(true);
@@ -111,8 +99,6 @@ function ItineraryPage() {
 
     setAiWorking(false);
   }
-
-  // ---------- Changing activities by hand ----------
 
   function startEditing(activity) {
     setEditingId(activity._id);
@@ -140,7 +126,6 @@ function ItineraryPage() {
     }
   }
 
-  // direction is "up" (earlier) or "down" (later)
   async function handleMove(activityId, direction) {
     try {
       const response = await api.post("/trips/" + tripId + "/activities/" + activityId + "/move", {
@@ -179,9 +164,6 @@ function ItineraryPage() {
     }
   }
 
-  // ---------- Small calculations ----------
-
-  // Adds up the cost of a list of activities
   function getTotalCost(activities) {
     let total = 0;
     for (let i = 0; i < activities.length; i++) {
@@ -190,7 +172,6 @@ function ItineraryPage() {
     return total;
   }
 
-  // How many group decisions are still open
   function countOpenDecisions() {
     let count = 0;
     for (let i = 0; i < conflicts.length; i++) {
@@ -201,7 +182,6 @@ function ItineraryPage() {
     return count;
   }
 
-  // FR-5.6: the members an activity does NOT suit ([] if it suits everyone)
   function getNotMatched(matchedMembers) {
     if (trip.type !== "group" || matchedMembers.length === 0) {
       return [];
@@ -217,8 +197,6 @@ function ItineraryPage() {
     return notMatched;
   }
 
-  // ---------- What to show ----------
-
   if (!trip) {
     if (error) {
       return <p className="error-box">{error}</p>;
@@ -228,7 +206,6 @@ function ItineraryPage() {
 
   const isOrganiser = trip.organiser._id === user.id;
 
-  // The AI is working
   if (aiWorking) {
     return (
       <div className="trip-layout">
@@ -244,7 +221,6 @@ function ItineraryPage() {
     );
   }
 
-  // No itinerary yet
   if (!itinerary) {
     return (
       <div className="trip-layout">
@@ -269,13 +245,10 @@ function ItineraryPage() {
     );
   }
 
-  // The itinerary exists
   const isFinalised = itinerary.status === "finalised";
   const canEdit = isOrganiser && !isFinalised && trip.status === "planning";
   const openDecisions = countOpenDecisions();
 
-  // Activity costs are PER PERSON, the stay is per night for the WHOLE group.
-  // A 3-day trip has 2 nights.
   let activitiesCost = 0;
   for (let i = 0; i < itinerary.days.length; i++) {
     activitiesCost = activitiesCost + getTotalCost(itinerary.days[i].activities);
@@ -312,7 +285,6 @@ function ItineraryPage() {
           </p>
         )}
 
-        {/* Cost of the plan compared with the budget */}
         <div className="box">
           <p>
             Plan cost for {trip.members.length} {trip.members.length === 1 ? "person" : "people"}:{" "}
@@ -327,7 +299,6 @@ function ItineraryPage() {
           )}
         </div>
 
-        {/* Where to stay (a suggestion, not a booking) */}
         {itinerary.stay && itinerary.stay.area && (
           <div className="box">
             <p className="label">Where to stay</p>
@@ -343,7 +314,6 @@ function ItineraryPage() {
           </div>
         )}
 
-        {/* One button per day */}
         <div className="day-tabs">
           {itinerary.days.map((oneDay, index) => (
             <button
@@ -356,7 +326,6 @@ function ItineraryPage() {
           ))}
         </div>
 
-        {/* The activities of the selected day */}
         <div className="box">
           <h3>Day {day.dayNumber} · {formatDate(day.date)}</h3>
           <p className="muted small">About {formatMoney(getTotalCost(day.activities), currency)} per person</p>
@@ -374,24 +343,34 @@ function ItineraryPage() {
                   <span className="tag orange">Doesn't match: {getNotMatched(activity.matchedMembers).join(", ")}</span>
                 )}
 
+              </div>
+
+              <div className="activity-right">
+                <span className="activity-cost">
+                  {activity.estimatedCost > 0 ? formatMoney(activity.estimatedCost, currency) : "Free"}
+                </span>
+
                 {canEdit && (
-                  <div className="activity-buttons">
-                    <button className="small-button" onClick={() => startEditing(activity)}>Edit</button>
-                    <button className="small-button" disabled={index === 0} onClick={() => handleMove(activity._id, "up")}>Earlier</button>
-                    <button className="small-button" disabled={index === day.activities.length - 1} onClick={() => handleMove(activity._id, "down")}>Later</button>
-                    <button className="small-button danger" onClick={() => handleRemove(activity)}>Remove</button>
+                  <div className="activity-icons">
+                    <button className="icon-btn" title="Edit" onClick={() => startEditing(activity)}>
+                      <Pencil size={16} />
+                    </button>
+                    <button className="icon-btn" title="Move earlier" disabled={index === 0} onClick={() => handleMove(activity._id, "up")}>
+                      <ArrowUp size={16} />
+                    </button>
+                    <button className="icon-btn" title="Move later" disabled={index === day.activities.length - 1} onClick={() => handleMove(activity._id, "down")}>
+                      <ArrowDown size={16} />
+                    </button>
+                    <button className="icon-btn delete" title="Remove" onClick={() => handleRemove(activity)}>
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 )}
               </div>
-
-              <span className="activity-cost">
-                {activity.estimatedCost > 0 ? formatMoney(activity.estimatedCost, currency) : "Free"}
-              </span>
             </div>
           ))}
         </div>
 
-        {/* Edit pop-up */}
         <Modal opened={editingId !== ""} onClose={() => setEditingId("")} title="Edit activity">
           <form onSubmit={handleSaveEdit} className="edit-form">
             <TextInput label="Time" value={editTime} onChange={(e) => setEditTime(e.target.value)} />
@@ -402,7 +381,6 @@ function ItineraryPage() {
           </form>
         </Modal>
 
-        {/* Organiser only */}
         {canEdit && (
           <div className="box">
             <h3>Change the plan with AI</h3>

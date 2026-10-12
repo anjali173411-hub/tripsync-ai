@@ -44,7 +44,7 @@ TripSync AI is a MERN web app for planning solo and group trips. Every traveller
         │  HTTPS, JSON, "Authorization: Bearer <JWT>"
         ▼
  Node.js / Express API  (/api/...)
-   ├─ middleware: CORS, sanitize (blocks $ and . keys), verifyToken (JWT + tokenVersion), admin check
+   ├─ middleware: CORS, request cleaning (blocks $ and . keys), verifyToken (JWT + tokenVersion), admin check
    ├─ routes → Mongoose models ───────────────►  MongoDB Atlas
    └─ services → Gemini (AI), Brevo/Gmail (email), Open-Meteo (weather), Wikipedia (photos)
 ```
@@ -61,7 +61,7 @@ TripSyncAI/
 ├── backend/
 │   ├── server.js           Express app, CORS, routes, serves the built frontend
 │   ├── config/db.js        MongoDB connection
-│   ├── middleware/         auth.js (JWT, admin), sanitize.js
+│   ├── middleware/         auth.js (JWT, admin)
 │   ├── models/             User, Trip, Preference, Itinerary, ConflictVote, Expense
 │   ├── routes/             auth, profile, trip, member, preference, itinerary, consensus, budget, admin
 │   └── services/           itineraryConsensusService (AI), emailService, weatherService, placeImageService
@@ -77,6 +77,109 @@ TripSyncAI/
         └── pages/          Login, Register, Dashboard, CreateTrip, TripDetails, Members,
                             Preferences, Itinerary, Consensus, Budget, Profile, Admin
 ```
+
+---
+
+## Database design (MongoDB + Mongoose)
+
+Six collections. `ObjectId` fields link documents together (like foreign keys).
+
+```
+User ──< Trip (organiser, members) ──< Preference (one per member per trip)
+                 │
+                 ├──< Itinerary (one per trip: days → activities, stay)
+                 ├──< ConflictVote (group decisions for the trip)
+                 └──< Expense (money spent on the trip)
+```
+
+### users
+| Field | Type | Notes |
+|---|---|---|
+| name | String | required |
+| email | String | required, unique, stored in lowercase |
+| password | String | bcrypt hash, never the real password |
+| role | String | `traveller` (default) or `admin` |
+| isActive | Boolean | admin can deactivate an account |
+| defaultPreferences | { interests: [String], pace: String } | fills the preference form for new trips |
+| tokenVersion | Number | raised on logout so old login tokens stop working |
+| createdAt / updatedAt | Date | automatic |
+
+### trips
+| Field | Type | Notes |
+|---|---|---|
+| title | String | required |
+| type | String | `solo` or `group` |
+| startingFrom, destination | String | destination required |
+| travelMode | String | `train`, `bus` or `car` |
+| startDate, endDate | Date | required |
+| budget | Number | total budget for the whole group |
+| organiser | ObjectId → users | the creator |
+| members | [ObjectId → users] | everyone in the trip, organiser included |
+| invitedEmails | [String] | invited but not answered yet |
+| status | String | `planning`, `finalised`, `completed` or `archived` |
+| destinationLat, destinationLon, destinationFullName | Number / String | saved map position for the weather |
+| destinationImage | String | photo for the trip card |
+
+### preferences (one per member per trip – unique on trip + user)
+| Field | Type | Notes |
+|---|---|---|
+| trip | ObjectId → trips | |
+| user | ObjectId → users | |
+| interests | [String] | from a fixed list (adventure, food, culture, …) |
+| otherInterests, mustDo, dealBreakers | [String] | typed by the user |
+| pace | String | `relaxed`, `balanced` or `packed` |
+| foodPreference | String | no preference, vegetarian, non-vegetarian, vegan, jain |
+| stayBudget / stayType | String | budget / mid-range / luxury · hotel / homestay / hostel / resort |
+| budgetContribution | Number | what this member plans to put in |
+| freeTextNotes | String | the trip described in their own words |
+
+### itineraries (one per trip)
+| Field | Type | Notes |
+|---|---|---|
+| trip | ObjectId → trips | |
+| days | [{ dayNumber, date, activities }] | one entry per day |
+| days.activities | [{ time, name, description, category, estimatedCost, matchedMembers }] | cost is per person; matchedMembers = who it suits |
+| stay | { area, placeType, budgetLevel, costPerNight, reason, matchedMembers } | suggested place to stay (not a booking) |
+| status | String | `draft`, `ready` or `finalised` |
+
+### conflictvotes (group decisions)
+| Field | Type | Notes |
+|---|---|---|
+| trip | ObjectId → trips | |
+| conflictDescription, reasoning | String | what the group disagrees on and why |
+| affectedMembers | [String] | names of the members involved |
+| options | [{ description, extraCost, voteCount }] | 2–3 compromise options |
+| votes | [{ user: ObjectId → users, optionIndex }] | one vote per member |
+| resolved, chosenOption | Boolean, Number | set when more than half vote the same, or the organiser decides |
+
+### expenses
+| Field | Type | Notes |
+|---|---|---|
+| trip | ObjectId → trips | |
+| paidBy | ObjectId → users | |
+| title, amount | String, Number | required |
+| category | String | accommodation, food, transport, activities, misc |
+| activityName | String | optional link to an itinerary activity |
+| expenseDate | Date | defaults to today |
+
+---
+
+## React pages
+
+| Page | Address | Main API calls |
+|---|---|---|
+| LoginPage | `/login` | `POST /auth/login` |
+| RegisterPage | `/register` | `POST /auth/register` |
+| DashboardPage | `/` | `GET /trips`, `GET /trips/invitations/mine`, accept / decline invitation |
+| CreateTripPage | `/trips/new` | `POST /trips` |
+| TripDetailsPage | `/trips/:tripId` | `GET /trips/:id`, `GET /trips/:id/weather`, archive / complete / delete |
+| MembersPage | `/trips/:tripId/members` | invite, cancel invite, remove member, `GET /profile/search` |
+| PreferencesPage | `/trips/:tripId/preferences` | `GET /preferences/me`, `PUT /preferences`, `POST /preferences/from-text` |
+| ItineraryPage | `/trips/:tripId/itinerary` | `POST /generate`, `GET /itinerary`, edit / move / remove activity, re-plan a day, finalise |
+| ConsensusPage | `/trips/:tripId/consensus` | vote, organiser decides |
+| BudgetPage | `/trips/:tripId/budget` | `GET /budget`, `POST /expenses`, `POST /budget/suggestions` |
+| ProfilePage | `/profile` | `GET /profile`, `PUT /profile` |
+| AdminPage | `/admin` (admins only) | `GET /admin/summary`, `GET /admin/users`, activate / deactivate user |
 
 ---
 
@@ -201,7 +304,7 @@ All endpoints start with `/api`. Everything except register/login needs `Authori
 
 - Every route checks required fields, types and allowed values and returns a clear `400` message; missing items return `404`; not allowed returns `403`; server errors return `500` with a safe message.
 - Passwords are hashed with bcrypt; JWT login with a `tokenVersion` so logout ends all sessions.
-- `sanitize` middleware removes `$` / `.` keys from requests (NoSQL injection protection).
+- A small middleware in `server.js` (`cleanObject`) removes `$` / `.` keys from requests (NoSQL injection protection).
 - CORS only allows the configured frontend address.
 - AI answers are validated against a JSON schema and checked (right number of days, meals, valid names); a broken answer is asked for once more, otherwise the user gets a clear error and nothing is saved.
 

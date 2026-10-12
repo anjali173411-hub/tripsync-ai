@@ -1,4 +1,3 @@
-
 import express from "express";
 import Trip from "../models/Trip.js";
 import Preference from "../models/Preference.js";
@@ -13,12 +12,8 @@ import {
 
 const router = express.Router();
 
-// The longest trip the AI will plan
 const MAX_TRIP_DAYS = 30;
 
-// ---------------- Helper functions ----------------
-
-// Checks if an id is in a list of ids
 function listHasId(list, id) {
   for (let i = 0; i < list.length; i++) {
     if (list[i].toString() === id.toString()) {
@@ -28,15 +23,12 @@ function listHasId(list, id) {
   return false;
 }
 
-// How many days the trip lasts (start and end day both count)
 function countTripDays(trip) {
   const startDate = new Date(trip.startDate);
   const endDate = new Date(trip.endDate);
   return Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-// Collects every member's preferences in the simple shape the AI service wants.
-// Returns { members } or { error } if someone hasn't filled in their preferences.
 async function getMembersForAI(trip) {
   const preferences = await Preference.find({
     trip: trip._id,
@@ -69,7 +61,6 @@ async function getMembersForAI(trip) {
   return { members: members };
 }
 
-// Names of members who have not saved their preferences yet
 async function getMembersWithoutPreferences(trip) {
   const populatedTrip = await Trip.findById(trip._id).populate("members", "name");
   const preferences = await Preference.find({ trip: trip._id });
@@ -93,9 +84,6 @@ async function getMembersWithoutPreferences(trip) {
   return names;
 }
 
-// Loads the trip and itinerary for editing.
-// Only the organiser may edit, and only while the trip is still being planned.
-// Returns { trip, itinerary } or { error, status }.
 async function getEditableItinerary(tripId, userId) {
   const trip = await Trip.findById(tripId);
 
@@ -120,7 +108,6 @@ async function getEditableItinerary(tripId, userId) {
   return { trip: trip, itinerary: itinerary };
 }
 
-// Finds an activity by its id. Returns { day, index } or null.
 function findActivity(itinerary, activityId) {
   for (let d = 0; d < itinerary.days.length; d++) {
     const day = itinerary.days[d];
@@ -134,7 +121,6 @@ function findActivity(itinerary, activityId) {
   return null;
 }
 
-// Turns the AI's activities into the shape we save
 function toSavedActivities(aiActivities) {
   const activities = [];
 
@@ -151,8 +137,6 @@ function toSavedActivities(aiActivities) {
     });
   }
 
-  // Put the activities in time order ("08:00" before "13:00"),
-  // in case the AI listed them out of order
   activities.sort(function (first, second) {
     return String(first.time).localeCompare(String(second.time));
   });
@@ -160,10 +144,9 @@ function toSavedActivities(aiActivities) {
   return activities;
 }
 
-// Sends an AI error or other error back to the browser
 function sendError(res, error, whatFailed) {
   if (error instanceof AIServiceError) {
-    // 502 = the problem is with the outside AI service, not the user's request
+
     return res.status(502).json({
       message: error.message,
       details: error.details
@@ -176,9 +159,6 @@ function sendError(res, error, whatFailed) {
   });
 }
 
-// ---------------- Routes ----------------
-
-// GENERATE THE ITINERARY (organiser only) - FR-4.1, FR-5.1
 router.post("/:tripId/generate", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -219,7 +199,6 @@ router.post("/:tripId/generate", verifyToken, async (req, res) => {
       });
     }
 
-    // Everyone invited must accept or decline first, otherwise they'd be left out of the plan
     if (trip.invitedEmails.length > 0) {
       return res.status(400).json({
         message:
@@ -233,18 +212,13 @@ router.post("/:tripId/generate", verifyToken, async (req, res) => {
       return res.status(400).json({ message: result.error });
     }
 
-    // Extra instructions are only sent when the organiser clicks "Regenerate"
     let instructions = "";
     if (req.body && req.body.instructions) {
       instructions = String(req.body.instructions);
     }
 
-    // Ask the AI. This is the same call for solo and group trips.
-    // If the AI fails, it throws an error and we jump to "catch" below,
-    // so nothing gets saved and the old trip data stays safe (SRS 5.4).
     const aiResult = await generateItinerary(trip, numberOfDays, result.members, instructions);
 
-    // Build the days to save. The AI gives day numbers; we work out the real dates.
     const days = [];
     for (let i = 0; i < aiResult.days.length; i++) {
       const date = new Date(trip.startDate);
@@ -263,7 +237,6 @@ router.post("/:tripId/generate", verifyToken, async (req, res) => {
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
 
-    // Replace the old conflicts with the new ones (SRS 6.5). Nobody has voted yet.
     await ConflictVote.deleteMany({ trip: trip._id });
 
     for (let i = 0; i < aiResult.conflicts.length; i++) {
@@ -302,7 +275,6 @@ router.post("/:tripId/generate", verifyToken, async (req, res) => {
   }
 });
 
-// VIEW THE ITINERARY AND ITS CONFLICTS (trip members only)
 router.get("/:tripId/itinerary", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -325,7 +297,6 @@ router.get("/:tripId/itinerary", verifyToken, async (req, res) => {
 
     const conflicts = await ConflictVote.find({ trip: trip._id });
 
-    // Members with no saved preferences (e.g. they joined after the plan was made)
     const membersNotInPlan = await getMembersWithoutPreferences(trip);
 
     res.json({
@@ -338,7 +309,6 @@ router.get("/:tripId/itinerary", verifyToken, async (req, res) => {
   }
 });
 
-// EDIT ONE ACTIVITY (organiser only) - FR-4.4
 router.put("/:tripId/activities/:activityId", verifyToken, async (req, res) => {
   try {
     const result = await getEditableItinerary(req.params.tripId, req.user.id);
@@ -379,7 +349,6 @@ router.put("/:tripId/activities/:activityId", verifyToken, async (req, res) => {
   }
 });
 
-// MOVE AN ACTIVITY UP OR DOWN WITHIN ITS DAY (organiser only) - FR-4.4
 router.post("/:tripId/activities/:activityId/move", verifyToken, async (req, res) => {
   try {
     const result = await getEditableItinerary(req.params.tripId, req.user.id);
@@ -409,7 +378,6 @@ router.post("/:tripId/activities/:activityId/move", verifyToken, async (req, res
       return res.status(400).json({ message: "The activity cannot move further" });
     }
 
-    // Swap the two activities
     const moving = activities[found.index].toObject();
     const other = activities[newIndex].toObject();
     activities.set(newIndex, moving);
@@ -426,7 +394,6 @@ router.post("/:tripId/activities/:activityId/move", verifyToken, async (req, res
   }
 });
 
-// REMOVE ONE ACTIVITY (organiser only) - FR-4.4
 router.delete("/:tripId/activities/:activityId", verifyToken, async (req, res) => {
   try {
     const result = await getEditableItinerary(req.params.tripId, req.user.id);
@@ -451,7 +418,6 @@ router.delete("/:tripId/activities/:activityId", verifyToken, async (req, res) =
   }
 });
 
-// PLAN ONE DAY AGAIN WITH THE AI (organiser only) - FR-4.3
 router.post("/:tripId/days/:dayNumber/regenerate", verifyToken, async (req, res) => {
   try {
     const result = await getEditableItinerary(req.params.tripId, req.user.id);
@@ -461,7 +427,6 @@ router.post("/:tripId/days/:dayNumber/regenerate", verifyToken, async (req, res)
 
     const dayNumber = Number(req.params.dayNumber);
 
-    // Find the day to re-plan, and keep the others
     let dayToChange = null;
     const otherDays = [];
 
@@ -488,7 +453,6 @@ router.post("/:tripId/days/:dayNumber/regenerate", verifyToken, async (req, res)
       instructions = String(req.body.instructions);
     }
 
-    // If the AI fails, nothing is changed (SRS 5.4)
     const aiResult = await regenerateDay(
       result.trip,
       result.itinerary.days.length,

@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const tripSchema = new mongoose.Schema(
@@ -15,7 +14,6 @@ const tripSchema = new mongoose.Schema(
       required: true
     },
 
-    // Where the trip starts, e.g. the home city
     startingFrom: {
       type: String,
       trim: true,
@@ -80,9 +78,6 @@ const tripSchema = new mongoose.Schema(
       }
     ],
 
-    // Email addresses of people who were invited but have not accepted yet (FR-2.4).
-    // They don't need an account to be invited. When they sign up or log in
-    // with this email and click "Accept", they move into "members".
     invitedEmails: [
       {
         type: String,

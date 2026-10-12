@@ -1,11 +1,5 @@
-/* =========================================================
-   TripSync AI - green theme
-   All colours, corners and shadows are set once here at the top.
-   To change the app's colour, change the "--primary" values below.
-   ========================================================= */
-
 :root {
-  /* Main colour: green */
+
   --primary: #1e7a46;
   --primary-dark: #14532d;
   --primary-darkest: #0b3a1e;
@@ -15,20 +9,17 @@
   --primary-tile: #ebf7ef;
   --primary-pale: #f6fbf7;
 
-  /* Neutrals */
   --white: #ffffff;
   --background: #f6f9f6;
   --text: #1b2a21;
   --muted: #66756b;
   --border: #dfeae2;
 
-  /* Messages */
   --error: #c0392b;
   --error-light: #fdecea;
   --warning: #a16207;
   --warning-light: #fef6e0;
 
-  /* Shapes */
   --radius: 14px;
   --radius-small: 10px;
   --shadow: 0 1px 2px rgba(11, 58, 30, 0.06), 0 4px 16px rgba(11, 58, 30, 0.07);
@@ -93,8 +84,6 @@ hr {
   padding: 24px 16px 48px;
 }
 
-/* ---------- Navbar ---------- */
-
 .navbar {
   position: sticky;
   top: 0;
@@ -109,7 +98,6 @@ hr {
   box-shadow: 0 2px 12px rgba(11, 58, 30, 0.25);
 }
 
-/* Logo: purple square + name + tagline */
 .brand {
   display: flex;
   align-items: center;
@@ -181,7 +169,6 @@ hr {
   font-size: 0.95rem;
 }
 
-/* Round button that only has an icon (e.g. log out) */
 .icon-button {
   display: flex;
   align-items: center;
@@ -202,17 +189,6 @@ hr {
   transform: none;
   box-shadow: none;
 }
-
-/* ---------- Cards and layout ---------- */
-
-/* ---------- Login and sign-up ---------- */
-
-/* ---------- Forms ---------- */
-/* :where(:not([class*="mantine-"])) means: these plain styles skip Mantine's components,
-   which have their own look (set in theme.js). ":where" keeps the rule as weak as a
-   normal "input" rule, so our other classes can still change it. */
-
-/* ---------- Buttons ---------- */
 
 button:where(:not([class*="mantine-"])) {
   display: inline-flex;
@@ -250,8 +226,6 @@ button:where(:not([class*="mantine-"])):disabled {
   box-shadow: none;
 }
 
-/* ---------- Messages ---------- */
-
 .muted {
   color: var(--muted);
 }
@@ -259,8 +233,6 @@ button:where(:not([class*="mantine-"])):disabled {
 .small {
   font-size: 0.85rem;
 }
-
-/* ---------- Badges, pills and tags ---------- */
 
 .badge {
   display: inline-block;
@@ -276,8 +248,6 @@ button:where(:not([class*="mantine-"])):disabled {
 .badge-finalised { background: var(--primary); color: var(--white); }
 
 .badge-completed { background: #e6efe8; color: var(--muted); }
-
-/* ---------- Trip pages: menu on the left, content on the right ---------- */
 
 .trip-layout {
   display: grid;
@@ -338,9 +308,6 @@ button:where(:not([class*="mantine-"])):disabled {
   margin-top: 0;
 }
 
-/* ---------- Dashboard ---------- */
-
-/* Welcome banner */
 .hero {
   padding: 32px;
   border: none;
@@ -360,10 +327,6 @@ button:where(:not([class*="mantine-"])):disabled {
 .hero .muted {
   color: rgba(255, 255, 255, 0.75);
 }
-
-/* ---------- Tabs (itinerary days) ---------- */
-
-/* ---------- Group decisions ---------- */
 
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(224, 161, 0, 0.45); }
@@ -396,14 +359,6 @@ button:where(:not([class*="mantine-"])):disabled {
   to { transform: rotate(360deg); }
 }
 
-/* ---------- Budget ---------- */
-
-/* ---------- Tables ---------- */
-
-/* ---------- Admin and reviews ---------- */
-
-/* ---------- Phones ---------- */
-
 @media (max-width: 760px) {
 .container {
     padding: 16px 16px 40px;
@@ -426,7 +381,6 @@ button:where(:not([class*="mantine-"])):disabled {
     gap: 16px;
   }
 
-/* On phones the trip menu becomes a row of buttons you can scroll */
 .sidebar {
     position: static;
     flex-direction: row;
@@ -449,24 +403,17 @@ button:where(:not([class*="mantine-"])):disabled {
     font-size: 1.6rem;
   }
 
-/* The "+" card does not need to be so tall on phones */
 .add-trip-card {
     min-height: 170px;
   }
 }
 
-/* ---------- Small extras ---------- */
-
-/* ---------- Dashboard: trip cards ---------- */
-
-/* Grid of cards: as many columns as fit, each at least 250px wide */
 .trip-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 18px;
 }
 
-/* The first card with the big "+" */
 .add-trip-card {
   display: flex;
   flex-direction: column;
@@ -512,8 +459,6 @@ button:where(:not([class*="mantine-"])):disabled {
   color: var(--primary-dark);
 }
 
-/* One trip card: big photo on top (with the name on it),
-   then a white panel with rounded corners that slides up over the photo */
 .trip-tile {
   display: flex;
   flex-direction: column;
@@ -532,7 +477,6 @@ button:where(:not([class*="mantine-"])):disabled {
   box-shadow: var(--shadow-hover);
 }
 
-/* The photo area. Everything inside is placed on top of the photo. */
 .trip-tile-cover {
   position: relative;
   height: 190px;
@@ -550,7 +494,6 @@ button:where(:not([class*="mantine-"])):disabled {
   transform: scale(1.06);
 }
 
-/* Shown when there is no photo for the place */
 .trip-tile-image-empty {
   display: flex;
   align-items: center;
@@ -561,7 +504,6 @@ button:where(:not([class*="mantine-"])):disabled {
     linear-gradient(135deg, var(--primary-dark), var(--primary));
 }
 
-/* Dark fade so the white text is easy to read on any photo */
 .trip-tile-cover::after {
   content: "";
   position: absolute;
@@ -590,7 +532,6 @@ button:where(:not([class*="mantine-"])):disabled {
   opacity: 0.85;
 }
 
-/* The white panel. The negative margin pulls it up over the photo. */
 .trip-tile-body {
   position: relative;
   z-index: 2;
@@ -601,11 +542,6 @@ button:where(:not([class*="mantine-"])):disabled {
   background: var(--white);
 }
 
-/* ---------- Dashboard: invitations ---------- */
-
-/* ---------- Itinerary: cost summary ---------- */
-
-/* Small "Admin" label next to the admin's name in the top bar */
 .admin-badge {
   margin-left: 8px;
   padding: 2px 8px;
@@ -617,20 +553,10 @@ button:where(:not([class*="mantine-"])):disabled {
   text-transform: uppercase;
 }
 
-/* ---------- Password box with an eye button ---------- */
-
-/* ---------- Weather ---------- */
-
-/* ---------- Small extras for the SRS features ---------- */
-
 .badge-archived {
   background: #e6efe8;
   color: var(--muted);
 }
-
-/* ---------- Itinerary: stay suggestion and journey ---------- */
-
-/* ---------- Log in and Sign up: split screen ---------- */
 
 .auth-page {
   display: grid;
@@ -638,7 +564,6 @@ button:where(:not([class*="mantine-"])):disabled {
   min-height: 100vh;
 }
 
-/* Left: green side that explains the app */
 .auth-story {
   display: flex;
   flex-direction: column;
@@ -715,7 +640,6 @@ button:where(:not([class*="mantine-"])):disabled {
   font-size: 0.9rem;
 }
 
-/* Right: the form */
 .auth-form-side {
   display: grid;
   place-items: center;
@@ -734,7 +658,6 @@ button:where(:not([class*="mantine-"])):disabled {
   color: var(--primary-dark);
 }
 
-/* Phones: the green side becomes a short header above the form */
 @media (max-width: 760px) {
 .auth-page {
     grid-template-columns: 1fr;
@@ -763,9 +686,6 @@ button:where(:not([class*="mantine-"])):disabled {
   }
 }
 
-/* ---------- Small extra styles for Mantine parts ---------- */
-
-/* Trip Details: big banner with the place photo (or the green gradient) */
 .trip-banner {
   position: relative;
   display: flex;
@@ -779,7 +699,6 @@ button:where(:not([class*="mantine-"])):disabled {
   background-position: center;
 }
 
-/* Dark fade at the bottom so the white text is readable on any photo */
 .trip-banner::after {
   content: "";
   position: absolute;
@@ -793,14 +712,10 @@ button:where(:not([class*="mantine-"])):disabled {
   padding: 24px 26px;
 }
 
-/* Show choices like "no preference" as "No Preference" */
 .capitalize {
   text-transform: capitalize;
 }
 
-/* ---------- Simple shared styles (Itinerary page) ---------- */
-
-/* A white box with rounded corners */
 .box {
   background: white;
   border: 1px solid var(--border);
@@ -828,7 +743,6 @@ button:where(:not([class*="mantine-"])):disabled {
   border-radius: 10px;
 }
 
-/* Small grey heading above a value */
 .label {
   margin: 12px 0 4px;
   font-size: 12px;
@@ -837,7 +751,6 @@ button:where(:not([class*="mantine-"])):disabled {
   color: var(--muted);
 }
 
-/* Small rounded label, e.g. "Mid-range" */
 .tag {
   display: inline-block;
   padding: 2px 10px;
@@ -863,7 +776,6 @@ button:where(:not([class*="mantine-"])):disabled {
   color: #c0392b;
 }
 
-/* Day 1 / Day 2 / Day 3 buttons */
 .day-tabs {
   display: flex;
   gap: 8px;
@@ -881,7 +793,6 @@ button:where(:not([class*="mantine-"])):disabled {
   color: white;
 }
 
-/* One activity: time | name and description | cost */
 .activity {
   display: flex;
   gap: 16px;
@@ -907,12 +818,6 @@ button:where(:not([class*="mantine-"])):disabled {
   font-weight: 700;
 }
 
-.activity-buttons {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-
 .small-button {
   padding: 4px 10px;
   font-size: 13px;
@@ -925,7 +830,6 @@ button:where(:not([class*="mantine-"])):disabled {
   border-color: #c0392b;
 }
 
-/* A text box with a button next to it */
 .input-row {
   display: flex;
   gap: 8px;
@@ -943,12 +847,9 @@ button:where(:not([class*="mantine-"])):disabled {
   margin-top: 0;
 }
 
-/* The edit pop-up: space between the boxes */
 .edit-form > * {
   margin-bottom: 12px;
 }
-
-/* ---------- Simple forms and tables (used on every page) ---------- */
 
 label:where(:not([class*="mantine-"])) {
   display: block;
@@ -975,7 +876,6 @@ textarea:where(:not([class*="mantine-"])):focus {
   border-color: var(--primary);
 }
 
-/* Two boxes side by side (one under the other on phones) */
 .two-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -988,7 +888,6 @@ textarea:where(:not([class*="mantine-"])):focus {
   }
 }
 
-/* A row of buttons */
 .button-row {
   display: flex;
   gap: 8px;
@@ -996,7 +895,6 @@ textarea:where(:not([class*="mantine-"])):focus {
   margin-top: 12px;
 }
 
-/* White button with a coloured border */
 .outline-button {
   background: white;
   color: var(--primary);
@@ -1030,12 +928,10 @@ table:where(:not([class*="mantine-"])) th {
   color: var(--muted);
 }
 
-/* A box that scrolls sideways on phones (for tables) */
 .scroll {
   overflow-x: auto;
 }
 
-/* A simple bar that fills up, e.g. budget used */
 .bar {
   height: 10px;
   background: var(--primary-light);
@@ -1053,7 +949,6 @@ table:where(:not([class*="mantine-"])) th {
   background: #c0392b;
 }
 
-/* A list row: text on the left, something on the right */
 .row {
   display: flex;
   justify-content: space-between;
@@ -1070,7 +965,6 @@ table:where(:not([class*="mantine-"])) th {
   border-radius: 10px;
 }
 
-/* Boxes in a grid, e.g. numbers or details */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1084,13 +978,11 @@ table:where(:not([class*="mantine-"])) th {
   margin: 0;
 }
 
-/* A narrower box in the middle of the page (forms) */
 .narrow-box {
   max-width: 680px;
   margin: 0 auto;
 }
 
-/* Trip Details: one day of weather */
 .weather-day {
   padding: 12px;
   border-radius: 10px;
@@ -1106,26 +998,22 @@ table:where(:not([class*="mantine-"])) th {
   font-size: 28px;
 }
 
-/* White text on the photo banner */
 .trip-banner-text h1,
 .trip-banner-text p {
   color: white;
   margin: 4px 0;
 }
 
-/* Interest chips, side by side */
 .chip-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-/* Group decisions: space between the options */
 .option + .option {
   margin-top: 10px;
 }
 
-/* Dashboard: white "+ New trip" link on the dark banner */
 .hero h1,
 .hero p {
   color: white;
@@ -1145,15 +1033,50 @@ table:where(:not([class*="mantine-"])) th {
   margin: 6px 0;
 }
 
-/* A button as wide as the form (Log in, Sign up) */
 .full-width {
   width: 100%;
   margin-top: 16px;
 }
 
-/* Admin: place name on the left, number on the right (no line under it) */
 .row-plain {
   display: flex;
   justify-content: space-between;
   margin-top: 12px;
+}
+
+.activity-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.activity-icons {
+  display: flex;
+  gap: 2px;
+}
+
+.icon-btn {
+  padding: 6px;
+  margin: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.icon-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.icon-btn.delete:hover {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
 }

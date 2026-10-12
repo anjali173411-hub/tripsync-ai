@@ -5,7 +5,6 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// VIEW MY PROFILE (FR-1.4)
 router.get("/", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
@@ -25,7 +24,6 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// UPDATE MY PROFILE: name and default travel preferences (FR-1.4)
 router.put("/", verifyToken, async (req, res) => {
   try {
     const { name, defaultInterests, defaultPace } = req.body;
@@ -36,7 +34,6 @@ router.put("/", verifyToken, async (req, res) => {
       });
     }
 
-    // The allowed interests and paces are listed once, in the Preference model
     const allowedInterests = Preference.schema.path("interests").getEmbeddedSchemaType().enumValues;
     const allowedPaces = Preference.schema.path("pace").enumValues;
 
@@ -82,7 +79,6 @@ router.put("/", verifyToken, async (req, res) => {
   }
 });
 
-// SEARCH REGISTERED T
 router.get("/search", verifyToken, async (req, res) => {
   try {
     let text = "";
@@ -90,12 +86,10 @@ router.get("/search", verifyToken, async (req, res) => {
       text = req.query.q.trim();
     }
 
-    // Need at least 2 letters, otherwise we would list everybody
     if (text.length < 2) {
       return res.json({ users: [] });
     }
 
-    // Escape special characters so the search text is treated as plain text
     const safeText = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     const users = await User.find({

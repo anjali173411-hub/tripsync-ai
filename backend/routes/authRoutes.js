@@ -1,4 +1,3 @@
-
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -7,17 +6,14 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ---------- Settings ----------
-export const MIN_PASSWORD_LENGTH = 8; 
-const SALT_ROUNDS = 10;               
-const TOKEN_EXPIRES_IN = "1d";        
+const MIN_PASSWORD_LENGTH = 8;
+const SALT_ROUNDS = 10;
+const TOKEN_EXPIRES_IN = "1d";
 
-// REGISTER
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Everything must be plain text (blocks tricks like {"$gt": ""})
     if (typeof name !== "string" || typeof email !== "string" || typeof password !== "string") {
       return res.status(400).json({
         message: "Name, email and password are required"
@@ -36,14 +32,12 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // At least one capital letter (A-Z)
     if (!/[A-Z]/.test(password)) {
       return res.status(400).json({
         message: "Password must contain at least one capital letter"
       });
     }
 
-    // At least one special character: anything that is not a letter or a number, e.g. @ # ! $
     if (!/[^A-Za-z0-9]/.test(password)) {
       return res.status(400).json({
         message: "Password must contain at least one special character (for example @ # ! $)"
@@ -77,7 +71,7 @@ router.post("/register", async (req, res) => {
         role: user.role
       }
     });
-    
+
   } catch (error) {
     res.status(500).json({
       message: "Registration failed"
@@ -85,12 +79,10 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// LOGIN
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Both must be plain text (blocks tricks like {"$gt": ""})
     if (typeof email !== "string" || typeof password !== "string") {
       return res.status(400).json({
         message: "Email and password are required"
@@ -165,7 +157,6 @@ router.post("/logout", verifyToken, async (req, res) => {
   }
 });
 
-// GET LOGGED-IN USER
 router.get("/me", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)

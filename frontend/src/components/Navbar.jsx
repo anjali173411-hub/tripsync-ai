@@ -1,4 +1,3 @@
-
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Leaf, LogOut } from "lucide-react";
 import { getCurrentUser, logoutEverywhere } from "../api/axios.js";
@@ -26,7 +25,6 @@ function Navbar() {
 
       {user && (
         <div className="nav-links">
-          {/* Admin menu */}
           {user.role === "admin" && <NavLink to="/admin">Admin Dashboard</NavLink>}
 
           {user.role !== "admin" && <NavLink to="/" end>My Trips</NavLink>}

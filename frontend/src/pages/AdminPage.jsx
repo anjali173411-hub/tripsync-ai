@@ -1,5 +1,3 @@
-// Admin dashboard (FR-10): platform numbers, popular destinations and all user accounts.
-
 import { useEffect, useState } from "react";
 import api, { getErrorMessage, getCurrentUser, formatDate } from "../api/axios.js";
 
@@ -26,7 +24,6 @@ function AdminPage() {
     }
   }
 
-  // Turn a user account on or off
   async function handleToggleActive(account) {
     const action = account.isActive ? "Deactivate" : "Activate";
     if (!window.confirm(action + " " + account.name + "?")) {
@@ -49,7 +46,6 @@ function AdminPage() {
 
       {error && <p className="error-box">{error}</p>}
 
-      {/* Platform numbers (FR-10.2) */}
       {summary && (
         <div className="grid">
           <div className="box"><p className="big-number">{summary.totalUsers}</p><p className="muted">Users</p></div>
@@ -72,7 +68,6 @@ function AdminPage() {
                 <span>{place.name}</span>
                 <b>{place.trips} trip(s)</b>
               </div>
-              {/* The bar is full for the most popular place, shorter for the others */}
               <div className="bar">
                 <div className="bar-fill" style={{ width: (place.trips / summary.popularDestinations[0].trips) * 100 + "%" }} />
               </div>
@@ -81,7 +76,6 @@ function AdminPage() {
         </div>
       )}
 
-      {/* All users */}
       <div className="box scroll">
         <h3>Users</h3>
         <table>
@@ -97,7 +91,6 @@ function AdminPage() {
                 <td>{formatDate(account.createdAt)}</td>
                 <td>{account.isActive ? "Active" : "Deactivated"}</td>
                 <td>
-                  {/* An admin can't deactivate their own account */}
                   {account._id !== user.id && (
                     <button className="small-button" onClick={() => handleToggleActive(account)}>
                       {account.isActive ? "Deactivate" : "Activate"}

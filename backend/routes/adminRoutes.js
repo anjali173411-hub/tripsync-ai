@@ -1,4 +1,3 @@
-
 import express from "express";
 import User from "../models/User.js";
 import Trip from "../models/Trip.js";
@@ -6,7 +5,6 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// CHECK WHETHER THE USER IS AN ADMIN
 function adminOnly(req, res, next) {
   if (req.user.role !== "admin") {
     return res.status(403).json({
@@ -17,7 +15,6 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// VIEW ALL USERS
 router.get("/users", verifyToken, adminOnly, async (req, res) => {
   try {
     const users = await User.find()
@@ -37,8 +34,6 @@ router.get("/users", verifyToken, adminOnly, async (req, res) => {
   }
 });
 
-// VIEW PLATFORM ANALYTICS - FR-10.2
-// Total users, trips (solo vs group), most popular destinations, average group size
 router.get("/summary", verifyToken, adminOnly, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
@@ -49,7 +44,7 @@ router.get("/summary", verifyToken, adminOnly, async (req, res) => {
     let planningTrips = 0;
     let completedTrips = 0;
     let peopleInGroupTrips = 0;
-    const destinationCounts = []; // [{ name, trips }]
+    const destinationCounts = [];
 
     for (let i = 0; i < trips.length; i++) {
       const trip = trips[i];
@@ -68,7 +63,6 @@ router.get("/summary", verifyToken, adminOnly, async (req, res) => {
         completedTrips = completedTrips + 1;
       }
 
-      // Count trips per destination (ignoring capital letters)
       const place = trip.destination.trim();
       let found = null;
       for (let j = 0; j < destinationCounts.length; j++) {
@@ -83,7 +77,6 @@ router.get("/summary", verifyToken, adminOnly, async (req, res) => {
       }
     }
 
-    // Most popular first, keep the top 5
     destinationCounts.sort(function (a, b) {
       return b.trips - a.trips;
     });
@@ -113,7 +106,6 @@ router.get("/summary", verifyToken, adminOnly, async (req, res) => {
   }
 });
 
-// ACTIVATE OR DEACTIVATE A USER
 router.patch("/users/:userId/status",
   verifyToken,
   adminOnly,

@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const conflictVoteSchema = new mongoose.Schema(
@@ -8,22 +7,22 @@ const conflictVoteSchema = new mongoose.Schema(
       ref: "Trip",
       required: true
     },
-    
+
     conflictDescription: {
       type: String,
       required: true
     },
-    
+
     reasoning: {
       type: String,
       default: ""
     },
-    
+
     affectedMembers: {
       type: [String],
       default: []
     },
-    
+
     options: [
       {
         description: {
@@ -40,7 +39,7 @@ const conflictVoteSchema = new mongoose.Schema(
         }
       }
     ],
-  
+
     votes: [
       {
         user: {
@@ -58,7 +57,7 @@ const conflictVoteSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    
+
     chosenOption: {
       type: Number,
       default: null

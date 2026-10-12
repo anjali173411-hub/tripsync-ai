@@ -1,4 +1,3 @@
-
 import { NavLink } from "react-router-dom";
 import { Info, Users, SlidersHorizontal, CalendarDays, Vote, Wallet } from "lucide-react";
 
@@ -16,7 +15,6 @@ function Sidebar(props) {
         <Info size={18} /> Trip Details
       </NavLink>
 
-    
       {isGroupTrip && (
         <NavLink to={tripLink + "/members"}>
           <Users size={18} /> Members

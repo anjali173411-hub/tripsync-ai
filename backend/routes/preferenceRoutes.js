@@ -1,4 +1,3 @@
-
 import express from "express";
 import Preference from "../models/Preference.js";
 import Trip from "../models/Trip.js";
@@ -8,7 +7,6 @@ import { preferencesFromText, AIServiceError } from "../services/itineraryConsen
 
 const router = express.Router();
 
-// SAVE MY PREFERENCES
 router.put("/:tripId/preferences", verifyToken, async (req, res) => {
   try {
     const {
@@ -62,9 +60,6 @@ router.put("/:tripId/preferences", verifyToken, async (req, res) => {
 
     const itinerary = await Itinerary.findOne({ trip: trip._id });
 
-    // FR-3.4: preferences can only be edited until the itinerary is generated.
-    // Exception: someone who joined AFTER the plan was made (and has no preferences yet)
-    // may still save theirs once, so the organiser can plan the trip again with them.
     if (itinerary) {
       const alreadySaved = await Preference.findOne({ trip: trip._id, user: req.user.id });
 
@@ -121,9 +116,6 @@ router.put("/:tripId/preferences", verifyToken, async (req, res) => {
   }
 });
 
-// FILL THE FORM FROM A DESCRIPTION (FR-3.2)
-// The AI reads what the traveller wrote and returns the form answers.
-// Nothing is saved: the page fills in the form, and the traveller clicks Save.
 router.post("/:tripId/preferences/from-text", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -164,7 +156,6 @@ router.post("/:tripId/preferences/from-text", verifyToken, async (req, res) => {
       });
     }
 
-    // The allowed choices come from the Preference model
     const choices = {
       interests: Preference.schema.path("interests").getEmbeddedSchemaType().enumValues,
       paces: Preference.schema.path("pace").enumValues,
@@ -190,7 +181,6 @@ router.post("/:tripId/preferences/from-text", verifyToken, async (req, res) => {
   }
 });
 
-// VIEW MY PREFERENCES
 router.get("/:tripId/preferences/me", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -224,7 +214,6 @@ router.get("/:tripId/preferences/me", verifyToken, async (req, res) => {
   }
 });
 
-// ORGANISER VIEWS ALL MEMBERS' PREFERENCES
 router.get("/:tripId/preferences", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);

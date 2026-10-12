@@ -1,35 +1,13 @@
-
-// Shared itinerary and consensus logic, used for BOTH solo and group trips.
-//
-// A solo trip is just a group with one member, so the same code works for both.
-// For a group, the AI also looks for conflicts between members.
-//
-// The file has 4 parts:
-//   PART 1. Prompts      - the text we send to the AI
-//   PART 2. JSON shape   - the format the AI must reply in
-//   PART 3. Checking     - making sure the AI's reply is correct (FR-4.6)
-//   PART 4. Calling AI   - sending the request to Google Gemini
-//
-// The routes use three functions from here:
-//   generateItinerary()     - the whole day-by-day plan, with group conflicts (FR-4.1, FR-5.1)
-//   regenerateDay()         - plan one day again (FR-4.3)
-//   getBudgetSuggestions()  - money-saving ideas when spending is near the budget (FR-7.4)
-// All three use the same Gemini call and the same "check the reply, retry once" safety (FR-4.6).
-// The API key comes from backend/.env (GEMINI_API_KEY) because it is a secret.
-
 import { GoogleGenAI, ApiError } from "@google/genai";
 
-// ---------- Settings ----------
-export const CURRENCY = "INR";              // all money in the app is in this currency (SRS 8.1)
-const GEMINI_MODEL = "gemini-flash-latest";             // main model: Google's newest Flash model
-const GEMINI_BACKUP_MODEL = "gemini-flash-lite-latest"; // used when the main model's free daily limit is used up
-const AI_TIMEOUT_MS = 60000;                // give up on one AI request after 60 seconds
-const AI_MAX_ATTEMPTS = 2;                  // if the AI's answer is wrong, ask this many times in total
-const AI_BUSY_TRIES = 3;                    // if Gemini is busy, try this many times in total
-const AI_RETRY_DELAY_MS = 3000;             // wait 3 seconds, then 6 seconds, before trying again
+export const CURRENCY = "INR";
+const GEMINI_MODEL = "gemini-flash-latest";
+const GEMINI_BACKUP_MODEL = "gemini-flash-lite-latest";
+const AI_TIMEOUT_MS = 60000;
+const AI_MAX_ATTEMPTS = 2;
+const AI_BUSY_TRIES = 3;
+const AI_RETRY_DELAY_MS = 3000;
 
-// Our own error type for "the AI could not give a usable answer".
-// The route catches it and shows the user a "please try again" message.
 export class AIServiceError extends Error {
   constructor(message, details) {
     super(message);
@@ -37,11 +15,6 @@ export class AIServiceError extends Error {
   }
 }
 
-// =====================================================================
-// PART 1. PROMPTS - the text we send to the AI
-// =====================================================================
-
-// The general rules the AI must follow
 const SYSTEM_PROMPT = `You are TripSync AI, a travel planner.
 You plan day-by-day trip itineraries for one traveller or for a group of travellers.
 
@@ -110,7 +83,6 @@ Conflicts (group trips only):
   it is NOT a conflict (just plan it). Being tight on budget alone is not a conflict either.
 - If there is only one traveller, or there are no real conflicts, return an empty "conflicts" array.`;
 
-// Builds the message describing THIS trip and its travellers
 function buildTripPrompt(trip, numberOfDays, members, instructions) {
   const currency = CURRENCY;
 
@@ -134,7 +106,6 @@ function buildTripPrompt(trip, numberOfDays, members, instructions) {
   prompt += "Trip type: " + tripType + "\n\n";
   prompt += "Travellers:\n";
 
-  // Add one block of text for each traveller
   for (let i = 0; i < members.length; i++) {
     const member = members[i];
 
@@ -150,7 +121,6 @@ function buildTripPrompt(trip, numberOfDays, members, instructions) {
     prompt += "  stay: " + (member.stayBudget || "mid-range") + " " + (member.stayType || "hotel") + "\n";
   }
 
-  // Extra instructions when the organiser clicks "Regenerate" (FR-4.3)
   if (instructions) {
     prompt += "\nExtra instructions from the user: " + instructions;
   }
@@ -158,7 +128,6 @@ function buildTripPrompt(trip, numberOfDays, members, instructions) {
   return prompt;
 }
 
-// Turns ["food", "beaches"] into "food, beaches", or "none" if the list is empty
 function listOrNone(list) {
   if (list.length === 0) {
     return "none";
@@ -166,7 +135,6 @@ function listOrNone(list) {
   return list.join(", ");
 }
 
-// Sent when the AI's answer had mistakes, so it can fix them
 function buildRetryPrompt(errors) {
   let prompt = "Your previous answer had these problems:\n";
 
@@ -177,8 +145,6 @@ function buildRetryPrompt(errors) {
   prompt += "\nReturn the complete corrected answer as JSON.";
   return prompt;
 }
-
-// ---------- Prompt for planning ONE day again (FR-4.3) ----------
 
 const DAY_PROMPT = `You are TripSync AI, a travel planner.
 You are re-planning ONE day of an existing trip itinerary.
@@ -217,8 +183,6 @@ function buildDayPrompt(trip, numberOfDays, members, otherDays, dayNumber, instr
   return prompt;
 }
 
-// ---------- Prompt for money-saving suggestions (FR-7.4) ----------
-
 const BUDGET_PROMPT = `You are TripSync AI, a travel budget adviser.
 A group's spending is close to (or over) their trip budget.
 Suggest practical ways to save money for the rest of the trip, for example
@@ -248,24 +212,6 @@ function buildBudgetPrompt(trip, numberOfTravellers, totalSpent, spendingByCateg
 
   return prompt;
 }
-
-// =====================================================================
-// PART 2. JSON SHAPE - the format the AI must reply in
-//
-// Example of a correct reply:
-// {
-//   "days": [
-//     { "dayNumber": 1, "activities": [
-//         { "time": "09:00", "name": "...", "description": "...", "category": "...",
-//           "estimatedCost": 500, "matchedMembers": ["Asha"] } ] }
-//   ],
-//   "conflicts": [
-//     { "description": "...", "reasoning": "...", "affectedMembers": ["Asha"],
-//       "options": [ { "description": "...", "extraCost": 0 },
-//                    { "description": "...", "extraCost": 800 } ] }
-//   ]
-// }
-// =====================================================================
 
 const ACTIVITY_SHAPE = {
   type: "object",
@@ -309,14 +255,13 @@ const CONFLICT_SHAPE = {
   required: ["description", "reasoning", "affectedMembers", "options"]
 };
 
-// The suggested place to stay
 const STAY_SHAPE = {
   type: "object",
   properties: {
-    area: { type: "string" },          // e.g. "Calangute, North Goa"
-    placeType: { type: "string" },     // e.g. "homestay"
-    budgetLevel: { type: "string" },   // e.g. "mid-range"
-    costPerNight: { type: "number" },  // for the whole group
+    area: { type: "string" },
+    placeType: { type: "string" },
+    budgetLevel: { type: "string" },
+    costPerNight: { type: "number" },
     reason: { type: "string" },
     matchedMembers: { type: "array", items: { type: "string" } }
   },
@@ -333,7 +278,6 @@ const ITINERARY_SHAPE = {
   required: ["days", "stay", "conflicts"]
 };
 
-// Reply for re-planning one day: { "activities": [ ... ] }
 const ONE_DAY_SHAPE = {
   type: "object",
   properties: {
@@ -342,7 +286,6 @@ const ONE_DAY_SHAPE = {
   required: ["activities"]
 };
 
-// Reply for money-saving ideas: { "suggestions": [ { "title", "detail", "estimatedSaving" } ] }
 const SUGGESTIONS_SHAPE = {
   type: "object",
   properties: {
@@ -362,18 +305,6 @@ const SUGGESTIONS_SHAPE = {
   required: ["suggestions"]
 };
 
-// =====================================================================
-// PART 3. CHECKING the AI's reply (FR-4.6: malformed AI output)
-//
-// We never trust the AI blindly. Its reply might:
-//   - not be JSON at all
-//   - be wrapped in ```json ... ``` marks
-//   - have the wrong number of days
-//   - mention people who are not on the trip
-//   - give a conflict only 1 option, so there is nothing to vote on
-// =====================================================================
-
-// Removes ```json at the start and ``` at the end, if the AI added them
 function removeCodeMarks(text) {
   let cleaned = text.trim();
 
@@ -398,7 +329,6 @@ function isValidCost(value) {
   return typeof value === "number" && value >= 0;
 }
 
-// Checks a list of activities and adds any problems to "errors"
 function checkActivities(activities, dayLabel, memberNames, errors) {
   for (let a = 0; a < activities.length; a++) {
     const activity = activities[a];
@@ -420,7 +350,6 @@ function checkActivities(activities, dayLabel, memberNames, errors) {
   }
 }
 
-// Turns the AI's text into JSON. Returns the data, or null if it is not valid JSON.
 function readJson(replyText) {
   try {
     return JSON.parse(removeCodeMarks(replyText));
@@ -429,7 +358,6 @@ function readJson(replyText) {
   }
 }
 
-// Checks the AI's reply for ONE re-planned day
 export function checkDayReply(replyText, dayNumber, memberNames) {
   const data = readJson(replyText);
 
@@ -452,7 +380,6 @@ export function checkDayReply(replyText, dayNumber, memberNames) {
   return { ok: true, data: data };
 }
 
-// Checks the AI's money-saving suggestions
 export function checkSuggestionsReply(replyText) {
   const data = readJson(replyText);
 
@@ -483,11 +410,8 @@ export function checkSuggestionsReply(replyText) {
   return { ok: true, data: data };
 }
 
-// Checks the AI's reply.
-// Returns { ok: true, data: theItinerary }
-//      or { ok: false, errors: ["problem 1", "problem 2", ...] }
 export function checkAIReply(replyText, numberOfDays, memberNames) {
-  // Step 1: is the reply valid JSON?
+
   const data = readJson(replyText);
 
   if (!data) {
@@ -498,15 +422,12 @@ export function checkAIReply(replyText, numberOfDays, memberNames) {
     return { ok: false, errors: ["The response must have a \"days\" list and a \"conflicts\" list"] };
   }
 
-  // Step 2: does the content make sense? Collect every problem we find.
   const errors = [];
 
-  // Right number of days?
   if (data.days.length !== numberOfDays) {
     errors.push("Expected " + numberOfDays + " days but got " + data.days.length);
   }
 
-  // Check each day
   for (let d = 0; d < data.days.length; d++) {
     const day = data.days[d];
     const dayLabel = "Day " + (d + 1);
@@ -517,12 +438,11 @@ export function checkAIReply(replyText, numberOfDays, memberNames) {
 
     if (!Array.isArray(day.activities) || day.activities.length === 0) {
       errors.push(dayLabel + " has no activities");
-      continue; // skip to the next day
+      continue;
     }
 
     checkActivities(day.activities, dayLabel, memberNames, errors);
 
-    // A full day plan always includes meals
     let mealCount = 0;
     for (let a = 0; a < day.activities.length; a++) {
       if (day.activities[a].category === "food") {
@@ -534,7 +454,6 @@ export function checkAIReply(replyText, numberOfDays, memberNames) {
     }
   }
 
-  // The suggested place to stay
   const stay = data.stay;
   if (!stay || !isFilledText(stay.area) || !isFilledText(stay.placeType)) {
     errors.push("The response needs a \"stay\" with an area and a type of place");
@@ -550,12 +469,10 @@ export function checkAIReply(replyText, numberOfDays, memberNames) {
     }
   }
 
-  // A solo trip cannot have conflicts
   if (memberNames.length === 1 && data.conflicts.length > 0) {
     errors.push("A solo trip cannot have conflicts; return an empty conflicts list");
   }
 
-  // Check each conflict
   for (let c = 0; c < data.conflicts.length; c++) {
     const conflict = data.conflicts[c];
     const conflictLabel = "Conflict " + (c + 1);
@@ -590,24 +507,12 @@ export function checkAIReply(replyText, numberOfDays, memberNames) {
   return { ok: true, data: data };
 }
 
-// =====================================================================
-// PART 4. CALLING THE AI (Google Gemini)
-// This is the only code that talks to Gemini. To use a different AI
-// later, only this part needs to change.
-// =====================================================================
-
-// Waits for some milliseconds (used between retries)
 function wait(milliseconds) {
   return new Promise(function (resolve) {
     setTimeout(resolve, milliseconds);
   });
 }
 
-// Sends the conversation to Gemini and returns its reply.
-// systemPrompt: the rules for the AI
-// shape:        the JSON format the reply must follow
-// messages:     a list like [{ role: "user", text: "..." }, { role: "model", text: "..." }]
-// Returns { text: "the reply", cutOff: true/false }
 async function askGemini(systemPrompt, shape, messages) {
   if (!process.env.GEMINI_API_KEY) {
     throw new AIServiceError("GEMINI_API_KEY is not set in the .env file");
@@ -618,7 +523,6 @@ async function askGemini(systemPrompt, shape, messages) {
     httpOptions: { timeout: AI_TIMEOUT_MS }
   });
 
-  // Put our messages into the format Gemini expects
   const contents = [];
   for (let i = 0; i < messages.length; i++) {
     contents.push({
@@ -627,7 +531,6 @@ async function askGemini(systemPrompt, shape, messages) {
     });
   }
 
-  // Each model has its own free daily limit. If the main one is used up, try the backup.
   const models = [GEMINI_MODEL, GEMINI_BACKUP_MODEL];
   let modelIndex = 0;
   let attempt = 1;
@@ -640,17 +543,17 @@ async function askGemini(systemPrompt, shape, messages) {
         contents: contents,
         config: {
           systemInstruction: systemPrompt,
-          responseMimeType: "application/json",  // ask for JSON...
-          responseJsonSchema: shape              // ...in exactly this shape
+          responseMimeType: "application/json",
+          responseJsonSchema: shape
         }
       });
     } catch (error) {
-      // The free Gemini plan allows a fixed number of requests per day, per model.
+
       const dailyLimitReached =
         error instanceof ApiError && error.status === 429 && String(error.message).includes("PerDay");
 
       if (dailyLimitReached) {
-        // Is there another model left to try?
+
         if (modelIndex < models.length - 1) {
           console.warn(models[modelIndex] + " has used its free daily limit, switching to " + models[modelIndex + 1]);
           modelIndex = modelIndex + 1;
@@ -664,7 +567,6 @@ async function askGemini(systemPrompt, shape, messages) {
         );
       }
 
-      // 429 = too many requests right now, 500+ = server problem. Both are usually temporary.
       const isTemporary = error instanceof ApiError && (error.status === 429 || error.status >= 500);
 
       if (isTemporary && attempt < AI_BUSY_TRIES) {
@@ -678,7 +580,6 @@ async function askGemini(systemPrompt, shape, messages) {
     }
   }
 
-  // Why did the AI stop writing?
   let finishReason = "";
   if (response.candidates && response.candidates.length > 0) {
     finishReason = response.candidates[0].finishReason;
@@ -690,21 +591,18 @@ async function askGemini(systemPrompt, shape, messages) {
 
   return {
     text: response.text || "",
-    cutOff: finishReason === "MAX_TOKENS" // the reply was too long and got cut off
+    cutOff: finishReason === "MAX_TOKENS"
   };
 }
 
-// Asks the AI, checks the reply, and if it is wrong asks once more (FR-4.6).
-// checkReply is a function that returns { ok, data } or { ok: false, errors }.
 async function askUntilValid(systemPrompt, shape, firstPrompt, checkReply) {
   const messages = [{ role: "user", text: firstPrompt }];
   let lastErrors = [];
 
   for (let attempt = 1; attempt <= AI_MAX_ATTEMPTS; attempt++) {
-    // 1. Ask the AI
+
     const reply = await askGemini(systemPrompt, shape, messages);
 
-    // 2. Check the reply
     let result;
     if (reply.cutOff) {
       result = { ok: false, errors: ["The response was cut off before it finished"] };
@@ -712,12 +610,10 @@ async function askUntilValid(systemPrompt, shape, firstPrompt, checkReply) {
       result = checkReply(reply.text);
     }
 
-    // 3. Good reply: we are done
     if (result.ok) {
       return result.data;
     }
 
-    // 4. Bad reply: show the AI its answer and the problems, then loop and ask again
     lastErrors = result.errors;
     console.warn("AI try " + attempt + " gave a wrong answer:", result.errors);
 
@@ -725,11 +621,9 @@ async function askUntilValid(systemPrompt, shape, firstPrompt, checkReply) {
     messages.push({ role: "user", text: buildRetryPrompt(result.errors) });
   }
 
-  // Every try failed. The route will show an error and save nothing.
   throw new AIServiceError("The AI could not produce a valid answer. Please try again.", lastErrors);
 }
 
-// Makes the list of member names, used to check the AI's replies
 function getMemberNames(members) {
   const names = [];
   for (let i = 0; i < members.length; i++) {
@@ -738,16 +632,6 @@ function getMemberNames(members) {
   return names;
 }
 
-// =====================================================================
-// MAIN FUNCTIONS - used by the routes
-//
-// members: a list like [{ name, interests, otherInterests, pace, budgetContribution,
-//                         mustDo, dealBreakers, freeTextNotes }, ...]
-// =====================================================================
-
-// The whole itinerary. Returns { days: [...], conflicts: [...] }, already checked.
-// Works out what a plan costs for the whole group:
-// (all activity costs per person x number of travellers) + (stay per night x nights)
 export function getPlanCost(plan, numberOfTravellers) {
   let costPerPerson = 0;
   for (let d = 0; d < plan.days.length; d++) {
@@ -776,7 +660,6 @@ export async function generateItinerary(trip, numberOfDays, members, instruction
     return checkAIReply(replyText, numberOfDays, memberNames);
   }
 
-  // 1. The normal plan
   const plan = await askUntilValid(
     SYSTEM_PROMPT,
     ITINERARY_SHAPE,
@@ -784,7 +667,6 @@ export async function generateItinerary(trip, numberOfDays, members, instruction
     checkReply
   );
 
-  // 2. Over budget? Ask once more for a cheaper version of the same trip
   const cost = getPlanCost(plan, members.length);
   if (cost <= trip.budget) {
     return plan;
@@ -807,20 +689,17 @@ export async function generateItinerary(trip, numberOfDays, members, instruction
       checkReply
     );
 
-    // Keep whichever plan is cheaper
     if (getPlanCost(cheaperPlan, members.length) < cost) {
       return cheaperPlan;
     }
   } catch (error) {
-    // The cheaper attempt failed: keep the first plan (the page will show it is over budget)
+
     console.warn("Could not get a cheaper plan:", error.message);
   }
 
   return plan;
 }
 
-// Plans one day again (FR-4.3). Returns { activities: [...] }, already checked.
-// otherDays: the days we keep, so the AI doesn't repeat their activities.
 export async function regenerateDay(trip, numberOfDays, members, otherDays, dayNumber, instructions) {
   const memberNames = getMemberNames(members);
 
@@ -834,8 +713,6 @@ export async function regenerateDay(trip, numberOfDays, members, otherDays, dayN
   );
 }
 
-// Money-saving suggestions (FR-7.4). Returns { suggestions: [...] }, already checked.
-// spendingByCategory: [{ name, amount }]   plannedActivities: [{ name, estimatedCost }]
 export async function getBudgetSuggestions(trip, numberOfTravellers, totalSpent, spendingByCategory, plannedActivities) {
   return askUntilValid(
     BUDGET_PROMPT,
@@ -844,15 +721,6 @@ export async function getBudgetSuggestions(trip, numberOfTravellers, totalSpent,
     checkSuggestionsReply
   );
 }
-
-// =====================================================================
-// FILLING THE PREFERENCE FORM FROM A DESCRIPTION (FR-3.2)
-//
-// The traveller describes their trip in their own words, for example
-// "I'm vegetarian, want a calm trip with beaches, no water sports".
-// The AI turns that into the form's answers. Nothing is saved here:
-// the page fills in the form and the traveller checks it and clicks Save.
-// =====================================================================
 
 const PREFERENCES_PROMPT = `You fill in a travel preference form from what a traveller wrote.
 Only use what they actually said. Do not invent wishes they did not mention.
@@ -886,7 +754,6 @@ Only use what they actually said. Do not invent wishes they did not mention.
 - budgetContribution: the amount of money they said they will put in, as a plain number
   ("10k" -> 10000, "1.5 lakh" -> 150000, "5 thousand" -> 5000), or 0 if not said.`;
 
-// Builds the reply shape, using the allowed choices from the Preference model
 function buildPreferencesShape(choices) {
   return {
     type: "object",
@@ -908,7 +775,6 @@ function buildPreferencesShape(choices) {
   };
 }
 
-// Keeps only the list items that are allowed (or any text, if no list is given)
 function cleanList(list, allowed) {
   const result = [];
   if (!Array.isArray(list)) {
@@ -929,7 +795,6 @@ function cleanList(list, allowed) {
   return result;
 }
 
-// Keeps one value only if it is allowed, otherwise ""
 function cleanChoice(value, allowed) {
   if (allowed.includes(value)) {
     return value;
@@ -937,8 +802,6 @@ function cleanChoice(value, allowed) {
   return "";
 }
 
-// choices: { interests, paces, foods, stayBudgets, stayTypes } (the allowed values)
-// Returns the form answers, already cleaned.
 export async function preferencesFromText(text, choices) {
   let prompt = "Allowed interests: " + choices.interests.join(", ") + "\n\n";
   prompt += "What the traveller wrote:\n\"" + text + "\"";
@@ -956,7 +819,6 @@ export async function preferencesFromText(text, choices) {
     }
   );
 
-  // Never trust the AI blindly: keep only allowed values (FR-4.6)
   let budget = Number(data.budgetContribution);
   if (!Number.isFinite(budget) || budget < 0) {
     budget = 0;

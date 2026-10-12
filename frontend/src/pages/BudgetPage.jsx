@@ -1,9 +1,3 @@
-// Budget tracking:
-// - add expenses, optionally linked to an itinerary activity (FR-7.1)
-// - spent vs budget, and spending per category (FR-7.2)
-// - what each member paid and their fair share (FR-7.3)
-// - AI money-saving tips when spending is near the budget (FR-7.4)
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Loader } from "@mantine/core";
@@ -15,12 +9,11 @@ function BudgetPage() {
   const { tripId } = useParams();
 
   const [trip, setTrip] = useState(null);
-  const [budget, setBudget] = useState(null); // budget, totalSpent, remaining, members, expenses...
+  const [budget, setBudget] = useState(null);
   const [categories, setCategories] = useState([]);
   const [currency, setCurrency] = useState("");
-  const [activityNames, setActivityNames] = useState([]); // itinerary activities to link to
+  const [activityNames, setActivityNames] = useState([]);
 
-  // The "Add an expense" form
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -48,7 +41,6 @@ function BudgetPage() {
       setError(getErrorMessage(err));
     }
 
-    // The itinerary activities, so an expense can be linked to one (no itinerary = empty list)
     try {
       const response = await api.get("/trips/" + tripId + "/itinerary");
       const names = [];
@@ -90,7 +82,6 @@ function BudgetPage() {
     }
   }
 
-  // Ask the AI how to save money (FR-7.4)
   async function handleGetSuggestions() {
     try {
       const response = await api.post("/trips/" + tripId + "/budget/suggestions");
@@ -100,7 +91,6 @@ function BudgetPage() {
     }
   }
 
-  // Adds up spending per category, e.g. [{ name: "food", amount: 500 }, ...]
   function getTotalsByCategory() {
     const totals = [];
     for (let i = 0; i < budget.expenses.length; i++) {
@@ -120,7 +110,6 @@ function BudgetPage() {
     return totals;
   }
 
-  // Who owes whom
   function getBalanceText(balance) {
     if (balance > 0) {
       return "Others owe " + formatMoney(balance, currency);
@@ -145,7 +134,6 @@ function BudgetPage() {
       <section className="trip-content">
         <h1>Budget</h1>
 
-        {/* Spent vs budget */}
         <div className="box">
           <p className="big-number">{formatMoney(budget.totalSpent, currency)}</p>
           <p className="muted">spent of {formatMoney(budget.budget, currency)} ({budget.percentUsed}%)</p>
@@ -156,7 +144,6 @@ function BudgetPage() {
           {!budget.overBudget && <p>{formatMoney(budget.remaining, currency)} left</p>}
         </div>
 
-        {/* AI tips, once 80% of the budget is used */}
         {budget.canAskForSuggestions && (
           <div className="box">
             <h3>You have used {budget.percentUsed}% of the budget</h3>
@@ -173,7 +160,6 @@ function BudgetPage() {
           </div>
         )}
 
-        {/* Add an expense */}
         <form className="box" onSubmit={handleAddExpense}>
           <h3>Add an expense</h3>
           <div className="two-columns">
@@ -205,7 +191,6 @@ function BudgetPage() {
           </div>
         </form>
 
-        {/* Spending per category */}
         {budget.expenses.length > 0 && (
           <div className="box">
             <h3>By category</h3>
@@ -218,7 +203,6 @@ function BudgetPage() {
           </div>
         )}
 
-        {/* What each member paid */}
         {trip.type === "group" && (
           <div className="box scroll">
             <h3>Who paid what</h3>
@@ -240,7 +224,6 @@ function BudgetPage() {
           </div>
         )}
 
-        {/* All expenses */}
         {budget.expenses.length > 0 && (
           <div className="box scroll">
             <h3>All expenses</h3>

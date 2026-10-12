@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -40,7 +39,7 @@ const userSchema = new mongoose.Schema(
         default: "balanced"
       }
     },
-    
+
     tokenVersion: {
       type: Number,
       default: 0

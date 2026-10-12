@@ -1,7 +1,3 @@
-// Group Decisions: things the AI found the group disagrees on (FR-5.3 to FR-5.5).
-// Each conflict has 2-3 options. Members vote; the organiser can also decide directly.
-// An option is chosen automatically when more than half of the group votes for it.
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Loader } from "@mantine/core";
@@ -34,14 +30,12 @@ function ConsensusPage() {
       setItinerary(itineraryResponse.data.itinerary);
       setConflicts(itineraryResponse.data.conflicts);
     } catch (err) {
-      // 404 just means there is no itinerary yet
       if (!err.response || err.response.status !== 404) {
         setError(getErrorMessage(err));
       }
     }
   }
 
-  // A member votes for one option
   async function handleVote(conflictId, optionIndex) {
     try {
       await api.post("/trips/" + tripId + "/conflicts/" + conflictId + "/vote", { optionIndex: optionIndex });
@@ -51,7 +45,6 @@ function ConsensusPage() {
     }
   }
 
-  // The organiser picks an option for everyone
   async function handleDecide(conflictId, optionIndex) {
     if (!window.confirm("Choose this option for the whole group?")) {
       return;
@@ -64,7 +57,6 @@ function ConsensusPage() {
     }
   }
 
-  // Which option I voted for (-1 if I haven't voted)
   function getMyVote(conflict) {
     for (let i = 0; i < conflict.votes.length; i++) {
       if (conflict.votes[i].user === user.id) {
@@ -101,7 +93,6 @@ function ConsensusPage() {
           <p className="box">No conflicts. The AI found a plan that suits everyone.</p>
         )}
 
-        {/* One box per decision */}
         {conflicts.map((conflict) => {
           const myVote = getMyVote(conflict);
           const canVote = !conflict.resolved && itinerary.status !== "finalised";

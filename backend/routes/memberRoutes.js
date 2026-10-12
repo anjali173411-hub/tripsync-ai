@@ -1,4 +1,3 @@
-
 import express from "express";
 import Trip from "../models/Trip.js";
 import User from "../models/User.js";
@@ -10,14 +9,12 @@ import { sendInvitationEmail } from "../services/emailService.js";
 
 const router = express.Router();
 
-// A simple check that text looks like an email: something@something.something
 function looksLikeEmail(text) {
   const atPosition = text.indexOf("@");
   const lastDot = text.lastIndexOf(".");
   return atPosition > 0 && lastDot > atPosition + 1 && lastDot < text.length - 1 && !text.includes(" ");
 }
 
-// Checks if an id is in a list of ids
 function listHasId(list, id) {
   for (let i = 0; i < list.length; i++) {
     if (list[i].toString() === id.toString()) {
@@ -27,7 +24,6 @@ function listHasId(list, id) {
   return false;
 }
 
-// Returns a new list without one email
 function removeEmailFromList(list, email) {
   const newList = [];
   for (let i = 0; i < list.length; i++) {
@@ -38,9 +34,6 @@ function removeEmailFromList(list, email) {
   return newList;
 }
 
-// INVITE ANYONE BY EMAIL (organiser only) - FR-2.3
-// The person doesn't need an account yet. We save their email and send
-// them an email. They join only after they accept (FR-2.4).
 router.post("/:tripId/members", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -74,7 +67,6 @@ router.post("/:tripId/members", verifyToken, async (req, res) => {
       });
     }
 
-    // Is this person already a member?
     const existingUser = await User.findOne({ email: email });
 
     if (existingUser && listHasId(trip.members, existingUser._id)) {
@@ -83,7 +75,6 @@ router.post("/:tripId/members", verifyToken, async (req, res) => {
       });
     }
 
-    // Have we already invited this email?
     if (trip.invitedEmails.includes(email)) {
       return res.status(409).json({
         message: "This email has already been invited"
@@ -114,7 +105,6 @@ router.post("/:tripId/members", verifyToken, async (req, res) => {
   }
 });
 
-// CANCEL AN INVITATION (organiser only)
 router.delete("/:tripId/invitations", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -155,7 +145,6 @@ router.delete("/:tripId/invitations", verifyToken, async (req, res) => {
   }
 });
 
-// MY INVITATIONS: trips that invited my email address
 router.get("/invitations/mine", verifyToken, async (req, res) => {
   try {
     const me = await User.findById(req.user.id);
@@ -201,7 +190,6 @@ router.post("/:tripId/invitation/accept", verifyToken, async (req, res) => {
   }
 });
 
-// DECLINE AN INVITATION: just remove my email from "invited"
 router.post("/:tripId/invitation/decline", verifyToken, async (req, res) => {
   try {
     const me = await User.findById(req.user.id);
@@ -226,7 +214,6 @@ router.post("/:tripId/invitation/decline", verifyToken, async (req, res) => {
   }
 });
 
-// REMOVE A MEMBER (organiser only, before the itinerary is finalised) - FR-2.5
 router.delete("/:tripId/members/:userId", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.tripId);
@@ -263,7 +250,6 @@ router.delete("/:tripId/members/:userId", verifyToken, async (req, res) => {
       });
     }
 
-    // Take them off the member list
     const newMembers = [];
     for (let i = 0; i < trip.members.length; i++) {
       if (trip.members[i].toString() !== req.params.userId) {
@@ -273,7 +259,6 @@ router.delete("/:tripId/members/:userId", verifyToken, async (req, res) => {
     trip.members = newMembers;
     await trip.save();
 
-    // Their preferences and votes no longer count
     await Preference.deleteMany({ trip: trip._id, user: req.params.userId });
     const conflicts = await ConflictVote.find({ trip: trip._id });
     for (let i = 0; i < conflicts.length; i++) {
@@ -301,7 +286,6 @@ router.delete("/:tripId/members/:userId", verifyToken, async (req, res) => {
   }
 });
 
-// VIEW TRIP MEMBERS
 router.get("/:tripId/members", verifyToken, async (req, res) => {
   try {
     const trip = await Trip.findOne({

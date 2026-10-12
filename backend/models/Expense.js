@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const expenseSchema = new mongoose.Schema(
@@ -18,13 +17,13 @@ const expenseSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
-  
+
     category: {
       type: String,
       enum: ["accommodation", "food", "transport", "activities", "misc"],
       default: "misc"
     },
-    // Optional: the itinerary activity this money was spent on (FR-7.1)
+
     activityName: {
       type: String,
       default: ""

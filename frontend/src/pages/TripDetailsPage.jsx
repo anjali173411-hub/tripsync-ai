@@ -1,5 +1,3 @@
-// Main page of one trip: the details, the weather, and archive / delete / complete.
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Loader } from "@mantine/core";
@@ -13,7 +11,7 @@ function TripDetailsPage() {
 
   const [trip, setTrip] = useState(null);
   const [currency, setCurrency] = useState("");
-  const [weather, setWeather] = useState(null); // { place, type, days }
+  const [weather, setWeather] = useState(null);
   const [weatherMessage, setWeatherMessage] = useState("Loading weather...");
   const [error, setError] = useState("");
 
@@ -32,7 +30,6 @@ function TripDetailsPage() {
       setError(getErrorMessage(err));
     }
 
-    // Weather is loaded separately, so the page still works if the weather service is down
     try {
       const weatherResponse = await api.get("/trips/" + tripId + "/weather");
       setWeather(weatherResponse.data);
@@ -41,7 +38,6 @@ function TripDetailsPage() {
     }
   }
 
-  // Organiser archives the trip: it is kept, but moved to "Archived trips" (FR-2.7)
   async function handleArchive() {
     if (!window.confirm("Archive this trip? It moves to 'Archived trips' on your dashboard.")) {
       return;
@@ -54,7 +50,6 @@ function TripDetailsPage() {
     }
   }
 
-  // Organiser deletes the trip and everything in it (FR-2.7)
   async function handleDelete() {
     if (!window.confirm("Delete this trip for everyone? This cannot be undone.")) {
       return;
@@ -67,7 +62,6 @@ function TripDetailsPage() {
     }
   }
 
-  // Organiser marks the trip as completed after coming back
   async function handleComplete() {
     if (!window.confirm("Mark this trip as completed?")) {
       return;
@@ -89,7 +83,6 @@ function TripDetailsPage() {
 
   const isOrganiser = trip.organiser._id === user.id;
 
-  // The banner shows the place photo if there is one
   let bannerStyle = {};
   if (trip.destinationImage) {
     bannerStyle = { backgroundImage: "url(" + trip.destinationImage + ")" };
@@ -100,7 +93,6 @@ function TripDetailsPage() {
       <Sidebar trip={trip} />
 
       <section className="trip-content">
-        {/* Photo banner with the trip name */}
         <div className="trip-banner" style={bannerStyle}>
           <div className="trip-banner-text">
             <span className="tag">{trip.status}</span>
@@ -111,7 +103,6 @@ function TripDetailsPage() {
 
         {error && <p className="error-box">{error}</p>}
 
-        {/* Trip details */}
         <div className="grid">
           <div className="box">
             <p className="label">Dates</p>
@@ -135,7 +126,6 @@ function TripDetailsPage() {
           </div>
         </div>
 
-        {/* Weather for each day of the trip */}
         <div className="box">
           <h3>Weather</h3>
           {!weather && <p className="muted">{weatherMessage}</p>}
@@ -164,7 +154,6 @@ function TripDetailsPage() {
           <p className="success-box">This trip is completed. Welcome back!</p>
         )}
 
-        {/* Organiser only */}
         {isOrganiser && (
           <div className="box">
             <h3>Manage trip</h3>

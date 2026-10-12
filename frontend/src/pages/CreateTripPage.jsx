@@ -1,5 +1,3 @@
-// Create a new solo or group trip (FR-2.1, FR-2.2)
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
@@ -8,12 +6,10 @@ import api, { getErrorMessage, travelModeText } from "../api/axios.js";
 function CreateTripPage() {
   const navigate = useNavigate();
 
-  // Choices that come from the backend
   const [tripTypes, setTripTypes] = useState([]);
   const [travelModes, setTravelModes] = useState([]);
   const [currency, setCurrency] = useState("");
 
-  // What the user fills in
   const [title, setTitle] = useState("");
   const [startingFrom, setStartingFrom] = useState("");
   const [destination, setDestination] = useState("");
@@ -25,7 +21,6 @@ function CreateTripPage() {
 
   const [error, setError] = useState("");
 
-  // Today as "2026-10-11", so past dates can't be picked
   const today = new Date().toLocaleDateString("en-CA");
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const preferenceSchema = new mongoose.Schema(
@@ -13,8 +12,7 @@ const preferenceSchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
-    // The allowed interests are listed once here.
-    // The frontend fetches this list from GET /api/options.
+
     interests: {
       type: [
         {
@@ -35,7 +33,7 @@ const preferenceSchema = new mongoose.Schema(
       ],
       default: []
     },
-    
+
     otherInterests: {
       type: [String],
       default: []
@@ -59,19 +57,19 @@ const preferenceSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
-    
+
     freeTextNotes: {
       type: String,
       default: "",
       maxlength: 1000
     },
-    
+
     foodPreference: {
       type: String,
       enum: ["no preference", "vegetarian", "non-vegetarian", "vegan", "jain"],
       default: "no preference"
     },
-  
+
     stayBudget: {
       type: String,
       enum: ["budget", "mid-range", "luxury"],

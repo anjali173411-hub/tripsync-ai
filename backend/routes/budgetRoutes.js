@@ -1,4 +1,3 @@
-
 import express from "express";
 import Trip from "../models/Trip.js";
 import Expense from "../models/Expense.js";
@@ -9,10 +8,8 @@ import { getBudgetSuggestions, AIServiceError } from "../services/itineraryConse
 
 const router = express.Router();
 
-// AI money-saving ideas are offered once spending reaches this share of the budget (FR-7.4)
 const SUGGESTIONS_FROM_PERCENT = 80;
 
-// Checks if an id is in a list of ids
 function listHasId(list, id) {
   for (let i = 0; i < list.length; i++) {
     if (list[i].toString() === id.toString()) {
@@ -22,7 +19,6 @@ function listHasId(list, id) {
   return false;
 }
 
-// Loads a trip and checks the user is a member. Returns { trip } or { error, status }.
 async function getMemberTrip(tripId, userId) {
   const trip = await Trip.findById(tripId).populate("members", "name");
 
@@ -42,7 +38,6 @@ async function getMemberTrip(tripId, userId) {
   return { trip: trip };
 }
 
-// Adds up all expense amounts
 function addUpExpenses(expenses) {
   let total = 0;
   for (let i = 0; i < expenses.length; i++) {
@@ -51,7 +46,6 @@ function addUpExpenses(expenses) {
   return total;
 }
 
-// ADD AN EXPENSE (any trip member) - FR-7.1
 router.post("/:tripId/expenses", verifyToken, async (req, res) => {
   try {
     const { title, category, amount, expenseDate, notes, activityName } = req.body;
@@ -73,7 +67,6 @@ router.post("/:tripId/expenses", verifyToken, async (req, res) => {
       });
     }
 
-    // The allowed categories are listed once, in the Expense model
     const allowedCategories = Expense.schema.path("category").enumValues;
     const chosenCategory = category || "misc";
 
@@ -106,7 +99,6 @@ router.post("/:tripId/expenses", verifyToken, async (req, res) => {
   }
 });
 
-// VIEW BUDGET, EXPENSES AND EACH MEMBER'S SHARE (any trip member) - FR-7.2, FR-7.3
 router.get("/:tripId/budget", verifyToken, async (req, res) => {
   try {
     const result = await getMemberTrip(req.params.tripId, req.user.id);
@@ -122,10 +114,8 @@ router.get("/:tripId/budget", verifyToken, async (req, res) => {
 
     const totalSpent = addUpExpenses(expenses);
 
-    // Each member's planned contribution comes from their preferences
     const preferences = await Preference.find({ trip: trip._id });
 
-    // Fair share = total spent divided equally between members
     const fairShare = totalSpent / trip.members.length;
 
     const members = [];
@@ -149,10 +139,10 @@ router.get("/:tripId/budget", verifyToken, async (req, res) => {
       members.push({
         id: member._id,
         name: member.name,
-        contribution: contribution,       // what they said they would put in
-        paid: paid,                       // what they have actually paid
-        fairShare: Math.round(fairShare), // their equal share of everything spent
-        balance: Math.round(paid - fairShare) // + means others owe them, - means they owe
+        contribution: contribution,
+        paid: paid,
+        fairShare: Math.round(fairShare),
+        balance: Math.round(paid - fairShare)
       });
     }
 
@@ -177,7 +167,6 @@ router.get("/:tripId/budget", verifyToken, async (req, res) => {
   }
 });
 
-// AI MONEY-SAVING SUGGESTIONS (any trip member, when spending is near/over budget) - FR-7.4
 router.post("/:tripId/budget/suggestions", verifyToken, async (req, res) => {
   try {
     const result = await getMemberTrip(req.params.tripId, req.user.id);
@@ -195,7 +184,6 @@ router.post("/:tripId/budget/suggestions", verifyToken, async (req, res) => {
       });
     }
 
-    // Spending added up per category
     const spendingByCategory = [];
     for (let i = 0; i < expenses.length; i++) {
       let found = null;
@@ -211,7 +199,6 @@ router.post("/:tripId/budget/suggestions", verifyToken, async (req, res) => {
       }
     }
 
-    // The planned activities, so the AI can suggest cheaper ones
     const plannedActivities = [];
     const itinerary = await Itinerary.findOne({ trip: trip._id });
     if (itinerary) {
