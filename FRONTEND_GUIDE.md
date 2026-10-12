@@ -101,13 +101,3 @@ function SomePage() {
 
 ---
 
-## 6. Study order (easiest → hardest)
-
-1. `LoginPage.jsx` – simplest example of the pattern
-2. `RegisterPage.jsx`
-3. `App.jsx` + `ProtectedRoute.jsx` + `api/axios.js` – routing and login
-4. `CreateTripPage.jsx` – a form
-5. `DashboardPage.jsx` – lists with `.map()`
-6. `MembersPage.jsx`, `PreferencesPage.jsx`
-7. `BudgetPage.jsx`, `ConsensusPage.jsx`
-8. `ItineraryPage.jsx` – read in parts: load → AI buttons → cost maths → timeline
