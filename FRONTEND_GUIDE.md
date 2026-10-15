@@ -77,7 +77,7 @@ frontend/
 | `/trips/new` | Create Trip | Trip name, solo or group, destination, dates, travel mode, budget | `POST /trips` |
 | `/trips/:tripId` | Trip Details | Trip banner, details, weather, complete / archive / delete | `GET /trips/:id`, `GET /trips/:id/weather` |
 | `/trips/:tripId/members` | Members | Member list, invite by email, remove a member | invite, cancel invite, remove, `GET /profile/search` |
-| `/trips/:tripId/preferences` | Preferences | Interests, pace, food, stay, must-do, avoid, budget share. "Describe your trip" fills the form using AI | `GET /preferences/me`, `PUT /preferences`, `POST /preferences/from-text` |
+| `/trips/:tripId/preferences` | Preferences | Interests, pace, food, stay, must-do, avoid. "Fill with AI" fills the form from a short description | `GET /preferences/me`, `PUT /preferences`, `POST /preferences/from-text` |
 | `/trips/:tripId/itinerary` | Itinerary | Total cost, stay suggestion, day tabs, activities with edit / move / remove icons, AI re-plan, finalise | `POST /generate`, `GET /itinerary`, edit, move, remove, re-plan, finalise |
 | `/trips/:tripId/consensus` | Group Decisions | Conflicts with options, vote counts, vote button, organiser decides | vote, decide |
 | `/trips/:tripId/budget` | Budget | Spent bar, add expense, totals by category, who paid what, all expenses, AI money-saving tips | `GET /budget`, `POST /expenses`, `POST /budget/suggestions` |

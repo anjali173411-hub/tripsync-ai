@@ -113,7 +113,6 @@ function buildTripPrompt(trip, numberOfDays, members, instructions) {
     prompt += "  interests: " + listOrNone(member.interests) + "\n";
     prompt += "  other interests (typed by the traveller): " + listOrNone(member.otherInterests || []) + "\n";
     prompt += "  pace: " + member.pace + "\n";
-    prompt += "  budget contribution: " + member.budgetContribution + " " + currency + "\n";
     prompt += "  must do: " + listOrNone(member.mustDo) + "\n";
     prompt += "  deal-breakers: " + listOrNone(member.dealBreakers) + "\n";
     prompt += "  notes: " + (member.freeTextNotes || "none") + "\n";
@@ -750,9 +749,7 @@ Only use what they actually said. Do not invent wishes they did not mention.
   stayBudget: "cheap", "backpacker", "low budget" -> budget; "5-star", "fancy", "premium" -> luxury;
         "comfortable", "nothing too fancy" -> mid-range.
   stayType: "with a local family", "home-like" -> homestay;
-        "villa", "pool", "beach property", "all-inclusive" -> resort; otherwise a normal hotel -> hotel.
-- budgetContribution: the amount of money they said they will put in, as a plain number
-  ("10k" -> 10000, "1.5 lakh" -> 150000, "5 thousand" -> 5000), or 0 if not said.`;
+        "villa", "pool", "beach property", "all-inclusive" -> resort; otherwise a normal hotel -> hotel.`;
 
 function buildPreferencesShape(choices) {
   return {
@@ -765,12 +762,11 @@ function buildPreferencesShape(choices) {
       pace: { type: "string", enum: choices.paces.concat([""]) },
       foodPreference: { type: "string", enum: choices.foods.concat([""]) },
       stayBudget: { type: "string", enum: choices.stayBudgets.concat([""]) },
-      stayType: { type: "string", enum: choices.stayTypes.concat([""]) },
-      budgetContribution: { type: "number" }
+      stayType: { type: "string", enum: choices.stayTypes.concat([""]) }
     },
     required: [
       "interests", "otherInterests", "mustDo", "dealBreakers",
-      "pace", "foodPreference", "stayBudget", "stayType", "budgetContribution"
+      "pace", "foodPreference", "stayBudget", "stayType"
     ]
   };
 }
@@ -819,11 +815,6 @@ export async function preferencesFromText(text, choices) {
     }
   );
 
-  let budget = Number(data.budgetContribution);
-  if (!Number.isFinite(budget) || budget < 0) {
-    budget = 0;
-  }
-
   return {
     interests: cleanList(data.interests, choices.interests),
     otherInterests: cleanList(data.otherInterests, null),
@@ -832,7 +823,6 @@ export async function preferencesFromText(text, choices) {
     pace: cleanChoice(data.pace, choices.paces),
     foodPreference: cleanChoice(data.foodPreference, choices.foods),
     stayBudget: cleanChoice(data.stayBudget, choices.stayBudgets),
-    stayType: cleanChoice(data.stayType, choices.stayTypes),
-    budgetContribution: Math.round(budget)
+    stayType: cleanChoice(data.stayType, choices.stayTypes)
   };
 }

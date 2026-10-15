@@ -39,57 +39,75 @@ router.post("/:tripId/conflicts/:conflictId/vote", verifyToken, async (req, res)
       });
     }
 
-    const conflict = await ConflictVote.findOne({
-      _id: req.params.conflictId,
-      trip: trip._id
-    });
-
-    if (!conflict) {
-      return res.status(404).json({
-        message: "Conflict not found"
+    // Two people voting at the same moment (or a double click) makes the second
+    // save fail with a VersionError, so load the conflict again and retry.
+    let conflict = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      conflict = await ConflictVote.findOne({
+        _id: req.params.conflictId,
+        trip: trip._id
       });
-    }
 
-    if (conflict.resolved) {
-      return res.status(400).json({
-        message: "This conflict has already been resolved"
-      });
-    }
+      if (!conflict) {
+        return res.status(404).json({
+          message: "Conflict not found"
+        });
+      }
 
-    if (!isValidOption(conflict, optionIndex)) {
-      return res.status(400).json({
-        message: "Choose a valid option"
-      });
-    }
+      if (conflict.resolved) {
+        return res.status(400).json({
+          message: "This conflict has already been resolved"
+        });
+      }
 
-    const otherVotes = [];
-    for (let i = 0; i < conflict.votes.length; i++) {
-      if (conflict.votes[i].user.toString() !== req.user.id) {
-        otherVotes.push(conflict.votes[i]);
+      if (!isValidOption(conflict, optionIndex)) {
+        return res.status(400).json({
+          message: "Choose a valid option"
+        });
+      }
+
+      const otherVotes = [];
+      for (let i = 0; i < conflict.votes.length; i++) {
+        if (conflict.votes[i].user.toString() !== req.user.id) {
+          otherVotes.push(conflict.votes[i]);
+        }
+      }
+      otherVotes.push({ user: req.user.id, optionIndex: optionIndex });
+      conflict.votes = otherVotes;
+
+      conflict.recountVotes();
+
+      if (conflict.options[optionIndex].voteCount > trip.members.length / 2) {
+        conflict.resolved = true;
+        conflict.chosenOption = optionIndex;
+      }
+
+      try {
+        await conflict.save();
+        break;
+      } catch (error) {
+        if (error.name !== "VersionError" || attempt === 3) {
+          throw error;
+        }
       }
     }
-    otherVotes.push({ user: req.user.id, optionIndex: optionIndex });
-    conflict.votes = otherVotes;
 
-    conflict.recountVotes();
-
-    if (conflict.options[optionIndex].voteCount > trip.members.length / 2) {
-      conflict.resolved = true;
-      conflict.chosenOption = optionIndex;
+    let message = "Vote saved";
+    if (conflict.resolved) {
+      message = "Vote saved. A majority was reached and the option is locked in.";
+    } else if (conflict.votes.length >= trip.members.length) {
+      message = "Vote saved. Everyone has voted but no option has a majority – " +
+        "change a vote, or the organiser can decide for everyone.";
     }
 
-    await conflict.save();
-
     res.json({
-      message: conflict.resolved
-        ? "Vote saved. A majority was reached and the option is locked in."
-        : "Vote saved",
+      message: message,
       conflict: conflict
     });
   } catch (error) {
     console.error("Conflict vote error:", error);
     res.status(500).json({
-      message: "Could not save vote"
+      message: "Could not save vote. Please try again."
     });
   }
 });

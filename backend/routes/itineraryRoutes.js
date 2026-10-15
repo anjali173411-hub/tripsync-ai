@@ -48,7 +48,6 @@ async function getMembersForAI(trip) {
       interests: preference.interests,
       otherInterests: preference.otherInterests,
       pace: preference.pace,
-      budgetContribution: preference.budgetContribution,
       mustDo: preference.mustDo,
       dealBreakers: preference.dealBreakers,
       freeTextNotes: preference.freeTextNotes,

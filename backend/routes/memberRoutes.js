@@ -75,14 +75,18 @@ router.post("/:tripId/members", verifyToken, async (req, res) => {
       });
     }
 
-    if (trip.invitedEmails.includes(email)) {
+    // Add the email in one step that only succeeds if it is not already there,
+    // so two quick clicks cannot both send an invitation.
+    const added = await Trip.updateOne(
+      { _id: trip._id, invitedEmails: { $ne: email } },
+      { $push: { invitedEmails: email } }
+    );
+
+    if (added.modifiedCount === 0) {
       return res.status(409).json({
         message: "This email has already been invited"
       });
     }
-
-    trip.invitedEmails.push(email);
-    await trip.save();
 
     const organiser = await User.findById(req.user.id);
     const emailSent = await sendInvitationEmail(email, organiser.name, trip);

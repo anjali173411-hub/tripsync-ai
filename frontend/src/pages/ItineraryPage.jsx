@@ -314,6 +314,31 @@ function ItineraryPage() {
           </div>
         )}
 
+        {conflicts.length > 0 && openDecisions < conflicts.length && (
+          <div className="box">
+            <p className="label">Group decisions</p>
+            {conflicts.map((conflict) => {
+              if (!conflict.resolved) {
+                return null;
+              }
+              const chosen = conflict.options[conflict.chosenOption];
+              return (
+                <div key={conflict._id} className="option chosen">
+                  <div>
+                    <b>{conflict.conflictDescription}</b>
+                    <p className="small">
+                      <span className="tag green">Group's choice</span> {chosen ? chosen.description : ""}
+                    </p>
+                    {chosen && chosen.extraCost > 0 && (
+                      <p className="muted small">Extra cost: {formatMoney(chosen.extraCost, currency)}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="day-tabs">
           {itinerary.days.map((oneDay, index) => (
             <button

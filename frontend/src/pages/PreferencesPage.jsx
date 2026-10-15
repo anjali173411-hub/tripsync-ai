@@ -17,7 +17,6 @@ function PreferencesPage() {
   const [foodPreference, setFoodPreference] = useState("");
   const [stayBudget, setStayBudget] = useState("");
   const [stayType, setStayType] = useState("");
-  const [budgetContribution, setBudgetContribution] = useState("");
   const [mustDo, setMustDo] = useState([]);
   const [dealBreakers, setDealBreakers] = useState([]);
   const [freeTextNotes, setFreeTextNotes] = useState("");
@@ -59,7 +58,6 @@ function PreferencesPage() {
     if (data.foodPreference) setFoodPreference(data.foodPreference);
     if (data.stayBudget) setStayBudget(data.stayBudget);
     if (data.stayType) setStayType(data.stayType);
-    if (data.budgetContribution) setBudgetContribution(data.budgetContribution);
     if (data.freeTextNotes) setFreeTextNotes(data.freeTextNotes);
   }
 
@@ -88,7 +86,6 @@ function PreferencesPage() {
         foodPreference: foodPreference || undefined,
         stayBudget: stayBudget || undefined,
         stayType: stayType || undefined,
-        budgetContribution: Number(budgetContribution),
         mustDo: mustDo,
         dealBreakers: dealBreakers,
         freeTextNotes: freeTextNotes
@@ -123,7 +120,7 @@ function PreferencesPage() {
             placeholder="I'm vegetarian and want a relaxed trip with beaches. No water sports. A cheap homestay is fine."
           />
           <button onClick={handleFillFromText} disabled={filling || description.length < 10}>
-            {filling ? "Reading..." : "Fill in the form for me"}
+            {filling ? "Filling..." : "Fill with AI"}
           </button>
         </div>
 
@@ -174,9 +171,6 @@ function PreferencesPage() {
               </select>
             </div>
           </div>
-
-          <label>My budget contribution ({options.currency})</label>
-          <input type="number" min="0" value={budgetContribution} onChange={(e) => setBudgetContribution(e.target.value)} />
 
           <label>Must do (press Enter after each)</label>
           <TagsInput value={mustDo} onChange={setMustDo} />

@@ -21,8 +21,9 @@ api.interceptors.response.use(
   function (error) {
     const loginExpired = error.response && error.response.status === 401;
     const wasLoggedIn = localStorage.getItem("token");
+    const isLoginRequest = error.config && String(error.config.url).includes("/auth/login");
 
-    if (loginExpired && wasLoggedIn) {
+    if (loginExpired && wasLoggedIn && !isLoginRequest) {
       logout();
       window.location.href = "/login";
     }

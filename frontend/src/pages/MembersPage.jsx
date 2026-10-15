@@ -15,6 +15,7 @@ function MembersPage() {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState("");
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     loadPage();
@@ -40,15 +41,20 @@ function MembersPage() {
   }
 
   async function sendInvite(emailToInvite) {
+    if (inviting) {
+      return;
+    }
+    setInviting(true);
     setError("");
     try {
       const response = await api.post("/trips/" + tripId + "/members", { email: emailToInvite });
       notifications.show({ message: response.data.message, color: "green" });
       setEmail("");
-      loadPage();
+      await loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
     }
+    setInviting(false);
   }
 
   async function handleSearch(event) {
@@ -147,7 +153,9 @@ function MembersPage() {
             <label>Invite by email (works even if they don't have an account yet)</label>
             <div className="input-row">
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="friend@example.com" />
-              <button onClick={() => sendInvite(email)} disabled={!email}>Send invite</button>
+              <button onClick={() => sendInvite(email)} disabled={!email || inviting}>
+                {inviting ? "Sending..." : "Send invite"}
+              </button>
             </div>
 
             <label>Or search people already on TripSync AI</label>
@@ -159,7 +167,7 @@ function MembersPage() {
             {searchResults.map((person) => (
               <div key={person._id} className="row">
                 <span>{person.name} <span className="muted small">{person.email}</span></span>
-                <button className="small-button" onClick={() => sendInvite(person.email)}>Invite</button>
+                <button className="small-button" onClick={() => sendInvite(person.email)} disabled={inviting}>Invite</button>
               </div>
             ))}
           </div>

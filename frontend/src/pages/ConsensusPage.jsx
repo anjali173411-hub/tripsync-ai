@@ -13,6 +13,8 @@ function ConsensusPage() {
   const [itinerary, setItinerary] = useState(null);
   const [conflicts, setConflicts] = useState([]);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadPage();
@@ -37,12 +39,20 @@ function ConsensusPage() {
   }
 
   async function handleVote(conflictId, optionIndex) {
+    if (saving) {
+      return;
+    }
+    setSaving(true);
+    setError("");
+    setMessage("");
     try {
-      await api.post("/trips/" + tripId + "/conflicts/" + conflictId + "/vote", { optionIndex: optionIndex });
-      loadPage();
+      const response = await api.post("/trips/" + tripId + "/conflicts/" + conflictId + "/vote", { optionIndex: optionIndex });
+      setMessage(response.data.message);
+      await loadPage();
     } catch (err) {
       setError(getErrorMessage(err));
     }
+    setSaving(false);
   }
 
   async function handleDecide(conflictId, optionIndex) {
@@ -84,6 +94,7 @@ function ConsensusPage() {
         <p className="muted">Vote for the option you prefer. An option wins when more than half of the group votes for it.</p>
 
         {error && <p className="error-box">{error}</p>}
+        {message && <p className="box">{message}</p>}
 
         {!itinerary && (
           <p className="box">Nothing to decide yet. <Link to={"/trips/" + tripId + "/itinerary"}>Generate the itinerary first.</Link></p>
@@ -103,6 +114,12 @@ function ConsensusPage() {
               {!conflict.resolved && myVote === -1 && <span className="tag orange">Needs your vote</span>}
               <h3>{conflict.conflictDescription}</h3>
               <p className="muted small">{conflict.reasoning}</p>
+              {canVote && conflict.votes.length >= trip.members.length && (
+                <p className="warning-box">
+                  Everyone has voted but it's a tie. Someone can change their vote
+                  {isOrganiser ? ", or you can decide for everyone." : ", or the organiser can decide for everyone."}
+                </p>
+              )}
 
               {conflict.options.map((option, index) => (
                 <div key={option._id} className={conflict.chosenOption === index ? "option chosen" : "option"}>
@@ -117,7 +134,7 @@ function ConsensusPage() {
 
                   {canVote && (
                     <div className="button-row">
-                      <button className={myVote === index ? "small-button" : "small-button outline-button"} onClick={() => handleVote(conflict._id, index)}>
+                      <button className={myVote === index ? "small-button" : "small-button outline-button"} disabled={saving} onClick={() => handleVote(conflict._id, index)}>
                         {myVote === index ? "Your vote" : "Vote"}
                       </button>
                       {isOrganiser && (
