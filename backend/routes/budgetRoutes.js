@@ -55,6 +55,12 @@ router.post("/:tripId/expenses", verifyToken, async (req, res) => {
       return res.status(result.status).json({ message: result.error });
     }
 
+    if (result.trip.status === "completed" || result.trip.status === "archived") {
+      return res.status(400).json({
+        message: "This trip is finished, so no more expenses can be added"
+      });
+    }
+
     if (!title || amount === undefined || amount === null) {
       return res.status(400).json({
         message: "Expense title and amount are required"
@@ -112,6 +118,80 @@ router.post("/:tripId/expenses", verifyToken, async (req, res) => {
     res.status(500).json({
       message: "Could not add expense"
     });
+  }
+});
+
+// Finds an expense the logged-in user may change: their own, or any expense if they
+// are the organiser. A completed or archived trip's expenses are locked.
+async function getChangeableExpense(tripId, expenseId, userId) {
+  const result = await getMemberTrip(tripId, userId);
+  if (result.error) {
+    return result;
+  }
+
+  if (result.trip.status === "completed" || result.trip.status === "archived") {
+    return { error: "This trip is finished, so its expenses can no longer be changed", status: 400 };
+  }
+
+  const expense = await Expense.findOne({ _id: expenseId, trip: result.trip._id });
+  if (!expense) {
+    return { error: "Expense not found", status: 404 };
+  }
+
+  const isOwner = expense.paidBy && expense.paidBy.toString() === userId;
+  const isOrganiser = result.trip.organiser.toString() === userId;
+  if (!isOwner && !isOrganiser) {
+    return { error: "You can only change expenses you paid", status: 403 };
+  }
+
+  return { trip: result.trip, expense: expense };
+}
+
+router.put("/:tripId/expenses/:expenseId", verifyToken, async (req, res) => {
+  try {
+    const result = await getChangeableExpense(req.params.tripId, req.params.expenseId, req.user.id);
+    if (result.error) {
+      return res.status(result.status).json({ message: result.error });
+    }
+
+    const amount = Number(req.body.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ message: "Amount must be greater than zero" });
+    }
+
+    const allowedCategories = Expense.schema.path("category").enumValues;
+    const category = req.body.category || result.expense.category;
+    if (!allowedCategories.includes(category)) {
+      return res.status(400).json({ message: "Please choose a valid category" });
+    }
+
+    result.expense.amount = amount;
+    result.expense.category = category;
+    if (req.body.title) {
+      result.expense.title = String(req.body.title);
+    }
+    await result.expense.save();
+
+    res.json({ message: "Expense updated", expense: result.expense });
+  } catch (error) {
+    console.error("Update expense error:", error);
+    res.status(500).json({ message: "Could not update expense" });
+  }
+});
+
+router.delete("/:tripId/expenses/:expenseId", verifyToken, async (req, res) => {
+  try {
+    const result = await getChangeableExpense(req.params.tripId, req.params.expenseId, req.user.id);
+    if (result.error) {
+      return res.status(result.status).json({ message: result.error });
+    }
+
+    await result.expense.deleteOne();
+
+    res.json({ message: "Expense removed" });
+  } catch (error) {
+    console.error("Delete expense error:", error);
+    res.status(500).json({ message: "Could not remove expense" });
   }
 });
 

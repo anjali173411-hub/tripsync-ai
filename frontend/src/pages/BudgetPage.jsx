@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Chip, Loader } from "@mantine/core";
+import { Chip, Loader, Modal } from "@mantine/core";
+import { Pencil, Trash2 } from "lucide-react";
 import { notifications } from "@mantine/notifications";
-import api, { getErrorMessage, formatDate, formatMoney } from "../api/axios.js";
+import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 
 // Short names shown on the category buttons
@@ -20,6 +21,7 @@ function categoryLabel(category) {
 
 function BudgetPage() {
   const { tripId } = useParams();
+  const user = getCurrentUser();
 
   const [trip, setTrip] = useState(null);
   const [budget, setBudget] = useState(null);
@@ -33,6 +35,10 @@ function BudgetPage() {
   const [adding, setAdding] = useState(false);
   const addingNow = useRef(false);
   const [error, setError] = useState("");
+
+  const [editing, setEditing] = useState(null);
+  const [editAmount, setEditAmount] = useState("");
+  const [editCategory, setEditCategory] = useState("");
 
   useEffect(() => {
     loadPage();
@@ -83,6 +89,55 @@ function BudgetPage() {
     }
     addingNow.current = false;
     setAdding(false);
+  }
+
+  function startEditing(expense) {
+    setEditing(expense);
+    setEditAmount(expense.amount);
+    setEditCategory(expense.category);
+  }
+
+  async function handleSaveEdit(event) {
+    event.preventDefault();
+    setError("");
+    try {
+      // New-style expenses are titled by their category, so keep the title in step.
+      const title = editing.title === categoryLabel(editing.category) ? categoryLabel(editCategory) : undefined;
+      await api.put("/trips/" + tripId + "/expenses/" + editing._id, {
+        amount: Number(editAmount),
+        category: editCategory,
+        title: title
+      });
+      setEditing(null);
+      setSuggestions([]);
+      await loadBudget();
+      notifications.show({ message: "Expense updated", color: "green" });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
+  async function handleDelete(expense) {
+    if (!window.confirm("Remove this " + formatMoney(expense.amount, currency) + " expense?")) {
+      return;
+    }
+    setError("");
+    try {
+      await api.delete("/trips/" + tripId + "/expenses/" + expense._id);
+      setSuggestions([]);
+      await loadBudget();
+      notifications.show({ message: "Expense removed", color: "green" });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
+  function canChange(expense) {
+    if (trip.status === "completed" || trip.status === "archived") {
+      return false;
+    }
+    const paidById = expense.paidBy ? expense.paidBy._id : "";
+    return paidById === user.id || trip.organiser._id === user.id;
   }
 
   async function handleGetSuggestions() {
@@ -209,7 +264,7 @@ function BudgetPage() {
             <h3>All expenses</h3>
             <table>
               <thead>
-                <tr><th>Date</th><th>Paid by</th><th>For</th><th>Amount</th></tr>
+                <tr><th>Date</th><th>Paid by</th><th>For</th><th>Amount</th><th></th></tr>
               </thead>
               <tbody>
                 {budget.expenses.map((expense) => (
@@ -218,12 +273,41 @@ function BudgetPage() {
                     <td>{expense.paidBy ? expense.paidBy.name : "Unknown"}</td>
                     <td>{categoryLabel(expense.category)}</td>
                     <td>{formatMoney(expense.amount, currency)}</td>
+                    <td>
+                      {canChange(expense) && (
+                        <div className="activity-icons">
+                          <button className="icon-btn" title="Edit" onClick={() => startEditing(expense)}>
+                            <Pencil size={16} />
+                          </button>
+                          <button className="icon-btn delete" title="Remove" onClick={() => handleDelete(expense)}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+        <Modal opened={editing !== null} onClose={() => setEditing(null)} title="Edit expense">
+          <form onSubmit={handleSaveEdit} className="edit-form">
+            <label>Amount ({currency})</label>
+            <input type="number" min="1" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} required />
+
+            <label>For</label>
+            <Chip.Group value={editCategory} onChange={setEditCategory}>
+              <div className="chip-list">
+                {categories.map((oneCategory) => (
+                  <Chip key={oneCategory} value={oneCategory}>{categoryLabel(oneCategory)}</Chip>
+                ))}
+              </div>
+            </Chip.Group>
+
+            <button type="submit">Save</button>
+          </form>
+        </Modal>
       </section>
     </div>
   );
