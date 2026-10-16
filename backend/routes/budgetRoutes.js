@@ -76,6 +76,22 @@ router.post("/:tripId/expenses", verifyToken, async (req, res) => {
       });
     }
 
+    // A double click sends the same expense twice within a moment; keep only the first.
+    const sameExpenseJustAdded = await Expense.findOne({
+      trip: result.trip._id,
+      paidBy: req.user.id,
+      title: String(title),
+      amount: Number(amount),
+      category: chosenCategory,
+      createdAt: { $gte: new Date(Date.now() - 10000) }
+    });
+
+    if (sameExpenseJustAdded) {
+      return res.status(409).json({
+        message: "This expense was just added"
+      });
+    }
+
     const expense = await Expense.create({
       trip: result.trip._id,
       paidBy: req.user.id,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -20,6 +20,8 @@ function BudgetPage() {
   const [activityName, setActivityName] = useState("");
 
   const [suggestions, setSuggestions] = useState([]);
+  const [adding, setAdding] = useState(false);
+  const addingNow = useRef(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -63,6 +65,12 @@ function BudgetPage() {
 
   async function handleAddExpense(event) {
     event.preventDefault();
+    // A ref changes at once, so a quick second click is ignored even before the page redraws.
+    if (addingNow.current) {
+      return;
+    }
+    addingNow.current = true;
+    setAdding(true);
     setError("");
 
     try {
@@ -80,6 +88,8 @@ function BudgetPage() {
     } catch (err) {
       setError(getErrorMessage(err));
     }
+    addingNow.current = false;
+    setAdding(false);
   }
 
   async function handleGetSuggestions() {
@@ -187,7 +197,7 @@ function BudgetPage() {
           </div>
           {error && <p className="error-box">{error}</p>}
           <div className="button-row">
-            <button type="submit">Add expense</button>
+            <button type="submit" disabled={adding}>{adding ? "Saving..." : "Add expense"}</button>
           </div>
         </form>
 
