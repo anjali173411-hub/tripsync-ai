@@ -1,9 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader } from "@mantine/core";
+import { Chip, Loader } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import api, { getErrorMessage, formatDate, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
+
+// Short names shown on the category buttons
+const CATEGORY_LABELS = {
+  accommodation: "Stay",
+  food: "Food",
+  transport: "Travel",
+  activities: "Activities",
+  misc: "Other"
+};
+
+function categoryLabel(category) {
+  return CATEGORY_LABELS[category] || category;
+}
 
 function BudgetPage() {
   const { tripId } = useParams();
@@ -12,12 +25,9 @@ function BudgetPage() {
   const [budget, setBudget] = useState(null);
   const [categories, setCategories] = useState([]);
   const [currency, setCurrency] = useState("");
-  const [activityNames, setActivityNames] = useState([]);
 
-  const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
-  const [activityName, setActivityName] = useState("");
 
   const [suggestions, setSuggestions] = useState([]);
   const [adding, setAdding] = useState(false);
@@ -42,20 +52,6 @@ function BudgetPage() {
     } catch (err) {
       setError(getErrorMessage(err));
     }
-
-    try {
-      const response = await api.get("/trips/" + tripId + "/itinerary");
-      const names = [];
-      for (let d = 0; d < response.data.itinerary.days.length; d++) {
-        const day = response.data.itinerary.days[d];
-        for (let a = 0; a < day.activities.length; a++) {
-          names.push("Day " + day.dayNumber + ": " + day.activities[a].name);
-        }
-      }
-      setActivityNames(names);
-    } catch (err) {
-      setActivityNames([]);
-    }
   }
 
   async function loadBudget() {
@@ -75,14 +71,11 @@ function BudgetPage() {
 
     try {
       await api.post("/trips/" + tripId + "/expenses", {
-        title: title,
+        title: categoryLabel(category),
         amount: Number(amount),
-        category: category,
-        activityName: activityName
+        category: category
       });
-      setTitle("");
       setAmount("");
-      setActivityName("");
       await loadBudget();
       notifications.show({ message: "Expense added", color: "green" });
     } catch (err) {
@@ -171,33 +164,22 @@ function BudgetPage() {
         )}
 
         <form className="box" onSubmit={handleAddExpense}>
-          <h3>Add an expense</h3>
-          <div className="two-columns">
-            <div>
-              <label>What did you pay for?</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Hotel for 2 nights" required />
+          <h3>Add what you paid</h3>
+          <label>Amount ({currency})</label>
+          <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="1500" required />
+
+          <label>For</label>
+          <Chip.Group value={category} onChange={setCategory}>
+            <div className="chip-list">
+              {categories.map((oneCategory) => (
+                <Chip key={oneCategory} value={oneCategory}>{categoryLabel(oneCategory)}</Chip>
+              ))}
             </div>
-            <div>
-              <label>Amount ({currency})</label>
-              <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-            </div>
-            <div>
-              <label>Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                {categories.map((oneCategory) => <option key={oneCategory} value={oneCategory}>{oneCategory}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>For which activity? (optional)</label>
-              <select value={activityName} onChange={(e) => setActivityName(e.target.value)}>
-                <option value="">Not linked</option>
-                {activityNames.map((name) => <option key={name} value={name}>{name}</option>)}
-              </select>
-            </div>
-          </div>
+          </Chip.Group>
+
           {error && <p className="error-box">{error}</p>}
           <div className="button-row">
-            <button type="submit" disabled={adding}>{adding ? "Saving..." : "Add expense"}</button>
+            <button type="submit" disabled={adding}>{adding ? "Saving..." : "Add"}</button>
           </div>
         </form>
 
@@ -206,7 +188,7 @@ function BudgetPage() {
             <h3>By category</h3>
             {getTotalsByCategory().map((item) => (
               <div key={item.name} className="row">
-                <span className="capitalize">{item.name}</span>
+                <span>{categoryLabel(item.name)}</span>
                 <b>{formatMoney(item.amount, currency)}</b>
               </div>
             ))}
@@ -239,15 +221,14 @@ function BudgetPage() {
             <h3>All expenses</h3>
             <table>
               <thead>
-                <tr><th>Date</th><th>What</th><th>Category</th><th>Paid by</th><th>Amount</th></tr>
+                <tr><th>Date</th><th>Paid by</th><th>For</th><th>Amount</th></tr>
               </thead>
               <tbody>
                 {budget.expenses.map((expense) => (
                   <tr key={expense._id}>
                     <td>{formatDate(expense.expenseDate)}</td>
-                    <td>{expense.title}</td>
-                    <td className="capitalize">{expense.category}</td>
                     <td>{expense.paidBy ? expense.paidBy.name : "Unknown"}</td>
+                    <td>{categoryLabel(expense.category)}</td>
                     <td>{formatMoney(expense.amount, currency)}</td>
                   </tr>
                 ))}
