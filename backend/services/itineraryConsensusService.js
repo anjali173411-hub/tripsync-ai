@@ -568,6 +568,19 @@ async function askGemini(systemPrompt, shape, messages) {
 
       const isTemporary = error instanceof ApiError && (error.status === 429 || error.status >= 500);
 
+      // The main model sometimes takes longer than the time limit for a whole itinerary.
+      // Retrying it just waits again, so switch to the faster backup model straight away.
+      const timedOut =
+        (error instanceof ApiError && error.status === 504) ||
+        error.name === "AbortError" || error.name === "TimeoutError";
+
+      if ((timedOut || (isTemporary && attempt >= AI_BUSY_TRIES)) && modelIndex < models.length - 1) {
+        console.warn(models[modelIndex] + " did not answer in time, switching to " + models[modelIndex + 1]);
+        modelIndex = modelIndex + 1;
+        attempt = 1;
+        continue;
+      }
+
       if (isTemporary && attempt < AI_BUSY_TRIES) {
         console.warn("Gemini is busy (try " + attempt + "), trying again:", error.message);
         await wait(AI_RETRY_DELAY_MS * attempt);
