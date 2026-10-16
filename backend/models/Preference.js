@@ -66,7 +66,7 @@ const preferenceSchema = new mongoose.Schema(
 
     foodPreference: {
       type: String,
-      enum: ["no preference", "vegetarian", "non-vegetarian", "vegan", "jain"],
+      enum: ["no preference", "vegetarian", "non-vegetarian", "vegan"],
       default: "no preference"
     },
 

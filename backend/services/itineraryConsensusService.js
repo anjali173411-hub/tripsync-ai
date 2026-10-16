@@ -54,7 +54,7 @@ The journey (when you are told where they travel from and how: train, bus or car
   or use local transport.
 
 Food:
-- Every meal must suit every traveller's food preference (vegetarian, vegan, jain, non-vegetarian).
+- Every meal must suit every traveller's food preference (vegetarian, vegan, non-vegetarian).
   For a mixed group choose places that serve all of them, and say so in the description.
 
 Where to stay:
@@ -758,7 +758,7 @@ Only use what they actually said. Do not invent wishes they did not mention.
   pace: "chill", "lazy", "slow", "take it easy" -> relaxed;
         "see as much as possible", "fit in a lot", "busy days" -> packed; "a bit of both" -> balanced.
   foodPreference: "I don't eat meat", "veg only" -> vegetarian; "no meat, eggs or dairy" -> vegan;
-        "no onion or garlic" -> jain; "I eat everything", "love seafood or chicken" -> non-vegetarian.
+        "I eat everything", "love seafood or chicken" -> non-vegetarian.
   stayBudget: "cheap", "backpacker", "low budget" -> budget; "5-star", "fancy", "premium" -> luxury;
         "comfortable", "nothing too fancy" -> mid-range.
   stayType: "with a local family", "home-like" -> homestay;
