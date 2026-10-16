@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Chip, Loader, Modal } from "@mantine/core";
 import { Pencil, Trash2 } from "lucide-react";
 import { notifications } from "@mantine/notifications";
-import api, { getErrorMessage, getCurrentUser, formatDate, formatMoney } from "../api/axios.js";
+import api, { getErrorMessage, getCurrentUser, formatMoney } from "../api/axios.js";
 import Sidebar from "../components/Sidebar.jsx";
 
 // Short names shown on the category buttons
@@ -36,6 +36,7 @@ function BudgetPage() {
   const addingNow = useRef(false);
   const [error, setError] = useState("");
 
+  const [showAll, setShowAll] = useState(false);
   const [editing, setEditing] = useState(null);
   const [editAmount, setEditAmount] = useState("");
   const [editCategory, setEditCategory] = useState("");
@@ -130,6 +131,18 @@ function BudgetPage() {
     } catch (err) {
       setError(getErrorMessage(err));
     }
+  }
+
+  // How much one member spent on one category, e.g. Anjali on Food
+  function getMemberCategoryTotal(memberId, category) {
+    let total = 0;
+    for (let i = 0; i < budget.expenses.length; i++) {
+      const expense = budget.expenses[i];
+      if (expense.paidBy && expense.paidBy._id === memberId && expense.category === category) {
+        total = total + expense.amount;
+      }
+    }
+    return total;
   }
 
   function canChange(expense) {
@@ -245,13 +258,21 @@ function BudgetPage() {
             <h3>Who paid what</h3>
             <table>
               <thead>
-                <tr><th>Member</th><th>Paid</th></tr>
+                <tr>
+                  <th>Member</th>
+                  {categories.map((oneCategory) => <th key={oneCategory}>{categoryLabel(oneCategory)}</th>)}
+                  <th>Total</th>
+                </tr>
               </thead>
               <tbody>
                 {budget.members.map((member) => (
                   <tr key={member.id}>
                     <td>{member.name}</td>
-                    <td>{formatMoney(member.paid, currency)}</td>
+                    {categories.map((oneCategory) => {
+                      const amountSpent = getMemberCategoryTotal(member.id, oneCategory);
+                      return <td key={oneCategory}>{amountSpent > 0 ? formatMoney(amountSpent, currency) : "-"}</td>;
+                    })}
+                    <td><b>{formatMoney(member.paid, currency)}</b></td>
                   </tr>
                 ))}
               </tbody>
@@ -261,15 +282,17 @@ function BudgetPage() {
 
         {budget.expenses.length > 0 && (
           <div className="box scroll">
-            <h3>All expenses</h3>
+            <button className="outline-button" onClick={() => setShowAll(!showAll)}>
+              {showAll ? "Hide payments" : "Show all payments (" + budget.expenses.length + ") to edit or remove"}
+            </button>
+            {showAll && (
             <table>
               <thead>
-                <tr><th>Date</th><th>Paid by</th><th>For</th><th>Amount</th><th></th></tr>
+                <tr><th>Paid by</th><th>For</th><th>Amount</th><th></th></tr>
               </thead>
               <tbody>
                 {budget.expenses.map((expense) => (
                   <tr key={expense._id}>
-                    <td>{formatDate(expense.expenseDate)}</td>
                     <td>{expense.paidBy ? expense.paidBy.name : "Unknown"}</td>
                     <td>{categoryLabel(expense.category)}</td>
                     <td>{formatMoney(expense.amount, currency)}</td>
@@ -289,6 +312,7 @@ function BudgetPage() {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         )}
         <Modal opened={editing !== null} onClose={() => setEditing(null)} title="Edit expense">
