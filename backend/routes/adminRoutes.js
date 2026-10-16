@@ -1,19 +1,9 @@
 import express from "express";
 import User from "../models/User.js";
 import Trip from "../models/Trip.js";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, adminOnly } from "../middleware/auth.js";
 
 const router = express.Router();
-
-function adminOnly(req, res, next) {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({
-      message: "Access denied. Admin only."
-    });
-  }
-
-  next();
-}
 
 router.get("/users", verifyToken, adminOnly, async (req, res) => {
   try {
