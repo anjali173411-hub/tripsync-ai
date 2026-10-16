@@ -13,9 +13,9 @@ function PreferencesPage() {
 
   const [interests, setInterests] = useState([]);
   const [otherInterests, setOtherInterests] = useState([]);
-  const [pace, setPace] = useState("");
-  const [foodPreference, setFoodPreference] = useState("");
-  const [stayBudget, setStayBudget] = useState("");
+  const [pace, setPace] = useState("balanced");
+  const [foodPreference, setFoodPreference] = useState("no preference");
+  const [stayBudget, setStayBudget] = useState("mid-range");
   const [mustDo, setMustDo] = useState([]);
   const [dealBreakers, setDealBreakers] = useState([]);
   const [freeTextNotes, setFreeTextNotes] = useState("");
@@ -142,21 +142,18 @@ function PreferencesPage() {
             <div>
               <label>How busy should each day be?</label>
               <select value={pace} onChange={(e) => setPace(e.target.value)}>
-                <option value="">Choose...</option>
                 {options.paceOptions.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </div>
             <div>
               <label>Food</label>
               <select value={foodPreference} onChange={(e) => setFoodPreference(e.target.value)}>
-                <option value="">Choose...</option>
                 {options.foodOptions.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </div>
             <div>
               <label>Stay budget</label>
               <select value={stayBudget} onChange={(e) => setStayBudget(e.target.value)}>
-                <option value="">Choose...</option>
                 {options.stayBudgets.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </div>
