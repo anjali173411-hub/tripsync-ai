@@ -39,7 +39,6 @@ function BudgetPage() {
   const [showAll, setShowAll] = useState(false);
   const [editing, setEditing] = useState(null);
   const [editAmount, setEditAmount] = useState("");
-  const [editCategory, setEditCategory] = useState("");
 
   useEffect(() => {
     loadPage();
@@ -92,42 +91,73 @@ function BudgetPage() {
     setAdding(false);
   }
 
-  function startEditing(expense) {
-    setEditing(expense);
-    setEditAmount(expense.amount);
-    setEditCategory(expense.category);
+  // One row per member per category, e.g. Anjali - Food - total
+  function getSpendingRows() {
+    const rows = [];
+    for (let i = 0; i < budget.expenses.length; i++) {
+      const expense = budget.expenses[i];
+      const memberId = expense.paidBy ? expense.paidBy._id : "";
+      let row = null;
+      for (let j = 0; j < rows.length; j++) {
+        if (rows[j].memberId === memberId && rows[j].category === expense.category) {
+          row = rows[j];
+        }
+      }
+      if (row) {
+        row.amount = row.amount + expense.amount;
+      } else {
+        rows.push({
+          memberId: memberId,
+          memberName: expense.paidBy ? expense.paidBy.name : "Unknown",
+          category: expense.category,
+          amount: expense.amount
+        });
+      }
+    }
+    rows.sort(function (first, second) {
+      if (first.memberName !== second.memberName) {
+        return first.memberName.localeCompare(second.memberName);
+      }
+      return categories.indexOf(first.category) - categories.indexOf(second.category);
+    });
+    return rows;
+  }
+
+  function startEditing(row) {
+    setEditing(row);
+    setEditAmount(row.amount);
   }
 
   async function handleSaveEdit(event) {
     event.preventDefault();
     setError("");
     try {
-      // New-style expenses are titled by their category, so keep the title in step.
-      const title = editing.title === categoryLabel(editing.category) ? categoryLabel(editCategory) : undefined;
-      await api.put("/trips/" + tripId + "/expenses/" + editing._id, {
-        amount: Number(editAmount),
-        category: editCategory,
-        title: title
+      await api.put("/trips/" + tripId + "/spending", {
+        memberId: editing.memberId,
+        category: editing.category,
+        amount: Number(editAmount)
       });
       setEditing(null);
       setSuggestions([]);
       await loadBudget();
-      notifications.show({ message: "Expense updated", color: "green" });
+      notifications.show({ message: "Total updated", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
   }
 
-  async function handleDelete(expense) {
-    if (!window.confirm("Remove this " + formatMoney(expense.amount, currency) + " expense?")) {
+  async function handleDelete(row) {
+    if (!window.confirm("Remove " + row.memberName + "'s " + categoryLabel(row.category) + " (" + formatMoney(row.amount, currency) + ")?")) {
       return;
     }
     setError("");
     try {
-      await api.delete("/trips/" + tripId + "/expenses/" + expense._id);
+      await api.delete("/trips/" + tripId + "/spending", {
+        data: { memberId: row.memberId, category: row.category }
+      });
       setSuggestions([]);
       await loadBudget();
-      notifications.show({ message: "Expense removed", color: "green" });
+      notifications.show({ message: "Removed", color: "green" });
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -145,12 +175,11 @@ function BudgetPage() {
     return total;
   }
 
-  function canChange(expense) {
+  function canChange(row) {
     if (trip.status === "completed" || trip.status === "archived") {
       return false;
     }
-    const paidById = expense.paidBy ? expense.paidBy._id : "";
-    return paidById === user.id || trip.organiser._id === user.id;
+    return row.memberId === user.id || trip.organiser._id === user.id;
   }
 
   async function handleGetSuggestions() {
@@ -283,7 +312,7 @@ function BudgetPage() {
         {budget.expenses.length > 0 && (
           <div className="box scroll">
             <button className="outline-button" onClick={() => setShowAll(!showAll)}>
-              {showAll ? "Hide payments" : "Show all payments (" + budget.expenses.length + ") to edit or remove"}
+              {showAll ? "Hide" : "Edit or remove amounts"}
             </button>
             {showAll && (
             <table>
@@ -291,18 +320,18 @@ function BudgetPage() {
                 <tr><th>Paid by</th><th>For</th><th>Amount</th><th></th></tr>
               </thead>
               <tbody>
-                {budget.expenses.map((expense) => (
-                  <tr key={expense._id}>
-                    <td>{expense.paidBy ? expense.paidBy.name : "Unknown"}</td>
-                    <td>{categoryLabel(expense.category)}</td>
-                    <td>{formatMoney(expense.amount, currency)}</td>
+                {getSpendingRows().map((row) => (
+                  <tr key={row.memberId + row.category}>
+                    <td>{row.memberName}</td>
+                    <td>{categoryLabel(row.category)}</td>
+                    <td>{formatMoney(row.amount, currency)}</td>
                     <td>
-                      {canChange(expense) && (
+                      {canChange(row) && (
                         <div className="activity-icons">
-                          <button className="icon-btn" title="Edit" onClick={() => startEditing(expense)}>
+                          <button className="icon-btn" title="Edit" onClick={() => startEditing(row)}>
                             <Pencil size={16} />
                           </button>
-                          <button className="icon-btn delete" title="Remove" onClick={() => handleDelete(expense)}>
+                          <button className="icon-btn delete" title="Remove" onClick={() => handleDelete(row)}>
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -315,20 +344,14 @@ function BudgetPage() {
             )}
           </div>
         )}
-        <Modal opened={editing !== null} onClose={() => setEditing(null)} title="Edit expense">
+        <Modal
+          opened={editing !== null}
+          onClose={() => setEditing(null)}
+          title={editing ? "Edit " + editing.memberName + "'s " + categoryLabel(editing.category) : ""}
+        >
           <form onSubmit={handleSaveEdit} className="edit-form">
-            <label>Amount ({currency})</label>
+            <label>Total amount ({currency})</label>
             <input type="number" min="1" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} required />
-
-            <label>For</label>
-            <Chip.Group value={editCategory} onChange={setEditCategory}>
-              <div className="chip-list">
-                {categories.map((oneCategory) => (
-                  <Chip key={oneCategory} value={oneCategory}>{categoryLabel(oneCategory)}</Chip>
-                ))}
-              </div>
-            </Chip.Group>
-
             <button type="submit">Save</button>
           </form>
         </Modal>

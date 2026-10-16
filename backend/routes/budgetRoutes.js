@@ -195,6 +195,77 @@ router.delete("/:tripId/expenses/:expenseId", verifyToken, async (req, res) => {
   }
 });
 
+// The budget page shows one total per member per category (e.g. Anjali - Food).
+// These two routes change or clear that whole total.
+async function getChangeableSpending(tripId, memberId, category, userId) {
+  const result = await getMemberTrip(tripId, userId);
+  if (result.error) {
+    return result;
+  }
+
+  if (result.trip.status === "completed" || result.trip.status === "archived") {
+    return { error: "This trip is finished, so its expenses can no longer be changed", status: 400 };
+  }
+
+  if (!Expense.schema.path("category").enumValues.includes(category)) {
+    return { error: "Please choose a valid category", status: 400 };
+  }
+
+  const isOrganiser = result.trip.organiser.toString() === userId;
+  if (String(memberId) !== userId && !isOrganiser) {
+    return { error: "You can only change what you paid", status: 403 };
+  }
+
+  return { trip: result.trip };
+}
+
+router.put("/:tripId/spending", verifyToken, async (req, res) => {
+  try {
+    const { memberId, category } = req.body;
+    const result = await getChangeableSpending(req.params.tripId, memberId, category, req.user.id);
+    if (result.error) {
+      return res.status(result.status).json({ message: result.error });
+    }
+
+    const amount = Number(req.body.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ message: "Amount must be greater than zero" });
+    }
+
+    // Replace that member's payments in this category with one payment of the new total
+    const existing = await Expense.find({ trip: result.trip._id, paidBy: memberId, category: category });
+    if (existing.length === 0) {
+      return res.status(404).json({ message: "Nothing found to change" });
+    }
+
+    await Expense.deleteMany({ _id: { $in: existing.slice(1).map((expense) => expense._id) } });
+    existing[0].amount = amount;
+    await existing[0].save();
+
+    res.json({ message: "Total updated" });
+  } catch (error) {
+    console.error("Update spending error:", error);
+    res.status(500).json({ message: "Could not update the total" });
+  }
+});
+
+router.delete("/:tripId/spending", verifyToken, async (req, res) => {
+  try {
+    const { memberId, category } = req.body;
+    const result = await getChangeableSpending(req.params.tripId, memberId, category, req.user.id);
+    if (result.error) {
+      return res.status(result.status).json({ message: result.error });
+    }
+
+    await Expense.deleteMany({ trip: result.trip._id, paidBy: memberId, category: category });
+
+    res.json({ message: "Removed" });
+  } catch (error) {
+    console.error("Delete spending error:", error);
+    res.status(500).json({ message: "Could not remove it" });
+  }
+});
+
 router.get("/:tripId/budget", verifyToken, async (req, res) => {
   try {
     const result = await getMemberTrip(req.params.tripId, req.user.id);
