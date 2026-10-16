@@ -113,16 +113,6 @@ function BudgetPage() {
     return totals;
   }
 
-  function getBalanceText(balance) {
-    if (balance > 0) {
-      return "Others owe " + formatMoney(balance, currency);
-    }
-    if (balance < 0) {
-      return "Owes " + formatMoney(-balance, currency);
-    }
-    return "Settled";
-  }
-
   if (!trip || !budget) {
     if (error) {
       return <p className="error-box">{error}</p>;
@@ -200,15 +190,13 @@ function BudgetPage() {
             <h3>Who paid what</h3>
             <table>
               <thead>
-                <tr><th>Member</th><th>Paid</th><th>Fair share</th><th>Balance</th></tr>
+                <tr><th>Member</th><th>Paid</th></tr>
               </thead>
               <tbody>
                 {budget.members.map((member) => (
                   <tr key={member.id}>
                     <td>{member.name}</td>
                     <td>{formatMoney(member.paid, currency)}</td>
-                    <td>{formatMoney(member.fairShare, currency)}</td>
-                    <td>{getBalanceText(member.balance)}</td>
                   </tr>
                 ))}
               </tbody>
