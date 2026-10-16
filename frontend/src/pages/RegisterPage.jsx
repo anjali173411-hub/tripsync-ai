@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PasswordInput } from "@mantine/core";
 import AuthLayout from "../components/AuthLayout.jsx";
-import api, { getErrorMessage } from "../api/axios.js";
+import api, { getErrorMessage, getCurrentUser, logoutEverywhere } from "../api/axios.js";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -11,6 +11,31 @@ function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loggedInUser, setLoggedInUser] = useState(getCurrentUser());
+
+  // Do not create a new account on top of someone else's login on this browser.
+  if (loggedInUser) {
+    return (
+      <AuthLayout>
+        <h2 className="auth-title">Create your account</h2>
+        <p>
+          This browser is logged in as <b>{loggedInUser.name}</b> ({loggedInUser.email}).
+          Log out first to create a new account.
+        </p>
+        <div className="button-row">
+          <button onClick={handleLogOut}>Log out and sign up</button>
+          <button className="outline-button" onClick={() => navigate("/")}>
+            Back to {loggedInUser.name}'s dashboard
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  async function handleLogOut() {
+    await logoutEverywhere();
+    setLoggedInUser(null);
+  }
 
   async function handleRegister(event) {
     event.preventDefault();

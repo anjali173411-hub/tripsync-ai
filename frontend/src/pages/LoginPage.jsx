@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { PasswordInput } from "@mantine/core";
 import AuthLayout from "../components/AuthLayout.jsx";
-import api, { getErrorMessage, saveLogin, getCurrentUser } from "../api/axios.js";
+import api, { getErrorMessage, saveLogin, getCurrentUser, logoutEverywhere } from "../api/axios.js";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -12,9 +12,33 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const loggedInUser = getCurrentUser();
+  const [loggedInUser, setLoggedInUser] = useState(getCurrentUser());
+
+  // Someone else may still be logged in on this browser (for example the organiser,
+  // when an invited friend opens the email link on the same computer).
+  // Ask instead of silently opening their account.
   if (loggedInUser) {
-    return <Navigate to={loggedInUser.role === "admin" ? "/admin" : "/"} />;
+    return (
+      <AuthLayout>
+        <h2 className="auth-title">You are already logged in</h2>
+        <p>
+          This browser is logged in as <b>{loggedInUser.name}</b> ({loggedInUser.email}).
+        </p>
+        <div className="button-row">
+          <button onClick={() => navigate(loggedInUser.role === "admin" ? "/admin" : "/")}>
+            Continue as {loggedInUser.name}
+          </button>
+          <button className="outline-button" onClick={handleSwitchAccount}>
+            Log in as someone else
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  async function handleSwitchAccount() {
+    await logoutEverywhere();
+    setLoggedInUser(null);
   }
 
   async function handleLogin(event) {
