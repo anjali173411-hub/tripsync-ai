@@ -32,8 +32,10 @@ Rules:
   but EVERY day still has breakfast, lunch and dinner (except meals before arriving
   on Day 1 or after leaving on the last day).
 - Prefer activities that satisfy several travellers at once.
-- For every activity, list in "matchedMembers" the names of the travellers whose
-  interests or must-do items it satisfies. Use the names exactly as given.
+- For every activity, list in "matchedMembers" ONLY the travellers whose interests or must-do
+  items it really satisfies (e.g. a trek matches the traveller who likes adventure, not the one
+  who wants relaxation). Do NOT simply list everyone. Meals, travel, check-in and check-out are
+  for everyone, so give them an EMPTY "matchedMembers" list. Use the names exactly as given.
 - Never include anything that is on a traveller's deal-breaker list.
 - The trip budget is the TOTAL for the whole group together (not per person).
   Activity costs are per person, so (all activity costs added up) x (number of travellers)
@@ -153,7 +155,8 @@ Follow the same rules as for a full plan:
   Every activity has a time (e.g. "09:00"), a name, a short description, a category
   ("food" for meals, "stay" for check-in/check-out, "travel" for journeys),
   and an estimated cost per person in the trip's currency.
-- In "matchedMembers" list the travellers whose interests or must-do items each activity satisfies.
+- In "matchedMembers" list ONLY the travellers whose interests or must-do items each activity
+  really satisfies, not everyone. Meals, travel, check-in and check-out get an EMPTY list.
   Use the names exactly as given.
 - Never include anything on a traveller's deal-breaker list.
 - Do not repeat activities that are already planned on the other days.
