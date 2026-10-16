@@ -84,7 +84,6 @@ app.get("/api/options", (req, res) => {
     paceOptions: Preference.schema.path("pace").enumValues,
     foodOptions: Preference.schema.path("foodPreference").enumValues,
     stayBudgets: Preference.schema.path("stayBudget").enumValues,
-    stayTypes: Preference.schema.path("stayType").enumValues,
     interestOptions: Preference.schema.path("interests").getEmbeddedSchemaType().enumValues,
     expenseCategories: Expense.schema.path("category").enumValues,
     currency: CURRENCY

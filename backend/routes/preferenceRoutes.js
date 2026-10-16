@@ -18,8 +18,7 @@ router.put("/:tripId/preferences", verifyToken, async (req, res) => {
       dealBreakers,
       freeTextNotes,
       foodPreference,
-      stayBudget,
-      stayType
+      stayBudget
     } = req.body;
 
     const trip = await Trip.findById(req.params.tripId);
@@ -86,8 +85,7 @@ router.put("/:tripId/preferences", verifyToken, async (req, res) => {
         dealBreakers: dealBreakers || [],
         freeTextNotes: freeTextNotes || "",
         foodPreference: foodPreference || "no preference",
-        stayBudget: stayBudget || "mid-range",
-        stayType: stayType || "hotel"
+        stayBudget: stayBudget || "mid-range"
       },
       {
         new: true,
@@ -160,8 +158,7 @@ router.post("/:tripId/preferences/from-text", verifyToken, async (req, res) => {
       interests: Preference.schema.path("interests").getEmbeddedSchemaType().enumValues,
       paces: Preference.schema.path("pace").enumValues,
       foods: Preference.schema.path("foodPreference").enumValues,
-      stayBudgets: Preference.schema.path("stayBudget").enumValues,
-      stayTypes: Preference.schema.path("stayType").enumValues
+      stayBudgets: Preference.schema.path("stayBudget").enumValues
     };
 
     const filled = await preferencesFromText(text, choices);

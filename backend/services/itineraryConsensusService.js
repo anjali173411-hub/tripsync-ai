@@ -59,7 +59,7 @@ Food:
 
 Where to stay:
 - In "stay", suggest ONE area and type of place for the whole group to stay, based on the
-  travellers' stay budget (budget, mid-range, luxury) and stay type (hotel, homestay, resort).
+  travellers' stay budget (budget, mid-range, luxury); choose the type of place (hotel, homestay or resort) yourself.
   Give an estimated cost per night for the WHOLE group, a short reason, and in "matchedMembers"
   the travellers whose stay preference it matches. This is a suggestion only, not a booking.
 - The stay cost (cost per night x nights) also comes out of the same trip budget.
@@ -117,7 +117,7 @@ function buildTripPrompt(trip, numberOfDays, members, instructions) {
     prompt += "  deal-breakers: " + listOrNone(member.dealBreakers) + "\n";
     prompt += "  notes: " + (member.freeTextNotes || "none") + "\n";
     prompt += "  food: " + (member.foodPreference || "no preference") + "\n";
-    prompt += "  stay: " + (member.stayBudget || "mid-range") + " " + (member.stayType || "hotel") + "\n";
+    prompt += "  stay budget: " + (member.stayBudget || "mid-range") + "\n";
   }
 
   if (instructions) {
@@ -752,7 +752,7 @@ Only use what they actually said. Do not invent wishes they did not mention.
   e.g. "must see", "really want to", "can't miss", "have to try".
 - dealBreakers: things they want to avoid (short phrases),
   e.g. "no ...", "hate ...", "scared of ...", "not into ...", "avoid ...", "allergic to ...".
-- For pace, foodPreference, stayBudget and stayType, pick the CLOSEST allowed value for
+- For pace, foodPreference and stayBudget, pick the CLOSEST allowed value for
   what they mean, even in different words. Use "" (empty) only if they gave no hint at all.
   Examples (use your judgement for anything else):
   pace: "chill", "lazy", "slow", "take it easy" -> relaxed;
@@ -760,9 +760,7 @@ Only use what they actually said. Do not invent wishes they did not mention.
   foodPreference: "I don't eat meat", "veg only" -> vegetarian; "no meat, eggs or dairy" -> vegan;
         "I eat everything", "love seafood or chicken" -> non-vegetarian.
   stayBudget: "cheap", "backpacker", "low budget" -> budget; "5-star", "fancy", "premium" -> luxury;
-        "comfortable", "nothing too fancy" -> mid-range.
-  stayType: "with a local family", "home-like" -> homestay;
-        "villa", "pool", "beach property", "all-inclusive" -> resort; otherwise a normal hotel -> hotel.`;
+        "comfortable", "nothing too fancy" -> mid-range.`;
 
 function buildPreferencesShape(choices) {
   return {
@@ -774,12 +772,11 @@ function buildPreferencesShape(choices) {
       dealBreakers: { type: "array", items: { type: "string" } },
       pace: { type: "string", enum: choices.paces.concat([""]) },
       foodPreference: { type: "string", enum: choices.foods.concat([""]) },
-      stayBudget: { type: "string", enum: choices.stayBudgets.concat([""]) },
-      stayType: { type: "string", enum: choices.stayTypes.concat([""]) }
+      stayBudget: { type: "string", enum: choices.stayBudgets.concat([""]) }
     },
     required: [
       "interests", "otherInterests", "mustDo", "dealBreakers",
-      "pace", "foodPreference", "stayBudget", "stayType"
+      "pace", "foodPreference", "stayBudget"
     ]
   };
 }
@@ -835,7 +832,6 @@ export async function preferencesFromText(text, choices) {
     dealBreakers: cleanList(data.dealBreakers, null),
     pace: cleanChoice(data.pace, choices.paces),
     foodPreference: cleanChoice(data.foodPreference, choices.foods),
-    stayBudget: cleanChoice(data.stayBudget, choices.stayBudgets),
-    stayType: cleanChoice(data.stayType, choices.stayTypes)
+    stayBudget: cleanChoice(data.stayBudget, choices.stayBudgets)
   };
 }

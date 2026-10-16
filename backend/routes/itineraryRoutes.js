@@ -52,8 +52,7 @@ async function getMembersForAI(trip) {
       dealBreakers: preference.dealBreakers,
       freeTextNotes: preference.freeTextNotes,
       foodPreference: preference.foodPreference,
-      stayBudget: preference.stayBudget,
-      stayType: preference.stayType
+      stayBudget: preference.stayBudget
     });
   }
 

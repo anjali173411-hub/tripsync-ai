@@ -16,7 +16,6 @@ function PreferencesPage() {
   const [pace, setPace] = useState("");
   const [foodPreference, setFoodPreference] = useState("");
   const [stayBudget, setStayBudget] = useState("");
-  const [stayType, setStayType] = useState("");
   const [mustDo, setMustDo] = useState([]);
   const [dealBreakers, setDealBreakers] = useState([]);
   const [freeTextNotes, setFreeTextNotes] = useState("");
@@ -57,7 +56,6 @@ function PreferencesPage() {
     if (data.pace) setPace(data.pace);
     if (data.foodPreference) setFoodPreference(data.foodPreference);
     if (data.stayBudget) setStayBudget(data.stayBudget);
-    if (data.stayType) setStayType(data.stayType);
     if (data.freeTextNotes) setFreeTextNotes(data.freeTextNotes);
   }
 
@@ -85,7 +83,6 @@ function PreferencesPage() {
         pace: pace,
         foodPreference: foodPreference || undefined,
         stayBudget: stayBudget || undefined,
-        stayType: stayType || undefined,
         mustDo: mustDo,
         dealBreakers: dealBreakers,
         freeTextNotes: freeTextNotes
@@ -161,13 +158,6 @@ function PreferencesPage() {
               <select value={stayBudget} onChange={(e) => setStayBudget(e.target.value)}>
                 <option value="">Choose...</option>
                 {options.stayBudgets.map((option) => <option key={option} value={option}>{option}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>Type of stay</label>
-              <select value={stayType} onChange={(e) => setStayType(e.target.value)}>
-                <option value="">Choose...</option>
-                {options.stayTypes.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </div>
           </div>
